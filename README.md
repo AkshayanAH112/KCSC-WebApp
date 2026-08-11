@@ -35,8 +35,19 @@ what's missing.
 
 ### First admin user
 
-With the dev server running, visit `/api/auth/seed` once. It creates `admin@kcsc.lk` /
-`password123` and is blocked in production. **Change that password before going live.**
+The KCSC Atlas database already has `admin@kcsc.lk` seeded with a strong generated password
+(handed over separately — it is not stored in this repo).
+
+For a **fresh, empty** database, `GET /api/auth/seed` creates `admin@kcsc.lk` / `password123`.
+That route is blocked in production and is for local development only — never point it at a live
+database, and change the password immediately if you do use it.
+
+### Deploying to Vercel
+
+`.env.local` is git-ignored, so the same variables must be set in the Vercel project settings:
+`MONGODB_URI`, `JWT_SECRET`, and the three `CLOUDINARY_*` values. In MongoDB Atlas, add
+`0.0.0.0/0` to **Network Access** — Vercel's serverless functions do not have fixed egress IPs,
+so an allowlist of specific addresses will fail in production.
 
 ## Commands
 
