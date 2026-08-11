@@ -1,4 +1,18 @@
+import dns from "dns";
 import mongoose from "mongoose";
+
+// Dev-only DNS fallback. On some Windows machines Node's own resolver can't reach
+// the system DNS server at all (every Node lookup fails, including plain domains —
+// not just Atlas), while the OS's own resolver works fine (e.g. PowerShell's
+// Resolve-DnsName succeeds). Because MONGODB_URI uses mongodb+srv://, connecting
+// requires a DNS SRV lookup, so this breaks Atlas specifically with
+// "querySrv ECONNREFUSED ..." even though the cluster and credentials are fine.
+// Pointing Node at a public resolver works around it. Skipped in production —
+// Vercel's network doesn't have this problem, and there's no reason to override
+// DNS there.
+if (process.env.NODE_ENV !== "production") {
+  dns.setServers(["8.8.8.8", "1.1.1.1"]);
+}
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
