@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Barlow, Barlow_Condensed, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import "../globals.css";
 
 // Barlow superfamily — athletic headings, table-friendly body. See
 // design-system/kallar-central-sports-club/MASTER.md. Self-hosted by next/font,

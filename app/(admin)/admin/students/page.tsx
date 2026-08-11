@@ -251,32 +251,60 @@ export default function StudentsPage() {
               </div>
             </div>
             
-            {/* Standard CR-80 Financial Card Size (85.6mm x 53.98mm) */}
-            <div id="printable-id-card" className="w-[85.6mm] h-[53.98mm] bg-white border-[3px] border-primary rounded-xl flex flex-row items-center p-4 gap-4 relative overflow-hidden shrink-0">
-              
-              {/* Decorative Geometric Background */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-8 translate-x-8"></div>
-              <div className="absolute bottom-0 left-0 w-16 h-16 bg-primary/5 rounded-full translate-y-8 -translate-x-4"></div>
-              
-              <div className="flex-1 flex flex-col justify-center z-10 w-full h-full relative">
-                <div className="flex items-center gap-2 mb-2">
-                  <Image src="/logo.png" width={32} height={32} className="w-8 h-8 object-contain" alt="KCSC crest" />
-                  <div className="text-[10px] font-bold text-primary leading-[1.1]">Kallar Central<br/>Sports Club</div>
-                </div>
-                
-                <h4 className="font-bold text-gray-900 text-[13px] leading-tight uppercase mt-3 line-clamp-2">{activeStudent.name}</h4>
-                <p className="text-[10px] font-extrabold text-primary mt-1">{activeStudent.batchId?.name || 'Standard Batch'}</p>
-                
-                <div className="mt-auto text-[9px] text-gray-600 space-y-0.5">
-                  <p><span className="font-semibold">Grade:</span> {activeStudent.grade}</p>
-                  <p><span className="font-semibold">Parent:</span> {activeStudent.guardianPhone}</p>
-                </div>
+            {/* Card art is the club's Canva-designed template (public/id-card-template.png);
+                only the fields below are overlaid — everything else (crest, title, tagline,
+                icons, labels, footer line) is baked into that image. Positions are percentages
+                derived from the template's native 1586x992 canvas, so they hold up at any
+                render size including html2canvas's 4x capture scale. */}
+            {/* Height is 85.6mm scaled to the template's native 1586x992 ratio (not the
+                CR-80 standard 53.98mm) so the background image is never stretched. */}
+            <div
+              id="printable-id-card"
+              className="relative w-[85.6mm] h-[53.54mm] shrink-0 rounded-2xl overflow-hidden"
+            >
+              <Image src="/id-card-template.png" alt="" fill priority className="object-cover" />
+
+              <h4
+                className="absolute font-bold text-[#14213D] uppercase leading-[1.05] line-clamp-2"
+                style={{ left: "8%", top: "38%", width: "45%", height: "13%", fontSize: "17px" }}
+              >
+                {activeStudent.name}
+              </h4>
+
+              <p
+                className="absolute flex items-center font-extrabold text-white uppercase tracking-wide"
+                style={{ left: "8.5%", top: "52.3%", width: "30%", height: "7%", fontSize: "6.5px" }}
+              >
+                {activeStudent.batchId?.name ?? "Scholarship Batch"}
+              </p>
+
+              <p
+                className="absolute font-semibold text-gray-800"
+                style={{ left: "28%", top: "69.5%", width: "35%", fontSize: "8px", transform: "translateY(-50%)" }}
+              >
+                {activeStudent.grade}
+              </p>
+
+              <p
+                className="absolute font-semibold text-gray-800"
+                style={{ left: "28%", top: "79.3%", width: "35%", fontSize: "8px", transform: "translateY(-50%)" }}
+              >
+                {activeStudent.guardianPhone}
+              </p>
+
+              <div
+                className="absolute flex items-center justify-center"
+                style={{ left: "66.9%", top: "25.7%", width: "25.5%", height: "37.8%" }}
+              >
+                <Image src={activeQr} alt="QR Code" width={200} height={200} unoptimized className="w-[88%] h-auto" />
               </div>
 
-              <div className="w-24 shrink-0 flex flex-col items-center z-10">
-                <Image src={activeQr} alt="QR Code" width={96} height={96} unoptimized className="w-full h-auto bg-white border-2 border-gray-100 rounded-lg p-1 shadow-sm" />
-                <p className="text-[7px] text-gray-400 font-mono mt-1 tracking-tighter">{activeStudent.qrCode}</p>
-              </div>
+              <p
+                className="absolute text-center text-gray-500 font-mono tracking-tight"
+                style={{ left: "66.9%", top: "64.8%", width: "25.5%", fontSize: "7px" }}
+              >
+                {activeStudent.qrCode}
+              </p>
             </div>
 
             <button onClick={() => setQrModalOpen(false)} className="w-full bg-gray-900 hover:bg-gray-800 text-white py-3 rounded-xl font-medium mt-8 print:hidden transition-colors">Close</button>
