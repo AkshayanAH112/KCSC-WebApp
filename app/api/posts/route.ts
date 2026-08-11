@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import { Post, POST_CATEGORIES } from '@/models';
-import { isAdminRequest } from '@/lib/requireAdmin';
+import { isStaffRequest } from '@/lib/auth-guard';
 import { uniqueSlug } from '@/lib/slug';
 
 /** Admin listing — includes drafts, so it is behind the auth guard. */
 export async function GET(request: Request) {
   try {
-    if (!(await isAdminRequest(request))) {
+    if (!(await isStaffRequest(request))) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     await connectToDatabase();
@@ -29,7 +29,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    if (!(await isAdminRequest(request))) {
+    if (!(await isStaffRequest(request))) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     await connectToDatabase();

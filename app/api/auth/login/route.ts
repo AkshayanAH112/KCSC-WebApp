@@ -18,11 +18,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
+    if (!user.isActive) {
+      return NextResponse.json({ error: 'This account has been deactivated' }, { status: 403 });
+    }
+
     const token = signToken({ userId: user._id, role: user.role });
 
     // Token is also returned in the body for the mobile app (Capacitor),
     // which authenticates with an Authorization: Bearer header instead of cookies.
-    const response = NextResponse.json({ success: true, token });
+    // user.role is returned too so both clients can gate navigation (e.g. hide
+    // the Members section from an lms_manager) without a second round trip.
+    const response = NextResponse.json({
+      success: true,
+      token,
+      user: { email: user.email, role: user.role },
+    });
     response.cookies.set({
       name: 'auth_token',
       value: token,

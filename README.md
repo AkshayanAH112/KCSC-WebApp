@@ -13,6 +13,16 @@ There is **no fee, invoice, or payment surface anywhere in this product** — cl
 - **Marks analysis** — Excel import/export, per-subject averages, performance charts
 - **News & Blog** — write posts with cover and gallery images (stored in Cloudinary) and publish
   them to the club's public landing page
+- **Club Members** (`admin` role only) — review/approve/reject membership applications submitted
+  from the landing page, or add a walk-in signup directly
+- **Staff Accounts** (`admin` role only) — create logins for the club's other admins/LMS managers
+
+### Two staff roles
+
+| Role | Can do |
+|---|---|
+| `admin` | Everything — the LMS *and* club membership + staff account management |
+| `lms_manager` | The LMS only (students, batches, attendance, marks, news) — no access to Club Members or Staff Accounts, enforced server-side, not just hidden in the UI |
 
 ## Setup
 
@@ -38,9 +48,12 @@ what's missing.
 The KCSC Atlas database already has `admin@kcsc.lk` seeded with a strong generated password
 (handed over separately — it is not stored in this repo).
 
-For a **fresh, empty** database, `GET /api/auth/seed` creates `admin@kcsc.lk` / `password123`.
-That route is blocked in production and is for local development only — never point it at a live
-database, and change the password immediately if you do use it.
+For a **fresh, empty** database, `GET /api/auth/seed` creates `admin@kcsc.lk` / `password123` with
+the `admin` role. That route is blocked in production and is for local development only — never
+point it at a live database, and change the password immediately if you do use it.
+
+Every other staff login (whether `admin` or `lms_manager`) is created from `/admin/staff` by an
+existing admin — there's no second seed route for that.
 
 ### Deploying to Vercel
 
@@ -62,9 +75,10 @@ No test runner is configured.
 
 ## Public API for the landing page
 
-The club's public website is a separate project. It reads published posts from these two
-read-only, unauthenticated endpoints (`/api/*` is served with
-`Access-Control-Allow-Origin: *`, so any origin can fetch them):
+The club's public website is a separate project. `/api/*` is served with
+`Access-Control-Allow-Origin: *`, so any origin can call these.
+
+### Reading published posts (unauthenticated)
 
 ```
 GET /api/public/posts?category=news&limit=6&page=1
@@ -76,8 +90,36 @@ GET /api/public/posts/<slug>
 `title`, `slug`, `excerpt`, `coverImageUrl`, `images[]`, `tags[]`, `author` and `publishedAt`.
 Drafts are never returned.
 
-Everything under `/api/posts` and `/api/upload` is admin-only (JWT via httpOnly cookie or
-`Authorization: Bearer`), because those routes write content that renders on the public site.
+### Submitting a membership application (unauthenticated)
+
+```
+POST /api/public/members
+Content-Type: application/json
+
+{
+  "fullName": "string, required",
+  "phone": "string, required",
+  "email": "string, optional",
+  "dateOfBirth": "ISO date string, optional",
+  "address": "string, optional",
+  "guardianName": "string, optional — for a minor applicant",
+  "guardianPhone": "string, optional",
+  "interest": "string, optional — which sport/activity",
+  "message": "string, optional — free text from the applicant"
+}
+```
+
+Returns `201 { success: true, id, message }` on success, `400` with `{ error }` if `fullName` or
+`phone` is missing. Every submission lands as `status: "pending"` for an admin to review at
+`/admin/members` — there is no way to read it back through this endpoint; it's write-only from the
+landing page's side.
+
+### Everything else requires auth
+
+`/api/posts*`, `/api/upload`, `/api/students*`, `/api/batches*`, `/api/classes*`, `/api/attendance*`,
+`/api/marks*`, `/api/dashboard/stats` — any authenticated staff member (JWT via httpOnly cookie or
+`Authorization: Bearer`). `/api/members*` and `/api/staff*` additionally require the `admin` role;
+an `lms_manager` token is valid but still gets `401` there.
 
 ## Design system
 

@@ -7,10 +7,21 @@ import mongoose from "mongoose";
 
 const GRADES = [3, 4, 5];
 
+/**
+ * Two staff roles:
+ * - 'admin'        — full access: the LMS (students/batches/attendance/marks/news)
+ *                    AND club membership (review/approve/manage Member applications).
+ * - 'lms_manager'  — the LMS only. No visibility into Member applications at all —
+ *                    not just hidden in the UI, the /api/members* routes reject this
+ *                    role server-side too (see lib/auth-guard.ts).
+ */
+export const USER_ROLES = ['admin', 'lms_manager'] as const;
+
 const UserSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   passwordHash: { type: String, required: true },
-  role: { type: String, default: 'admin' }
+  role: { type: String, enum: USER_ROLES, default: 'lms_manager' },
+  isActive: { type: Boolean, default: true },
 }, { timestamps: true });
 export const User = mongoose.models.User || mongoose.model("User", UserSchema);
 
@@ -62,6 +73,32 @@ const MarksSchema = new mongoose.Schema({
   grade: { type: Number, required: true, enum: GRADES },
 }, { timestamps: true });
 export const Marks = mongoose.models.Marks || mongoose.model("Marks", MarksSchema);
+
+/**
+ * Club membership — deliberately separate from Student. Student is the Grade 3-5
+ * free tuition roster; Member is general Kallar Central Sports Club membership,
+ * open to any age, submitted publicly from the club's landing page and reviewed
+ * by an admin (not an lms_manager — see lib/auth-guard.ts).
+ */
+export const MEMBER_STATUSES = ['pending', 'approved', 'rejected'] as const;
+
+const MemberSchema = new mongoose.Schema({
+  fullName: { type: String, required: true },
+  dateOfBirth: { type: Date },
+  phone: { type: String, required: true },
+  email: { type: String },
+  address: { type: String },
+  // Optional — many club members will be adults and won't have these.
+  guardianName: { type: String },
+  guardianPhone: { type: String },
+  interest: { type: String }, // free text: which sport/activity they want to join
+  message: { type: String }, // whatever the applicant wrote on the public form
+  status: { type: String, enum: MEMBER_STATUSES, default: 'pending', index: true },
+  reviewNotes: { type: String }, // admin-only notes, e.g. reason for rejection
+  reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  reviewedAt: { type: Date },
+}, { timestamps: true });
+export const Member = mongoose.models.Member || mongoose.model("Member", MemberSchema);
 
 /**
  * Blog / news posts surfaced on the public landing page (built separately).

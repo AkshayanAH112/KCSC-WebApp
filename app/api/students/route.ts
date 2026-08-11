@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import { Student } from '@/models';
+import { isStaffRequest } from '@/lib/auth-guard';
 import crypto from 'crypto';
 
 export async function GET(request: Request) {
   try {
+    if (!(await isStaffRequest(request))) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     await connectToDatabase();
     const { searchParams } = new URL(request.url);
     const grade = searchParams.get('grade');
@@ -23,9 +27,12 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    if (!(await isStaffRequest(request))) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     await connectToDatabase();
     const data = await request.json();
-    
+
     // Auto-generate unique QR code
     const uniqueId = crypto.randomBytes(4).toString('hex').toUpperCase();
     data.qrCode = `KCSC-${data.grade}-${uniqueId}`;

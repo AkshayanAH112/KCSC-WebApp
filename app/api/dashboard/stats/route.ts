@@ -1,21 +1,30 @@
 import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
-import { Student, ClassSession, Attendance, Marks, Post } from '@/models';
+import { Student, ClassSession, Attendance, Marks, Post, Member } from '@/models';
 import { getTodayRange } from '@/lib/dateRange';
 import { countLowAttendanceStudents } from '@/lib/attendanceStats';
+import { getAuthPayload } from '@/lib/auth-guard';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const auth = await getAuthPayload(request);
+    if (!auth) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     await connectToDatabase();
     const { start, end } = getTodayRange();
 
-    const [totalStudents, todaySessions, recentMarks, lowAttendanceCount, publishedPosts] =
+    const [totalStudents, todaySessions, recentMarks, lowAttendanceCount, publishedPosts, pendingMembers] =
       await Promise.all([
         Student.countDocuments({ isActive: true }),
         ClassSession.find({ date: { $gte: start, $lt: end } }),
         Marks.countDocuments({ createdAt: { $gte: start, $lt: end } }),
         countLowAttendanceStudents(),
         Post.countDocuments({ status: 'published' }),
+        // Only an admin can act on membership applications, so an lms_manager
+        // shouldn't even see the count — keeps the dashboard honest about what
+        // this session can do.
+        auth.role === 'admin' ? Member.countDocuments({ status: 'pending' }) : null,
       ]);
 
     // Today's attendance %: roster = students matching any (batchId, grade)
@@ -60,6 +69,7 @@ export async function GET() {
       absentToday: Math.max(0, totalRosterSlots - presentRosterSlots),
       lowAttendanceCount,
       publishedPosts,
+      pendingMembers,
       recentMarks,
     });
   } catch (error: any) {

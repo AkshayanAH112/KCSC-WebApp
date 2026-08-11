@@ -10,6 +10,8 @@ import {
   QrCode,
   Newspaper,
   GraduationCap,
+  UserCog,
+  ShieldCheck,
   LogOut,
 } from "lucide-react";
 
@@ -26,8 +28,9 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { useCurrentUser } from "@/components/current-user-provider";
 
-const navItems = [
+const lmsNavItems = [
   { title: "Dashboard", url: "/admin/dashboard", icon: LayoutDashboard },
   { title: "Students", url: "/admin/students", icon: Users },
   { title: "Batches & Classes", url: "/admin/batches", icon: BookOpen },
@@ -36,9 +39,18 @@ const navItems = [
   { title: "News & Blog", url: "/admin/news", icon: Newspaper },
 ];
 
+// Admin-only: club membership and staff-account management. Hidden from
+// lms_manager sessions here for UX; the API rejects them regardless (auth-guard.ts).
+const adminNavItems = [
+  { title: "Club Members", url: "/admin/members", icon: UserCog },
+  { title: "Staff Accounts", url: "/admin/staff", icon: ShieldCheck },
+];
+
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
   const router = useRouter();
+  const { user } = useCurrentUser();
+  const navItems = user?.role === "admin" ? [...lmsNavItems, ...adminNavItems] : lmsNavItems;
 
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });

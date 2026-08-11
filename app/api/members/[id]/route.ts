@@ -1,0 +1,66 @@
+import { NextResponse } from 'next/server';
+import connectToDatabase from '@/lib/mongodb';
+import { Member } from '@/models';
+import { isAdminOnlyRequest, getAuthPayload } from '@/lib/auth-guard';
+
+export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
+  try {
+    if (!(await isAdminOnlyRequest(request))) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    await connectToDatabase();
+    const { id } = await context.params;
+
+    const member = await Member.findById(id).populate('reviewedBy', 'email');
+    if (!member) return NextResponse.json({ error: 'Member not found' }, { status: 404 });
+
+    return NextResponse.json({ member });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+/** Approve/reject/edit. Stamps reviewedBy + reviewedAt the moment status first leaves 'pending'. */
+export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
+  try {
+    const auth = await getAuthPayload(request);
+    if (!auth || auth.role !== 'admin') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    await connectToDatabase();
+    const { id } = await context.params;
+
+    const existing = await Member.findById(id);
+    if (!existing) return NextResponse.json({ error: 'Member not found' }, { status: 404 });
+
+    const data = await request.json();
+    const update: Record<string, unknown> = { ...data };
+
+    if (data.status && data.status !== existing.status && existing.status === 'pending') {
+      update.reviewedBy = auth.userId;
+      update.reviewedAt = new Date();
+    }
+
+    const member = await Member.findByIdAndUpdate(id, update, { new: true, runValidators: true });
+    return NextResponse.json({ member });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
+  try {
+    if (!(await isAdminOnlyRequest(request))) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    await connectToDatabase();
+    const { id } = await context.params;
+
+    const member = await Member.findByIdAndDelete(id);
+    if (!member) return NextResponse.json({ error: 'Member not found' }, { status: 404 });
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}

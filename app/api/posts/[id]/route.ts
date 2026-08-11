@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import { Post } from '@/models';
-import { isAdminRequest } from '@/lib/requireAdmin';
+import { isStaffRequest } from '@/lib/auth-guard';
 import { uniqueSlug } from '@/lib/slug';
 import { deleteImage } from '@/lib/cloudinary';
 
 export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
-    if (!(await isAdminRequest(request))) {
+    if (!(await isStaffRequest(request))) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     await connectToDatabase();
@@ -24,7 +24,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
-    if (!(await isAdminRequest(request))) {
+    if (!(await isStaffRequest(request))) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     await connectToDatabase();
@@ -69,7 +69,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
 
 export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
-    if (!(await isAdminRequest(request))) {
+    if (!(await isStaffRequest(request))) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     await connectToDatabase();

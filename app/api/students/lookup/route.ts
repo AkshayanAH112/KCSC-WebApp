@@ -1,9 +1,13 @@
 import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import { Student, Attendance, ClassSession } from '@/models';
+import { isStaffRequest } from '@/lib/auth-guard';
 
 export async function GET(request: Request) {
   try {
+    if (!(await isStaffRequest(request))) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     await connectToDatabase();
     const { searchParams } = new URL(request.url);
     const qrCode = searchParams.get('qrCode');

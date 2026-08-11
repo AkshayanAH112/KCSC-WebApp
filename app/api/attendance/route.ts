@@ -1,9 +1,13 @@
 import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import { Attendance, Student, ClassSession } from '@/models';
+import { isStaffRequest } from '@/lib/auth-guard';
 
 export async function POST(request: Request) {
   try {
+    if (!(await isStaffRequest(request))) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     await connectToDatabase();
     const { studentId, classId, present } = await request.json();
 

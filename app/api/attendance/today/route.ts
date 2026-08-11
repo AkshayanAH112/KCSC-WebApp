@@ -2,9 +2,13 @@ import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import { ClassSession, Student, Attendance } from '@/models';
 import { getTodayRange } from '@/lib/dateRange';
+import { isStaffRequest } from '@/lib/auth-guard';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    if (!(await isStaffRequest(request))) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     await connectToDatabase();
     const { start, end } = getTodayRange();
 

@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
 import { uploadImage, isCloudinaryConfigured } from '@/lib/cloudinary';
-import { isAdminRequest } from '@/lib/requireAdmin';
+import { isStaffRequest } from '@/lib/auth-guard';
 
 const MAX_BYTES = 8 * 1024 * 1024; // 8MB
 const ALLOWED = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
 
 export async function POST(request: Request) {
   try {
-    if (!(await isAdminRequest(request))) {
+    if (!(await isStaffRequest(request))) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

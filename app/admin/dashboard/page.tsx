@@ -9,8 +9,10 @@ import {
   AlertTriangle,
   QrCode,
   Newspaper,
+  UserCog,
   ArrowRight,
 } from "lucide-react";
+import { useCurrentUser } from "@/components/current-user-provider";
 
 interface Stats {
   totalStudents: number;
@@ -21,6 +23,7 @@ interface Stats {
   absentToday: number;
   lowAttendanceCount: number;
   publishedPosts: number;
+  pendingMembers: number | null;
   recentMarks: number;
 }
 
@@ -67,6 +70,7 @@ const quickLinks = [
 ];
 
 export default function DashboardPage() {
+  const { user } = useCurrentUser();
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -81,6 +85,23 @@ export default function DashboardPage() {
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, []);
+
+  // pendingMembers only exists in the payload for an admin session — an
+  // lms_manager gets `null` from the API and never sees this card.
+  const cards =
+    user?.role === "admin"
+      ? [
+          ...statConfig,
+          {
+            key: "pendingMembers" as const,
+            title: "Pending Members",
+            icon: UserCog,
+            tone: "text-primary",
+            bg: "bg-primary/10",
+            hint: () => "awaiting review",
+          },
+        ]
+      : statConfig;
 
   return (
     <div className="space-y-6">
@@ -101,7 +122,7 @@ export default function DashboardPage() {
       )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {statConfig.map(({ key, title, icon: Icon, tone, bg, hint }) => (
+        {cards.map(({ key, title, icon: Icon, tone, bg, hint }) => (
           <div key={key} className="card-gold-rule p-5 shadow-xs">
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
@@ -128,7 +149,18 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        {quickLinks.map(({ href, label, icon: Icon, desc }) => (
+        {(user?.role === "admin"
+          ? [
+              ...quickLinks,
+              {
+                href: "/admin/members",
+                label: "Review members",
+                icon: UserCog,
+                desc: "Approve or reject club membership applications",
+              },
+            ]
+          : quickLinks
+        ).map(({ href, label, icon: Icon, desc }) => (
           <Link
             key={href}
             href={href}

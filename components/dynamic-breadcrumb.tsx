@@ -21,6 +21,8 @@ const routeLabels: Record<string, string> = {
   scanner: "Scanner & Attendance",
   marks: "Marks & Reports",
   news: "News & Blog",
+  members: "Club Members",
+  staff: "Staff Accounts",
 };
 
 export function DynamicBreadcrumb() {
