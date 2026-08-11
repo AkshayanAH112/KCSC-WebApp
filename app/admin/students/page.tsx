@@ -82,7 +82,11 @@ export default function StudentsPage() {
   };
 
   const downloadIdCard = async () => {
-    const html2canvas = (await import('html2canvas')).default;
+    // html2canvas-pro, not html2canvas: the plain package's color parser doesn't
+    // understand oklch()/lab()/color() — this app's whole design system is built on
+    // oklch CSS variables (Tailwind v4 default), so every capture would throw
+    // "unsupported color function". The -pro fork adds that support; same API.
+    const html2canvas = (await import('html2canvas-pro')).default;
     const card = document.getElementById('printable-id-card');
     if (!card) return;
     const canvas = await html2canvas(card, { scale: 4, useCORS: true, backgroundColor: '#ffffff' });
