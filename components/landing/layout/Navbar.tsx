@@ -28,49 +28,62 @@ function KcscMark() {
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("Home");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   const lastScrollY = useRef(0);
 
   useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      
-      setIsScrolled(currentScrollY > 50);
+      const handleScroll = () => {
+        const currentScrollY = window.scrollY;
+        
+        setIsScrolled(currentScrollY > 50);
 
-      // Hide on scroll down, show on scroll up
-      if (currentScrollY > lastScrollY.current && currentScrollY > 200) {
-        setIsHidden(true);
-      } else if (currentScrollY < lastScrollY.current) {
-        setIsHidden(false);
-      }
-      
-      lastScrollY.current = currentScrollY;
-
-      // Scroll Spy Logic
-      const sections = navLinks.map(link => link.href.replace('#', ''));
-      let current = "Home"; // default
-      for (const section of sections) {
-        if (!section || section === '/') continue;
-        const element = document.getElementById(section);
-        if (element) {
-          const rect = element.getBoundingClientRect();
-          // Adjust threshold based on section sizing
-          if (rect.top <= 300 && rect.bottom >= 300) {
-            current = navLinks.find(l => l.href.includes(section))?.label || "Home";
+        // Scroll Spy Logic
+        const sections = navLinks.map(link => link.href.replace('#', ''));
+        let current = "Home"; // default
+        for (const section of sections) {
+          if (!section || section === '/') continue;
+          const element = document.getElementById(section);
+          if (element) {
+            const rect = element.getBoundingClientRect();
+            // Adjust threshold based on section sizing
+            if (rect.top <= 300 && rect.bottom >= 300) {
+              current = navLinks.find(l => l.href.includes(section))?.label || "Home";
+            }
           }
         }
-      }
-      if (currentScrollY < 100) current = "Home";
+        if (currentScrollY < 100) current = "Home";
+        
+        setActiveSection(current);
+
+        // Hide on scroll down, show on scroll up
+        // Do this AFTER Scroll Spy so we don't accidentally use stale state
+        setIsHidden((prev) => {
+           if (currentScrollY > lastScrollY.current && currentScrollY > 200) {
+             return true;
+           } else if (currentScrollY < lastScrollY.current) {
+             return false;
+           }
+           return prev;
+        });
+        
+        lastScrollY.current = currentScrollY;
+      };
       
-      setActiveSection(current);
-    };
-    
-    window.addEventListener("scroll", handleScroll);
-    handleScroll(); // init
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+      const handleModalToggle = (e: any) => {
+        setIsModalOpen(e.detail.isOpen);
+      };
+
+      window.addEventListener("scroll", handleScroll);
+      window.addEventListener("modal-toggle", handleModalToggle);
+      handleScroll(); // init
+      return () => {
+        window.removeEventListener("scroll", handleScroll);
+        window.removeEventListener("modal-toggle", handleModalToggle);
+      };
+    }, []);
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
@@ -92,7 +105,7 @@ export default function Navbar() {
       <div 
         className={cn(
           "fixed top-4 left-0 w-full z-50 flex justify-center px-4 pointer-events-none transition-transform duration-500",
-          isHidden ? "-translate-y-[150%]" : "translate-y-0"
+          (isHidden || isModalOpen) ? "-translate-y-[150%]" : "translate-y-0"
         )}
       >
         <nav

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import { Member } from '@/models';
+import { uploadImage, isCloudinaryConfigured } from '@/lib/cloudinary';
 
 /**
  * Public membership registration — called by the club's landing page (a separate
@@ -24,11 +25,34 @@ export async function POST(request: Request) {
     // arbitrarily large document, independent of whatever the landing page validates.
     const cap = (v: unknown, max: number) => (typeof v === 'string' ? v.trim().slice(0, max) : undefined);
 
+    let imageUrl = undefined;
+    if (typeof data.image === 'string' && data.image.startsWith('data:image/') && isCloudinaryConfigured()) {
+      try {
+        const base64Data = data.image.split(';base64,').pop() || '';
+        const buffer = Buffer.from(base64Data, 'base64');
+        const uploaded = await uploadImage(buffer, `member_${Date.now()}`);
+        imageUrl = uploaded.url;
+      } catch (e) {
+        console.error('Failed to upload profile image to Cloudinary', e);
+        // If it fails, fallback to saving base64 to avoid losing the image
+        imageUrl = data.image;
+      }
+    } else if (typeof data.image === 'string') {
+      imageUrl = data.image;
+    }
+
     const member = await Member.create({
       fullName: fullName.slice(0, 120),
       phone: phone.slice(0, 30),
       email: cap(data.email, 254),
       dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : undefined,
+      nic: cap(data.nic, 20),
+      age: typeof data.age === 'number' ? data.age : (data.age ? parseInt(data.age, 10) : undefined),
+      image: imageUrl,
+      gender: cap(data.gender, 20),
+      whatsapp: cap(data.whatsapp, 30),
+      dateOfJoining: data.dateOfJoining ? new Date(data.dateOfJoining) : undefined,
+      previousClub: cap(data.previousClub, 120),
       address: cap(data.address, 300),
       guardianName: cap(data.guardianName, 120),
       guardianPhone: cap(data.guardianPhone, 30),

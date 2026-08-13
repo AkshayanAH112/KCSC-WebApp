@@ -85,6 +85,13 @@ export const MEMBER_STATUSES = ['pending', 'approved', 'rejected'] as const;
 const MemberSchema = new mongoose.Schema({
   fullName: { type: String, required: true },
   dateOfBirth: { type: Date },
+  nic: { type: String },
+  age: { type: Number },
+  image: { type: String }, // stores Cloudinary URL
+  gender: { type: String },
+  whatsapp: { type: String },
+  dateOfJoining: { type: Date },
+  previousClub: { type: String },
   phone: { type: String, required: true },
   email: { type: String },
   address: { type: String },
