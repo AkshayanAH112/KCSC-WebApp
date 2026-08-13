@@ -30,24 +30,24 @@ export default function JoinModal() {
     const form = new FormData(e.currentTarget);
     const firstName = String(form.get("firstName") ?? "").trim();
     const lastName = String(form.get("lastName") ?? "").trim();
-    const membershipType = String(form.get("membershipType") ?? "");
-    const role = String(form.get("role") ?? "");
+    const photo = form.get("photo");
 
-    const payload = {
-      fullName: [firstName, lastName].filter(Boolean).join(" "),
-      email: String(form.get("email") ?? "").trim(),
-      phone: String(form.get("phone") ?? "").trim(),
-      address: String(form.get("address") ?? "").trim(),
-      interest: [membershipType, role].filter(Boolean).join(" — "),
-      message: String(form.get("achievements") ?? "").trim(),
-    };
+    const payload = new FormData();
+    payload.set("fullName", [firstName, lastName].filter(Boolean).join(" "));
+    payload.set("email", String(form.get("email") ?? "").trim());
+    payload.set("phone", String(form.get("phone") ?? "").trim());
+    payload.set("nic", String(form.get("nic") ?? "").trim());
+    payload.set("address", String(form.get("address") ?? "").trim());
+    payload.set("memberType", String(form.get("membershipType") ?? ""));
+    payload.set("interest", String(form.get("role") ?? ""));
+    payload.set("message", String(form.get("achievements") ?? "").trim());
+    if (photo instanceof File && photo.size > 0) payload.set("photo", photo);
 
     setIsSubmitting(true);
     try {
       const res = await fetch("/api/public/members", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: payload,
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Something went wrong. Please try again.");
@@ -118,6 +118,23 @@ export default function JoinModal() {
               <div className="space-y-1">
                 <label className="text-sm font-medium text-on-surface">Address</label>
                 <input name="address" required type="text" className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface" placeholder="123 Cricket Lane, City" />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-on-surface">NIC Number</label>
+                <input name="nic" required type="text" className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface" placeholder="e.g. 200012345678 or 851234567V" />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-on-surface">Photo</label>
+                <input
+                  name="photo"
+                  required
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/avif"
+                  className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface text-sm file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-on-primary"
+                />
+                <p className="text-xs text-on-surface-variant">Used for your membership card — a clear passport-style photo.</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

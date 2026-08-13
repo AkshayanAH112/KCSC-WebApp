@@ -12,6 +12,7 @@ cloudinary.config({
 });
 
 export const CLOUDINARY_FOLDER = 'kcsc/news';
+export const CLOUDINARY_MEMBERS_FOLDER = 'kcsc/members';
 
 export function isCloudinaryConfigured() {
   return Boolean(
@@ -24,11 +25,15 @@ export function isCloudinaryConfigured() {
 export type UploadedImage = { url: string; publicId: string; width: number; height: number };
 
 /** Uploads raw image bytes and returns the stored URL plus the public_id needed to delete it later. */
-export async function uploadImage(buffer: Buffer, filename?: string): Promise<UploadedImage> {
+export async function uploadImage(
+  buffer: Buffer,
+  filename?: string,
+  folder: string = CLOUDINARY_FOLDER
+): Promise<UploadedImage> {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       {
-        folder: CLOUDINARY_FOLDER,
+        folder,
         resource_type: 'image',
         public_id: filename ? filename.replace(/\.[^.]+$/, '') : undefined,
         unique_filename: true,

@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Loader2, Save } from "lucide-react";
+import Image from "next/image";
+import { ArrowLeft, Loader2, Save, Upload } from "lucide-react";
 
 export default function NewMemberPage() {
   const router = useRouter();
@@ -12,14 +13,39 @@ export default function NewMemberPage() {
     email: "",
     dateOfBirth: "",
     address: "",
+    nic: "",
+    memberType: "Playing Member",
     guardianName: "",
     guardianPhone: "",
     interest: "",
+    photoUrl: "",
+    photoPublicId: "",
   });
   const [saving, setSaving] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const set = (key: keyof typeof form, value: string) => setForm((f) => ({ ...f, [key]: value }));
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingPhoto(true);
+    setError(null);
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      body.append("folder", "members");
+      const res = await fetch("/api/upload", { method: "POST", body });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || "Upload failed");
+      setForm((f) => ({ ...f, photoUrl: d.url, photoPublicId: d.publicId }));
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,6 +91,27 @@ export default function NewMemberPage() {
       )}
 
       <form onSubmit={submit} className="space-y-4 rounded-lg border border-border bg-card p-6 shadow-xs">
+        <div>
+          <label className="field-label">Photo</label>
+          <div className="flex items-center gap-4">
+            {form.photoUrl ? (
+              <Image src={form.photoUrl} alt="" width={64} height={64} className="size-16 rounded-lg object-cover" />
+            ) : (
+              <div className="flex size-16 items-center justify-center rounded-lg border border-dashed border-border text-muted-foreground">
+                <Upload size={20} aria-hidden />
+              </div>
+            )}
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/avif"
+              onChange={handlePhotoUpload}
+              disabled={uploadingPhoto}
+              className="field cursor-pointer text-sm file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-primary-foreground"
+            />
+            {uploadingPhoto && <Loader2 size={18} className="animate-spin text-muted-foreground" aria-hidden />}
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor="fullName" className="field-label">Full name</label>
@@ -81,6 +128,19 @@ export default function NewMemberPage() {
           <div>
             <label htmlFor="dob" className="field-label">Date of birth</label>
             <input id="dob" type="date" className="field" value={form.dateOfBirth} onChange={(e) => set("dateOfBirth", e.target.value)} />
+          </div>
+          <div>
+            <label htmlFor="nic" className="field-label">NIC number</label>
+            <input id="nic" className="field" value={form.nic} onChange={(e) => set("nic", e.target.value)} />
+          </div>
+          <div>
+            <label htmlFor="memberType" className="field-label">Member type</label>
+            <select id="memberType" className="field cursor-pointer" value={form.memberType} onChange={(e) => set("memberType", e.target.value)}>
+              <option value="Playing Member">Playing Member</option>
+              <option value="Non-Playing Member">Non-Playing Member</option>
+              <option value="Junior Member">Junior Member</option>
+              <option value="Coach / Staff">Coach / Staff</option>
+            </select>
           </div>
           <div className="sm:col-span-2">
             <label htmlFor="address" className="field-label">Address</label>
@@ -102,7 +162,7 @@ export default function NewMemberPage() {
 
         <button
           type="submit"
-          disabled={saving}
+          disabled={saving || uploadingPhoto}
           className="flex cursor-pointer items-center gap-2 rounded-lg bg-primary px-4 py-2 font-semibold text-primary-foreground transition-colors duration-200 hover:bg-primary/90 disabled:opacity-60"
         >
           {saving ? <Loader2 size={16} className="animate-spin" aria-hidden /> : <Save size={16} aria-hidden />}

@@ -91,6 +91,18 @@ const MemberSchema = new mongoose.Schema({
   // Optional — many club members will be adults and won't have these.
   guardianName: { type: String },
   guardianPhone: { type: String },
+  // Not schema-required — 3 members already exist in production from before this
+  // field was added, and PATCH (approve/reject) runs with runValidators: true, so
+  // a hard-required field here would break reviewing those. Required by the forms
+  // and API validation for new submissions instead — see /api/public/members.
+  nic: { type: String },
+  photoUrl: { type: String },
+  photoPublicId: { type: String },
+  memberType: { type: String }, // Playing Member / Non-Playing Member / Junior Member / Coach-Staff
+  // The card's "MEMBER ID" — generated once, when status first leaves 'pending'
+  // for 'approved' (see PATCH /api/members/[id]). sparse: true because pending/
+  // rejected applicants never get one.
+  memberCode: { type: String, unique: true, sparse: true },
   interest: { type: String }, // free text: which sport/activity they want to join
   message: { type: String }, // whatever the applicant wrote on the public form
   status: { type: String, enum: MEMBER_STATUSES, default: 'pending', index: true },

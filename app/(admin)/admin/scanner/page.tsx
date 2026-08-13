@@ -23,14 +23,33 @@ export default function ScannerPage() {
   const [manualCode, setManualCode] = useState("");
   const lastScannedCode = useRef<string | null>(null);
 
+  // Inline "create new class" — reached from the class select below when today's
+  // session hasn't been created yet, instead of having to leave to /admin/batches.
+  const [batches, setBatches] = useState<any[]>([]);
+  const [isNewClassModalOpen, setIsNewClassModalOpen] = useState(false);
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const [newClassForm, setNewClassForm] = useState({ batchId: "", grade: "3", date: todayIso, time: "", subject: "" });
+
   useEffect(() => {
-    fetch("/api/classes")
+    fetchClasses().then((list) => {
+      if (list.length > 0) setSelectedClass(list[0]._id);
+    });
+    fetch("/api/batches")
+      .then((r) => r.json())
+      .then((d) => {
+        setBatches(d.batches || []);
+        if (d.batches?.length > 0) setNewClassForm(prev => ({ ...prev, batchId: d.batches[0]._id }));
+      });
+  }, []);
+
+  function fetchClasses() {
+    return fetch("/api/classes")
       .then((r) => r.json())
       .then((d) => {
         setClasses(d.classes || []);
-        if (d.classes?.length > 0) setSelectedClass(d.classes[0]._id);
+        return d.classes || [];
       });
-  }, []);
+  }
 
   const handleQrScan = useCallback(
     async (qrCode: string) => {
@@ -103,6 +122,34 @@ export default function ScannerPage() {
     }
   };
 
+  const handleClassSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    if (e.target.value === "__new__") {
+      setIsNewClassModalOpen(true);
+      return;
+    }
+    setSelectedClass(e.target.value);
+  };
+
+  const createClassInline = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("/api/classes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newClassForm),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        await fetchClasses();
+        setSelectedClass(data.class._id);
+        setIsNewClassModalOpen(false);
+        setNewClassForm({ batchId: batches[0]?._id || "", grade: "3", date: todayIso, time: "", subject: "" });
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const isLowAttendance = attendanceRate !== null && attendanceRate < LOW_ATTENDANCE_PERCENT;
 
   return (
@@ -119,7 +166,7 @@ export default function ScannerPage() {
               id="class-select"
               className="field cursor-pointer"
               value={selectedClass}
-              onChange={(e) => setSelectedClass(e.target.value)}
+              onChange={handleClassSelect}
             >
               <option value="" disabled>
                 Select a class...
@@ -130,6 +177,7 @@ export default function ScannerPage() {
                   {new Date(c.date).toLocaleDateString()})
                 </option>
               ))}
+              <option value="__new__">+ Add New Class</option>
             </select>
           </div>
 
@@ -295,6 +343,86 @@ export default function ScannerPage() {
           )}
         </div>
       </div>
+
+      {/* Inline "New Class" — reached from the class select above so marking
+          attendance never has to be blocked on leaving to /admin/batches first. */}
+      {isNewClassModalOpen && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-6 sm:p-8 rounded-3xl max-w-sm w-full shadow-2xl">
+            <h2 className="text-xl font-bold mb-6 text-gray-900 dark:text-white">New Class Session</h2>
+            <form onSubmit={createClassInline} className="space-y-4">
+              <div>
+                <label className="field-label">Batch</label>
+                <select
+                  className="field cursor-pointer"
+                  required
+                  value={newClassForm.batchId}
+                  onChange={(e) => setNewClassForm({ ...newClassForm, batchId: e.target.value })}
+                >
+                  {batches.length === 0 && <option value="" disabled>No batches yet</option>}
+                  {batches.map((b) => (
+                    <option key={b._id} value={b._id}>{b.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="field-label">Grade</label>
+                <select
+                  className="field cursor-pointer"
+                  required
+                  value={newClassForm.grade}
+                  onChange={(e) => setNewClassForm({ ...newClassForm, grade: e.target.value })}
+                >
+                  <option value="3">Grade 3</option>
+                  <option value="4">Grade 4</option>
+                  <option value="5">Grade 5</option>
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="field-label">Date</label>
+                  <input
+                    type="date"
+                    required
+                    className="field"
+                    value={newClassForm.date}
+                    onChange={(e) => setNewClassForm({ ...newClassForm, date: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="field-label">Time</label>
+                  <input
+                    type="time"
+                    className="field"
+                    value={newClassForm.time}
+                    onChange={(e) => setNewClassForm({ ...newClassForm, time: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="field-label">Subject</label>
+                <input
+                  type="text"
+                  className="field"
+                  placeholder="Optional e.g. Mathematics"
+                  value={newClassForm.subject}
+                  onChange={(e) => setNewClassForm({ ...newClassForm, subject: e.target.value })}
+                />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsNewClassModalOpen(false)}
+                  className="flex-1 py-2 border border-border bg-card rounded-xl font-medium text-foreground hover:bg-muted transition-colors"
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground py-2 rounded-xl font-medium">Create</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

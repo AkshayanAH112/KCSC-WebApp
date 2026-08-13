@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Loader2, UserCog, Plus, ShieldAlert } from "lucide-react";
 import { useCurrentUser } from "@/components/current-user-provider";
 
@@ -11,6 +12,7 @@ type Member = {
   phone: string;
   email?: string;
   interest?: string;
+  photoUrl?: string;
   status: "pending" | "approved" | "rejected";
   createdAt: string;
 };
@@ -118,6 +120,7 @@ export default function MembersListPage() {
             <table className="w-full text-left text-sm">
               <thead className="bg-secondary font-medium text-secondary-foreground">
                 <tr>
+                  <th className="px-6 py-3"></th>
                   <th className="px-6 py-3">Name</th>
                   <th className="px-6 py-3">Phone</th>
                   <th className="px-6 py-3">Interest</th>
@@ -132,6 +135,13 @@ export default function MembersListPage() {
                     className="cursor-pointer transition-colors duration-200 hover:bg-muted"
                     onClick={() => (window.location.href = `/admin/members/${m._id}`)}
                   >
+                    <td className="px-6 py-2.5">
+                      {m.photoUrl ? (
+                        <Image src={m.photoUrl} alt="" width={32} height={32} className="size-8 rounded-full object-cover" />
+                      ) : (
+                        <div className="size-8 rounded-full bg-muted" />
+                      )}
+                    </td>
                     <td className="px-6 py-2.5 font-semibold text-foreground">{m.fullName}</td>
                     <td className="px-6 py-2.5 text-muted-foreground">{m.phone}</td>
                     <td className="px-6 py-2.5 text-muted-foreground">{m.interest || "—"}</td>

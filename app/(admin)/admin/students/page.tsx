@@ -17,7 +17,7 @@ export default function StudentsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterBatch, setFilterBatch] = useState("");
   const router = useRouter();
-  
+
   // Form state
   const [formData, setFormData] = useState({
     name: "",
@@ -27,6 +27,11 @@ export default function StudentsPage() {
     grade: "3",
     dateOfBirth: "",
   });
+
+  // Inline "create new batch" — reached from the Batch select below when no
+  // batch fits yet, instead of having to leave the registration form.
+  const [isNewBatchModalOpen, setIsNewBatchModalOpen] = useState(false);
+  const [newBatchForm, setNewBatchForm] = useState({ name: "", year: new Date().getFullYear() });
 
   useEffect(() => {
     fetchData();
@@ -64,6 +69,34 @@ export default function StudentsPage() {
         setIsModalOpen(false);
         setFormData({ name: "", guardianName: "", guardianPhone: "", batchId: batches[0]?._id || "", grade: "3", dateOfBirth: "" });
         fetchData();
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleBatchSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    if (e.target.value === "__new__") {
+      setIsNewBatchModalOpen(true);
+      return;
+    }
+    setFormData({ ...formData, batchId: e.target.value });
+  };
+
+  const createBatchInline = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("/api/batches", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...newBatchForm, grades: [3, 4, 5] }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setBatches(prev => [data.batch, ...prev]);
+        setFormData(prev => ({ ...prev, batchId: data.batch._id }));
+        setIsNewBatchModalOpen(false);
+        setNewBatchForm({ name: "", year: new Date().getFullYear() });
       }
     } catch (e) {
       console.error(e);
@@ -201,10 +234,12 @@ export default function StudentsPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="field-label">Batch</label>
-                  <select required className="field" value={formData.batchId} onChange={e => setFormData({...formData, batchId: e.target.value})}>
+                  <select required className="field cursor-pointer" value={formData.batchId} onChange={handleBatchSelect}>
+                    {batches.length === 0 && <option value="" disabled>No batches yet</option>}
                     {batches.map(b => (
                       <option key={b._id} value={b._id}>{b.name} ({b.year})</option>
                     ))}
+                    <option value="__new__">+ Add New Batch</option>
                   </select>
                 </div>
                 <div>
@@ -223,6 +258,36 @@ export default function StudentsPage() {
               <div className="flex gap-3 pt-4">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 px-4 py-2 border border-border bg-card rounded-xl font-medium text-foreground hover:bg-muted transition-colors">Cancel</button>
                 <button type="submit" className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-medium">Create & Generate QR</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Inline "New Batch" — reached from the Batch select above so registering a
+          student never has to be blocked on leaving to /admin/batches first. */}
+      {isNewBatchModalOpen && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-6 sm:p-8 rounded-3xl max-w-sm w-full shadow-2xl">
+            <h2 className="text-xl font-bold mb-6 text-gray-900 dark:text-white">New Batch</h2>
+            <form onSubmit={createBatchInline} className="space-y-4">
+              <div>
+                <label className="field-label">Batch Name</label>
+                <input required autoFocus className="field" placeholder="e.g. 2027 Scholarship Batch" value={newBatchForm.name} onChange={e => setNewBatchForm({ ...newBatchForm, name: e.target.value })} />
+              </div>
+              <div>
+                <label className="field-label">Starting Year</label>
+                <input type="number" required className="field" value={newBatchForm.year} onChange={e => setNewBatchForm({ ...newBatchForm, year: Number(e.target.value) })} />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => { setIsNewBatchModalOpen(false); setFormData(prev => ({ ...prev, batchId: batches[0]?._id || "" })); }}
+                  className="flex-1 py-2 border border-border bg-card rounded-xl font-medium text-foreground hover:bg-muted transition-colors"
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground py-2 rounded-xl font-medium">Create</button>
               </div>
             </form>
           </div>

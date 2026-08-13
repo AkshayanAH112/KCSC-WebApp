@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import crypto from 'crypto';
 import connectToDatabase from '@/lib/mongodb';
 import { Member } from '@/models';
 import { isAdminOnlyRequest, getAuthPayload } from '@/lib/auth-guard';
@@ -39,6 +40,13 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     if (data.status && data.status !== existing.status && existing.status === 'pending') {
       update.reviewedBy = auth.userId;
       update.reviewedAt = new Date();
+    }
+
+    // Card "MEMBER ID" — assigned once, the moment a member is first approved.
+    // Same format as Student.qrCode (app/api/students/route.ts), just an 'M' marker
+    // instead of a grade since general club membership isn't grade-scoped.
+    if (data.status === 'approved' && existing.status !== 'approved' && !existing.memberCode) {
+      update.memberCode = `KCSC-M-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
     }
 
     const member = await Member.findByIdAndUpdate(id, update, { new: true, runValidators: true });
