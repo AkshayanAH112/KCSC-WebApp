@@ -10,6 +10,7 @@ import {
   QrCode,
   Newspaper,
   GraduationCap,
+  LineChart,
   UserCog,
   ShieldCheck,
   LogOut,
@@ -36,6 +37,7 @@ const lmsNavItems = [
   { title: "Batches & Classes", url: "/admin/batches", icon: BookOpen },
   { title: "Scanner & Attendance", url: "/admin/scanner", icon: QrCode },
   { title: "Marks & Reports", url: "/admin/marks", icon: GraduationCap },
+  { title: "Analysis", url: "/admin/analysis", icon: LineChart },
   { title: "News & Blog", url: "/admin/news", icon: Newspaper },
 ];
 

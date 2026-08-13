@@ -71,6 +71,13 @@ const MarksSchema = new mongoose.Schema({
   marks: { type: Number, required: true },
   maxMarks: { type: Number, required: true },
   grade: { type: Number, required: true, enum: GRADES },
+  // Not required — existing Marks documents predate this field, and POST
+  // /api/marks upserts by {studentId, subject, examDate}, so a hard-required
+  // field would break re-saving old records (same reasoning as Member.nic).
+  // A grade can have more than one active batch at once (e.g. a new intake
+  // starting while an older one is still running), so grade alone doesn't
+  // uniquely scope an exam's roster — this does.
+  batchId: { type: mongoose.Schema.Types.ObjectId, ref: 'Batch' },
 }, { timestamps: true });
 export const Marks = mongoose.models.Marks || mongoose.model("Marks", MarksSchema);
 

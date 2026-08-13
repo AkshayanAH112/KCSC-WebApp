@@ -31,6 +31,7 @@ const statConfig = [
   {
     key: "totalStudents" as const,
     title: "Active Students",
+    href: "/admin/students",
     icon: Users,
     tone: "text-primary",
     bg: "bg-primary/10",
@@ -39,6 +40,7 @@ const statConfig = [
   {
     key: "todayAttendance" as const,
     title: "Today's Attendance",
+    href: "/admin/scanner",
     icon: CalendarCheck,
     tone: "text-success",
     bg: "bg-success/10",
@@ -48,6 +50,7 @@ const statConfig = [
   {
     key: "lowAttendanceCount" as const,
     title: "Needs Follow-up",
+    href: "/admin/analysis",
     icon: AlertTriangle,
     tone: "text-warning",
     bg: "bg-warning/10",
@@ -56,6 +59,7 @@ const statConfig = [
   {
     key: "recentMarks" as const,
     title: "Marks Entered Today",
+    href: "/admin/marks",
     icon: GraduationCap,
     tone: "text-gold-foreground",
     bg: "bg-gold/20",
@@ -95,6 +99,7 @@ export default function DashboardPage() {
           {
             key: "pendingMembers" as const,
             title: "Pending Members",
+            href: "/admin/members",
             icon: UserCog,
             tone: "text-primary",
             bg: "bg-primary/10",
@@ -122,8 +127,12 @@ export default function DashboardPage() {
       )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {cards.map(({ key, title, icon: Icon, tone, bg, hint }) => (
-          <div key={key} className="card-gold-rule p-5 shadow-xs">
+        {cards.map(({ key, title, href, icon: Icon, tone, bg, hint }) => (
+          <Link
+            key={key}
+            href={href}
+            className="card-gold-rule cursor-pointer p-5 shadow-xs transition-colors duration-200 hover:border-gold hover:bg-accent/40"
+          >
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
               <span className={`rounded-lg p-2 ${bg}`}>
@@ -144,7 +153,7 @@ export default function DashboardPage() {
                 <p className="mt-1 text-xs text-muted-foreground">{stats ? hint(stats) : ""}</p>
               </>
             )}
-          </div>
+          </Link>
         ))}
       </div>
 

@@ -11,9 +11,15 @@ export async function GET(request: Request) {
     await connectToDatabase();
     const { searchParams } = new URL(request.url);
     const grade = searchParams.get('grade');
-    const query = grade ? { grade: Number(grade) } : {};
+    const batchId = searchParams.get('batchId');
+    const query: Record<string, unknown> = {};
+    if (grade) query.grade = Number(grade);
+    if (batchId) query.batchId = batchId;
 
-    const marksList = await Marks.find(query).populate('studentId', 'name qrCode').sort({ examDate: -1 });
+    const marksList = await Marks.find(query)
+      .populate('studentId', 'name qrCode')
+      .populate('batchId', 'name')
+      .sort({ examDate: -1 });
     return NextResponse.json({ marks: marksList });
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 });

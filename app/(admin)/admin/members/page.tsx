@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Loader2, UserCog, Plus, ShieldAlert } from "lucide-react";
+import { Loader2, UserCog, Plus, ShieldAlert, Search } from "lucide-react";
 import { useCurrentUser } from "@/components/current-user-provider";
 
 type Member = {
@@ -36,6 +36,7 @@ export default function MembersListPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState("pending");
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     if (user?.role !== "admin") return;
@@ -63,6 +64,10 @@ export default function MembersListPage() {
     );
   }
 
+  const filteredMembers = members.filter((m) =>
+    m.fullName.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -80,20 +85,32 @@ export default function MembersListPage() {
         </Link>
       </div>
 
-      <div className="flex gap-2">
-        {FILTERS.map((f) => (
-          <button
-            key={f.value}
-            onClick={() => setFilter(f.value)}
-            className={`cursor-pointer rounded-lg px-4 py-1.5 text-sm font-medium transition-colors duration-200 ${
-              filter === f.value
-                ? "bg-primary text-primary-foreground"
-                : "border border-border bg-card text-muted-foreground hover:bg-muted"
-            }`}
-          >
-            {f.label}
-          </button>
-        ))}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex gap-2">
+          {FILTERS.map((f) => (
+            <button
+              key={f.value}
+              onClick={() => setFilter(f.value)}
+              className={`cursor-pointer rounded-lg px-4 py-1.5 text-sm font-medium transition-colors duration-200 ${
+                filter === f.value
+                  ? "bg-primary text-primary-foreground"
+                  : "border border-border bg-card text-muted-foreground hover:bg-muted"
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+        <div className="relative sm:w-64">
+          <Search className="absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground" size={16} aria-hidden />
+          <input
+            type="text"
+            placeholder="Search members by name..."
+            className="field pl-9"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
       </div>
 
       {error && (
@@ -109,10 +126,12 @@ export default function MembersListPage() {
         <div className="flex justify-center p-12">
           <Loader2 className="animate-spin text-primary" size={40} />
         </div>
-      ) : members.length === 0 ? (
+      ) : filteredMembers.length === 0 ? (
         <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-border p-16 text-center">
           <UserCog size={40} className="text-muted-foreground opacity-50" aria-hidden />
-          <p className="text-muted-foreground">No {filter || ""} members to show.</p>
+          <p className="text-muted-foreground">
+            {searchQuery ? `No members match "${searchQuery}".` : `No ${filter || ""} members to show.`}
+          </p>
         </div>
       ) : (
         <div className="overflow-hidden rounded-lg border border-border bg-card shadow-xs">
@@ -129,7 +148,7 @@ export default function MembersListPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {members.map((m) => (
+                {filteredMembers.map((m) => (
                   <tr
                     key={m._id}
                     className="cursor-pointer transition-colors duration-200 hover:bg-muted"
