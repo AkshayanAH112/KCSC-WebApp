@@ -71,7 +71,7 @@ export default function JoinModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
       <div
         className="absolute inset-0 bg-background/80 backdrop-blur-md transition-opacity"
         onClick={handleClose}
@@ -216,7 +216,7 @@ export default function JoinModal() {
 
               <div className="space-y-1">
                 <label className="text-sm font-medium text-on-surface">Sports Achievements</label>
-                <textarea name="achievements" className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface min-h-[100px]" placeholder="Tell us about your past clubs, highest scores, best bowling figures, or championships won..."></textarea>
+                <textarea name="achievements" className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface min-h-25" placeholder="Tell us about your past clubs, highest scores, best bowling figures, or championships won..."></textarea>
               </div>
             </fieldset>
 
