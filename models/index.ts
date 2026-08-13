@@ -154,3 +154,16 @@ const PostSchema = new mongoose.Schema({
   publishedAt: { type: Date },
 }, { timestamps: true });
 export const Post = mongoose.models.Post || mongoose.model("Post", PostSchema);
+
+/**
+ * Standalone club gallery — deliberately separate from Post.images. A gallery
+ * photo (a match, a training session, an event) doesn't need a news article
+ * written around it just to get a place to live, and folding both into one
+ * admin flow made it hard to see every gallery photo in one place.
+ */
+const GalleryImageSchema = new mongoose.Schema({
+  url: { type: String, required: true },
+  publicId: { type: String },
+  caption: { type: String },
+}, { timestamps: true });
+export const GalleryImage = mongoose.models.GalleryImage || mongoose.model("GalleryImage", GalleryImageSchema);

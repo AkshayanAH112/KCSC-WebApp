@@ -4,36 +4,24 @@ import { useRef, useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Image as ImageIcon, X } from "lucide-react";
 import Image from "next/image";
 
-interface PostImage {
+interface GalleryImage {
   url: string;
   caption?: string;
 }
 
-interface Post {
-  _id: string;
-  images: PostImage[];
-}
-
 export default function Gallery() {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [images, setImages] = useState<PostImage[]>([]);
+  const [images, setImages] = useState<GalleryImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAllModal, setShowAllModal] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/public/posts?limit=10")
+    fetch("/api/public/gallery?limit=30")
       .then((res) => res.json())
       .then((data) => {
         if (!cancelled) {
-          const fetchedPosts: Post[] = data.posts ?? [];
-          const allImages: PostImage[] = [];
-          fetchedPosts.forEach(post => {
-            if (post.images && post.images.length > 0) {
-              allImages.push(...post.images);
-            }
-          });
-          setImages(allImages);
+          setImages(data.images ?? []);
           setLoading(false);
         }
       })

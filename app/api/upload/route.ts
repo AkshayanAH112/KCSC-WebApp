@@ -1,12 +1,22 @@
 import { NextResponse } from 'next/server';
-import { uploadImage, isCloudinaryConfigured, CLOUDINARY_FOLDER, CLOUDINARY_MEMBERS_FOLDER } from '@/lib/cloudinary';
+import {
+  uploadImage,
+  isCloudinaryConfigured,
+  CLOUDINARY_FOLDER,
+  CLOUDINARY_MEMBERS_FOLDER,
+  CLOUDINARY_GALLERY_FOLDER,
+} from '@/lib/cloudinary';
 import { isStaffRequest } from '@/lib/auth-guard';
 
 const MAX_BYTES = 8 * 1024 * 1024; // 8MB
 const ALLOWED = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
 // Staff-authenticated, so the set of destination folders is deliberately fixed
 // rather than accepting an arbitrary string from the client.
-const FOLDERS: Record<string, string> = { news: CLOUDINARY_FOLDER, members: CLOUDINARY_MEMBERS_FOLDER };
+const FOLDERS: Record<string, string> = {
+  news: CLOUDINARY_FOLDER,
+  members: CLOUDINARY_MEMBERS_FOLDER,
+  gallery: CLOUDINARY_GALLERY_FOLDER,
+};
 
 export async function POST(request: Request) {
   try {

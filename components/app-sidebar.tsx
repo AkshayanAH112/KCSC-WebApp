@@ -11,6 +11,7 @@ import {
   Newspaper,
   GraduationCap,
   LineChart,
+  Image as ImageIcon,
   UserCog,
   ShieldCheck,
   LogOut,
@@ -39,6 +40,7 @@ const lmsNavItems = [
   { title: "Marks & Reports", url: "/admin/marks", icon: GraduationCap },
   { title: "Analysis", url: "/admin/analysis", icon: LineChart },
   { title: "News & Blog", url: "/admin/news", icon: Newspaper },
+  { title: "Gallery", url: "/admin/gallery", icon: ImageIcon },
 ];
 
 // Admin-only: club membership and staff-account management. Hidden from

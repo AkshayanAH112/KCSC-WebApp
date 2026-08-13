@@ -1,7 +1,8 @@
 import { v2 as cloudinary } from 'cloudinary';
 
 /**
- * Cloudinary holds every image attached to a news/blog post.
+ * Cloudinary holds every image the app stores — news/blog posts, member photos,
+ * and the standalone club gallery — split into folders below.
  * Required env vars: CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET.
  */
 cloudinary.config({
@@ -13,6 +14,7 @@ cloudinary.config({
 
 export const CLOUDINARY_FOLDER = 'kcsc/news';
 export const CLOUDINARY_MEMBERS_FOLDER = 'kcsc/members';
+export const CLOUDINARY_GALLERY_FOLDER = 'kcsc/gallery';
 
 export function isCloudinaryConfigured() {
   return Boolean(
