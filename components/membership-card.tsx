@@ -53,23 +53,37 @@ export function MembershipCardFront({
         )}
       </div>
 
-      {/* Row spacing here is tight (~38px in the 504px-tall native template, since
-          NIC was added as a 5th row to a design meant for 4) — font has to stay
-          small enough not to bleed into the next row's dotted line. */}
+      {/* Value column starts right after the labels' colon (measured directly off
+          the template) — the crest/wreath graphic extends further right than it
+          looks, so anything left of ~44% overlaps it. Each row is a positioned
+          band with flex centering, not a translateY(-50%) transform —
+          html2canvas-pro doesn't reliably resolve transforms on absolutely
+          positioned percentage boxes, which is what produced the badly
+          mispositioned first render of this card. NAME/MEMBER ID/MEMBER TYPE/
+          JOINING DATE labels are baked into the template; NIC isn't (it's a 5th
+          row added on top of a 4-row template, spaced slightly tighter to fit
+          before the bottom-right corner accent), so its label is drawn here. */}
       {[
-        { top: "64.7%", value: member.fullName },
-        { top: "72.2%", value: member.memberCode ?? "—" },
-        { top: "79.8%", value: member.memberType ?? "—" },
-        { top: "87.3%", value: joiningDate },
-        { top: "94.2%", value: member.nic ?? "—" },
+        { top: "65.0%", label: null, value: member.fullName },
+        { top: "72.6%", label: null, value: member.memberCode ?? "—" },
+        { top: "80.2%", label: null, value: member.memberType ?? "—" },
+        { top: "87.8%", label: null, value: joiningDate },
+        { top: "92.6%", label: "NIC", value: member.nic ?? "—" },
       ].map((row, i) => (
-        <p
+        <div
           key={i}
-          className="absolute truncate leading-none font-semibold text-[#3d0000]"
-          style={{ left: "17.7%", top: row.top, width: "42.3%", fontSize: 9, transform: "translateY(-50%)" }}
+          className="absolute flex items-center gap-1"
+          style={{ left: "44%", top: row.top, width: "21%", height: "6%" }}
         >
-          {row.value}
-        </p>
+          {row.label && (
+            <span className="shrink-0 font-bold text-[#3d0000]" style={{ fontSize: 9 }}>
+              {row.label} :
+            </span>
+          )}
+          <span className="truncate font-semibold text-[#3d0000]" style={{ fontSize: 9 }}>
+            {row.value}
+          </span>
+        </div>
       ))}
     </div>
   );
