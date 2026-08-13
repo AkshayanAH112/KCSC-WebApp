@@ -51,6 +51,8 @@ export async function POST(request: Request) {
     const buffer = Buffer.from(await photo.arrayBuffer());
     const uploaded = await uploadImage(buffer, photo.name, CLOUDINARY_MEMBERS_FOLDER);
 
+    const ageValue = form.get('age');
+
     const member = await Member.create({
       fullName: fullName.slice(0, 120),
       phone: phone.slice(0, 30),
@@ -59,6 +61,11 @@ export async function POST(request: Request) {
       photoPublicId: uploaded.publicId,
       email: cap(form.get('email'), 254),
       dateOfBirth: form.get('dateOfBirth') ? new Date(String(form.get('dateOfBirth'))) : undefined,
+      age: ageValue ? parseInt(String(ageValue), 10) : undefined,
+      gender: cap(form.get('gender'), 20),
+      whatsapp: cap(form.get('whatsapp'), 30),
+      dateOfJoining: form.get('dateOfJoining') ? new Date(String(form.get('dateOfJoining'))) : undefined,
+      previousClub: cap(form.get('previousClub'), 120),
       address: cap(form.get('address'), 300),
       guardianName: cap(form.get('guardianName'), 120),
       guardianPhone: cap(form.get('guardianPhone'), 30),

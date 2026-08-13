@@ -92,6 +92,11 @@ export const MEMBER_STATUSES = ['pending', 'approved', 'rejected'] as const;
 const MemberSchema = new mongoose.Schema({
   fullName: { type: String, required: true },
   dateOfBirth: { type: Date },
+  age: { type: Number },
+  gender: { type: String },
+  whatsapp: { type: String },
+  dateOfJoining: { type: Date },
+  previousClub: { type: String },
   phone: { type: String, required: true },
   email: { type: String },
   address: { type: String },
@@ -103,6 +108,8 @@ const MemberSchema = new mongoose.Schema({
   // a hard-required field here would break reviewing those. Required by the forms
   // and API validation for new submissions instead — see /api/public/members.
   nic: { type: String },
+  // Cloudinary asset — photoPublicId is what lets a delete actually remove it
+  // from Cloudinary too (same url/publicId pairing Post uses for its images).
   photoUrl: { type: String },
   photoPublicId: { type: String },
   memberType: { type: String }, // Playing Member / Non-Playing Member / Junior Member / Coach-Staff

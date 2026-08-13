@@ -25,7 +25,7 @@ export async function GET(request: Request) {
 
     const [posts, total] = await Promise.all([
       Post.find(query)
-        .select('title slug excerpt coverImageUrl images category tags author publishedAt createdAt')
+        .select('title slug excerpt content coverImageUrl images category tags author publishedAt createdAt')
         .sort({ publishedAt: -1, createdAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit),

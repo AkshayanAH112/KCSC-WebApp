@@ -36,8 +36,14 @@ export default function JoinModal() {
     payload.set("fullName", [firstName, lastName].filter(Boolean).join(" "));
     payload.set("email", String(form.get("email") ?? "").trim());
     payload.set("phone", String(form.get("phone") ?? "").trim());
+    payload.set("whatsapp", String(form.get("whatsapp") ?? "").trim());
     payload.set("nic", String(form.get("nic") ?? "").trim());
     payload.set("address", String(form.get("address") ?? "").trim());
+    payload.set("dateOfBirth", String(form.get("dateOfBirth") ?? ""));
+    payload.set("age", String(form.get("age") ?? ""));
+    payload.set("gender", String(form.get("gender") ?? ""));
+    payload.set("dateOfJoining", String(form.get("dateOfJoining") ?? ""));
+    payload.set("previousClub", String(form.get("previousClub") ?? "").trim());
     payload.set("memberType", String(form.get("membershipType") ?? ""));
     payload.set("interest", String(form.get("role") ?? ""));
     payload.set("message", String(form.get("achievements") ?? "").trim());
@@ -87,13 +93,15 @@ export default function JoinModal() {
             </p>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="p-6 md:p-8 flex flex-col gap-6">
+          <form onSubmit={handleSubmit} className="p-6 md:p-8 flex flex-col gap-8">
             <div className="space-y-2">
               <h3 className="text-2xl font-display font-bold text-on-surface">Join The Club</h3>
               <p className="text-sm text-on-surface-variant">Fill out the details below to register your interest.</p>
             </div>
 
-            <div className="space-y-4">
+            {/* SECTION: Personal Details */}
+            <fieldset className="space-y-4">
+              <legend className="text-lg font-display font-semibold text-primary mb-2 border-b border-outline-variant pb-2 w-full">Personal Details</legend>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-sm font-medium text-on-surface">First Name</label>
@@ -105,24 +113,45 @@ export default function JoinModal() {
                 </div>
               </div>
 
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-on-surface">Date of Birth</label>
+                  <input name="dateOfBirth" type="date" required className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-on-surface">Age</label>
+                  <input name="age" type="number" required className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface" placeholder="25" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-on-surface">NIC Number</label>
+                  <input name="nic" type="text" required className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface" placeholder="e.g. 123456789V" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-on-surface">Gender</label>
+                  <select name="gender" required defaultValue="" className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface appearance-none">
+                    <option value="" disabled>Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+            </fieldset>
+
+            {/* SECTION: Contact Information */}
+            <fieldset className="space-y-4">
+              <legend className="text-lg font-display font-semibold text-primary mb-2 border-b border-outline-variant pb-2 w-full">Contact Information</legend>
               <div className="space-y-1">
                 <label className="text-sm font-medium text-on-surface">Email</label>
                 <input name="email" required type="email" className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface" placeholder="john@example.com" />
               </div>
 
               <div className="space-y-1">
-                <label className="text-sm font-medium text-on-surface">Phone Number</label>
-                <input name="phone" required type="tel" className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface" placeholder="+1 (555) 000-0000" />
-              </div>
-
-              <div className="space-y-1">
                 <label className="text-sm font-medium text-on-surface">Address</label>
                 <input name="address" required type="text" className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface" placeholder="123 Cricket Lane, City" />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-sm font-medium text-on-surface">NIC Number</label>
-                <input name="nic" required type="text" className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface" placeholder="e.g. 200012345678 or 851234567V" />
               </div>
 
               <div className="space-y-1">
@@ -137,6 +166,21 @@ export default function JoinModal() {
                 <p className="text-xs text-on-surface-variant">Used for your membership card — a clear passport-style photo.</p>
               </div>
 
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-on-surface">Phone Number</label>
+                  <input name="phone" required type="tel" className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface" placeholder="e.g. +94 77 000 0000" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-on-surface">WhatsApp Number</label>
+                  <input name="whatsapp" required type="tel" className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface" placeholder="e.g. +94 77 000 0000" />
+                </div>
+              </div>
+            </fieldset>
+
+            {/* SECTION: Membership Details */}
+            <fieldset className="space-y-4">
+              <legend className="text-lg font-display font-semibold text-primary mb-2 border-b border-outline-variant pb-2 w-full">Club & Membership Details</legend>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-sm font-medium text-on-surface">Membership Type</label>
@@ -159,20 +203,31 @@ export default function JoinModal() {
                 </div>
               </div>
 
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-on-surface">Previous Club / Organization (Optional)</label>
+                  <input name="previousClub" type="text" className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface" placeholder="e.g. Apex Cricket Club" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-on-surface">Date of Joining Request</label>
+                  <input name="dateOfJoining" type="date" required className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface" />
+                </div>
+              </div>
+
               <div className="space-y-1">
                 <label className="text-sm font-medium text-on-surface">Sports Achievements</label>
                 <textarea name="achievements" className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface min-h-[100px]" placeholder="Tell us about your past clubs, highest scores, best bowling figures, or championships won..."></textarea>
               </div>
-            </div>
+            </fieldset>
 
             {error && (
-              <div className="flex items-center gap-2 text-sm text-red-600">
+              <div className="flex items-center gap-2 text-sm text-red-600 mt-2">
                 <AlertCircle size={16} />
                 <span>{error}</span>
               </div>
             )}
 
-            <Button type="submit" disabled={isSubmitting} className="w-full mt-2">
+            <Button type="submit" disabled={isSubmitting} className="w-full mt-4">
               {isSubmitting ? "Submitting…" : "Submit Application"}
             </Button>
           </form>

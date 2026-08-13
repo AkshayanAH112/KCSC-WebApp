@@ -20,8 +20,11 @@ type Member = {
   _id: string;
   fullName: string;
   phone: string;
+  whatsapp?: string;
   email?: string;
   dateOfBirth?: string;
+  age?: number;
+  gender?: string;
   address?: string;
   nic?: string;
   memberType?: string;
@@ -29,6 +32,8 @@ type Member = {
   photoUrl?: string;
   guardianName?: string;
   guardianPhone?: string;
+  dateOfJoining?: string;
+  previousClub?: string;
   interest?: string;
   message?: string;
   status: "pending" | "approved" | "rejected";
@@ -183,10 +188,15 @@ export default function MemberDetailPage() {
 
   const rows: [string, string | undefined][] = [
     ["Phone", member.phone],
+    ["WhatsApp", member.whatsapp],
     ["Email", member.email],
     ["NIC", member.nic],
+    ["Age", member.age?.toString()],
+    ["Gender", member.gender],
     ["Member type", member.memberType],
     ["Date of birth", member.dateOfBirth ? new Date(member.dateOfBirth).toLocaleDateString() : undefined],
+    ["Requested joining date", member.dateOfJoining ? new Date(member.dateOfJoining).toLocaleDateString() : undefined],
+    ["Previous club", member.previousClub],
     ["Address", member.address],
     ["Guardian", member.guardianName],
     ["Guardian phone", member.guardianPhone],
