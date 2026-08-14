@@ -60,6 +60,18 @@ export default function Footer() {
 
             <li>
               <a 
+                href="mailto:kallarcentralsportsclub@gmail.com"
+                className="flex items-center gap-3 text-on-surface-variant hover:text-primary transition-colors group"
+              >
+                <div className="p-2 rounded-full bg-surface-container-high group-hover:bg-primary/10 transition-colors shrink-0">
+                  <Mail size={18} className="text-on-surface-variant group-hover:text-primary" />
+                </div>
+                <span className="break-all md:break-normal">kallarcentralsportsclub@gmail.com</span>
+              </a>
+            </li>
+
+            <li>
+              <a 
                 href="https://www.facebook.com/kallarcentral.sportsclub/#"
                 target="_blank"
                 rel="noopener noreferrer"
