@@ -4,6 +4,11 @@ import { ChevronLeft, Folder as FolderIcon } from "lucide-react";
 import connectToDatabase from "@/lib/mongodb";
 import { GalleryFolder } from "@/models";
 
+// This reads GalleryFolder straight from the DB (no API route in between), so
+// without this it would statically prerender at build time and freeze gallery
+// content until the next deploy — admin-published albums must show up live.
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Gallery | KCSC",
   description: "View all photo albums from Kallar Central Sports Club.",

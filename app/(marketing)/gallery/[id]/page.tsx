@@ -5,6 +5,9 @@ import { GalleryFolder } from "@/models";
 import LightboxGallery from "@/components/landing/LightboxGallery";
 import { notFound } from "next/navigation";
 
+// Reads GalleryFolder straight from the DB — see app/(marketing)/gallery/page.tsx.
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   await connectToDatabase();
   const { id } = await params;

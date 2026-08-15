@@ -17,6 +17,10 @@ type Props = {
   params: Promise<{ slug: string }>;
 };
 
+// Reads Post straight from the DB — see app/(marketing)/gallery/page.tsx for why
+// this can't be left to statically prerender at build time.
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params;
   await connectToDatabase();

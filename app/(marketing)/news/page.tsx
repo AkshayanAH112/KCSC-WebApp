@@ -12,6 +12,10 @@ function formatDate(value: string | Date) {
   });
 }
 
+// Reads Post straight from the DB — see app/(marketing)/gallery/page.tsx for why
+// this can't be left to statically prerender at build time.
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "All News & Updates | KCSC",
   description: "Read all the latest news, updates, and announcements from Kallar Central Sports Club.",
