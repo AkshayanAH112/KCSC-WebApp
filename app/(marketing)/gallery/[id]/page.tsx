@@ -45,7 +45,7 @@ export default async function FolderPage({ params }: { params: Promise<{ id: str
   return (
     <div className="bg-surface-container-lowest min-h-screen pt-24 pb-24">
       <div className="max-w-[1280px] mx-auto px-5 md:px-16">
-        <div className="mb-8">
+        <div className="mb-8 mt-6">
           <Link 
             href="/gallery"
             className="inline-flex items-center gap-2 text-primary font-semibold text-sm hover:underline"

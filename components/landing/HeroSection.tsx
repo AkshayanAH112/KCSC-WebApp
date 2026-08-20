@@ -10,20 +10,12 @@ import { siteConfig } from "@/lib/constants";
 
 export default function HeroSection() {
   return (
-    <section id="home" className="relative min-h-[150vh] flex flex-col pt-16 pb-16">
+    <section id="home" className="relative min-h-[150vh] flex flex-col pt-20 md:pt-24 pb-16">
       {/* Remove CricketExperience wrapper */}
       
       <div className="w-full flex items-start mt-4 md:mt-6">
           <div className="w-full max-w-[1280px] mx-auto px-5 md:px-16">
             <div className="w-full lg:w-1/2 flex flex-col gap-4 md:gap-5">
-              <motion.span
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.1, ease: [0.2, 0.8, 0.2, 1] }}
-                className="text-xs font-semibold tracking-[0.25em] uppercase text-secondary-fixed"
-              >
-                {siteConfig.name}
-              </motion.span>
 
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}

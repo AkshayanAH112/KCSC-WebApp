@@ -7,12 +7,12 @@ export const siteConfig = {
 };
 
 export const navLinks = [
-  { label: "Home", href: "#home" },
-  { label: "About", href: "#about" },
-  { label: "Programs", href: "#programs" },
-  { label: "Gallery", href: "#gallery" },
-  { label: "News", href: "#news" },
-  { label: "Legacy", href: "#achievements" },
+  { label: "Home", href: "/#home" },
+  { label: "About", href: "/#about" },
+  { label: "Programs", href: "/#programs" },
+  { label: "Gallery", href: "/gallery" },
+  { label: "News", href: "/news" },
+  { label: "Legacy", href: "/#achievements" },
 ];
 
 // placeholder — replace with real club data

@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { navLinks } from "@/lib/constants";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -31,37 +33,42 @@ export default function Navbar() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("Home");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
   
   const lastScrollY = useRef(0);
 
   useEffect(() => {
+      // Ensure we don't carry over stale scroll values between route changes
+      lastScrollY.current = window.scrollY;
+
       const handleScroll = () => {
         const currentScrollY = window.scrollY;
         
-        setIsScrolled(currentScrollY > 50);
+        setIsScrolled(currentScrollY > 10);
 
-        // Scroll Spy Logic
-        const sections = navLinks.map(link => link.href.replace('#', ''));
-        let current = "Home"; // default
-        for (const section of sections) {
-          if (!section || section === '/') continue;
-          const element = document.getElementById(section);
-          if (element) {
-            const rect = element.getBoundingClientRect();
-            // Adjust threshold based on section sizing
-            if (rect.top <= 300 && rect.bottom >= 300) {
-              current = navLinks.find(l => l.href.includes(section))?.label || "Home";
+        if (pathname === "/") {
+          // Scroll Spy Logic
+          const sections = navLinks.map(link => link.href.replace('/#', ''));
+          let current = "Home"; // default
+          for (const section of sections) {
+            if (!section || section === '/') continue;
+            const element = document.getElementById(section);
+            if (element) {
+              const rect = element.getBoundingClientRect();
+              // Adjust threshold based on section sizing
+              if (rect.top <= 300 && rect.bottom >= 300) {
+                current = navLinks.find(l => l.href.includes(section))?.label || "Home";
+              }
             }
           }
+          if (currentScrollY < 100) current = "Home";
+          setActiveSection(current);
         }
-        if (currentScrollY < 100) current = "Home";
-        
-        setActiveSection(current);
 
         // Hide on scroll down, show on scroll up
         // Do this AFTER Scroll Spy so we don't accidentally use stale state
         setIsHidden((prev) => {
-           if (currentScrollY > lastScrollY.current && currentScrollY > 200) {
+           if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
              return true;
            } else if (currentScrollY < lastScrollY.current) {
              return false;
@@ -78,19 +85,36 @@ export default function Navbar() {
 
       window.addEventListener("scroll", handleScroll);
       window.addEventListener("modal-toggle", handleModalToggle);
-      handleScroll(); // init
+      
+      // Also update immediately if pathname changes but scroll doesn't happen
+      if (pathname !== "/") {
+        const currentNav = navLinks.find(link => link.href.startsWith('/') && pathname.startsWith(link.href) && link.href !== '/#home');
+        setActiveSection(currentNav ? currentNav.label : "");
+      } else {
+        handleScroll();
+      }
+
       return () => {
         window.removeEventListener("scroll", handleScroll);
         window.removeEventListener("modal-toggle", handleModalToggle);
       };
-    }, []);
+    }, [pathname]);
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    e.preventDefault();
-    setIsMobileMenuOpen(false);
-    const target = document.querySelector(href);
-    if (target) {
-      target.scrollIntoView({ behavior: "smooth" });
+    if (href.startsWith("/#")) {
+      if (pathname === "/") {
+        e.preventDefault();
+        setIsMobileMenuOpen(false);
+        const id = href.replace("/", "");
+        const target = document.querySelector(id);
+        if (target) {
+          target.scrollIntoView({ behavior: "smooth" });
+        }
+      } else {
+        setIsMobileMenuOpen(false);
+      }
+    } else {
+      setIsMobileMenuOpen(false);
     }
   };
 
@@ -104,64 +128,68 @@ export default function Navbar() {
     <>
       <div 
         className={cn(
-          "fixed top-4 left-0 w-full z-50 flex justify-center px-4 pointer-events-none transition-transform duration-500",
-          (isHidden || isModalOpen) ? "-translate-y-[150%]" : "translate-y-0"
+          "fixed top-0 left-0 w-full z-50 pointer-events-none transition-all duration-500 ease-in-out",
+          (isHidden || isModalOpen) ? "-translate-y-full opacity-0" : "translate-y-0 opacity-100"
         )}
       >
         <nav
           className={cn(
-            "pointer-events-auto transition-all duration-500 flex items-center justify-between rounded-full",
+            "pointer-events-auto w-full transition-all duration-500 flex items-center px-5 md:px-12 border-b",
             isScrolled
-              ? "w-full max-w-[800px] bg-surface/85 backdrop-blur-xl border border-outline-variant shadow-elevated py-2 px-3"
-              : "w-full max-w-[1280px] bg-surface/40 backdrop-blur-md border border-outline-variant/30 py-4 px-3"
+              ? "bg-surface/90 backdrop-blur-xl border-outline-variant/50 shadow-sm py-3"
+              : "bg-transparent border-transparent py-5 md:py-6"
           )}
         >
-          <a
-            href="#home"
-            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-full pl-1"
-            onClick={(e) => handleNavClick(e, "#home")}
-          >
-            <KcscMark />
-          </a>
+          {/* Left: Logo */}
+          <div className="flex-1 flex items-center justify-start">
+            <Link
+              href="/#home"
+              className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-full"
+              onClick={(e) => handleNavClick(e, "/#home")}
+            >
+              <KcscMark />
+            </Link>
+          </div>
 
-          {/* Desktop Nav Links */}
-          <div className="hidden md:flex items-center gap-1 bg-surface-container-low/60 backdrop-blur-md rounded-full p-1 border border-outline-variant/40 shadow-soft">
+          {/* Center: Desktop Nav Links */}
+          <div className="hidden md:flex items-center justify-center gap-8">
             {navLinks.map((link) => (
-              <a
+              <Link
                 key={link.label}
                 href={link.href}
                 onClick={(e) => handleNavClick(e, link.href)}
                 className={cn(
-                  "relative text-sm font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary px-5 py-2 rounded-full",
+                  "relative text-[15px] font-semibold transition-colors duration-300 focus-visible:outline-none focus-visible:text-primary",
                   activeSection === link.label
-                    ? "text-on-primary bg-primary shadow-md"
-                    : "text-on-surface-variant hover:text-primary hover:bg-surface-container"
+                    ? "text-primary"
+                    : "text-on-surface-variant hover:text-primary"
                 )}
               >
                 {link.label}
-              </a>
+              </Link>
             ))}
           </div>
 
-          {/* Primary Action CTA */}
-          <Button 
-            className={cn(
-              "hidden md:inline-flex rounded-full shadow-soft transition-all duration-300",
-              isScrolled ? "px-6" : "px-8"
-            )}
-            onClick={handleJoinClick}
-          >
-            Join The Club
-          </Button>
+          {/* Right: CTA & Mobile Menu Toggle */}
+          <div className="flex-1 flex items-center justify-end gap-4">
+            <Button 
+              className={cn(
+                "hidden md:inline-flex rounded-full shadow-soft transition-all duration-300",
+                isScrolled ? "px-6" : "px-8"
+              )}
+              onClick={handleJoinClick}
+            >
+              Join The Club
+            </Button>
 
-          {/* Mobile Menu Toggle */}
-          <button
-            className="cursor-pointer md:hidden text-on-surface p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-full bg-surface shadow-sm border border-outline-variant/50"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            aria-label="Toggle Menu"
-          >
-            {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
+            <button
+              className="cursor-pointer md:hidden text-on-surface p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-full bg-surface shadow-sm border border-outline-variant/50"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label="Toggle Menu"
+            >
+              {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
+          </div>
         </nav>
       </div>
 
@@ -169,7 +197,7 @@ export default function Navbar() {
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-40 bg-surface/98 backdrop-blur-md pt-28 px-5 md:hidden flex flex-col gap-6 overflow-y-auto pb-8">
           {navLinks.map((link) => (
-            <a
+            <Link
               key={link.label}
               href={link.href}
               className={cn(
@@ -179,7 +207,7 @@ export default function Navbar() {
               onClick={(e) => handleNavClick(e, link.href)}
             >
               {link.label}
-            </a>
+            </Link>
           ))}
           <div className="h-px w-full bg-outline-variant/50 my-2" />
           <Button size="lg" className="w-full justify-center rounded-full" onClick={handleJoinClick}>
