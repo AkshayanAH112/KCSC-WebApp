@@ -23,24 +23,19 @@ export default async function GalleryPage() {
 
   return (
     <div className="bg-surface-container-lowest min-h-screen pt-24 pb-24">
-      <div className="max-w-[1280px] mx-auto px-5 md:px-16">
-        <div className="mb-8">
-          <Link 
-            href="/"
-            className="inline-flex items-center gap-2 text-primary font-semibold text-sm hover:underline"
-          >
-            <ChevronLeft size={16} /> Back to Home
-          </Link>
-        </div>
-        <div className="mb-12">
-          <h1 className="text-4xl md:text-5xl font-display font-bold text-on-surface mb-4">Gallery</h1>
-          <p className="text-lg text-on-surface-variant max-w-2xl">
-            Explore our albums featuring moments, matches, and memories from the ground.
+      <div className="max-w-[1280px] mx-auto px-5 md:px-8">
+        {/* Header matched to screenshot style */}
+        <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6 pt-4">
+          <h1 className="text-4xl md:text-6xl font-display font-bold text-on-surface max-w-lg leading-tight tracking-tight">
+            Club moments and<br className="hidden md:block"/> memories.
+          </h1>
+          <p className="text-base text-on-surface-variant max-w-md md:text-right pb-2">
+            Explore our albums featuring memorable matches, behind-the-scenes action, and celebrations from Kallar Central Sports Club.
           </p>
         </div>
 
         {folders.length === 0 ? (
-          <div className="flex flex-col items-center justify-center p-12 bg-surface-container-low rounded-2xl border border-outline-variant/30 text-on-surface-variant">
+          <div className="flex flex-col items-center justify-center p-12 bg-surface-container-low rounded-3xl border border-outline-variant/30 text-on-surface-variant">
             <FolderIcon className="w-12 h-12 mb-4 opacity-50" />
             <p>No gallery albums uploaded yet.</p>
           </div>
@@ -50,16 +45,16 @@ export default async function GalleryPage() {
               const imageCount = folder.images?.length || 0;
               return (
                 <Link 
-                  key={idx} 
+                  key={folder._id?.toString() || idx} 
                   href={`/gallery/${folder._id}`}
-                  className="group relative rounded-2xl overflow-hidden bg-surface-container border border-outline-variant/30 shadow-soft hover:shadow-elevated transition-all duration-300 aspect-[4/3] block"
+                  className="group relative rounded-[2rem] overflow-hidden bg-surface-container shadow-soft hover:shadow-elevated transition-all duration-300 block h-[400px]"
                 >
                   {folder.coverImageUrl ? (
                     <Image 
                       src={folder.coverImageUrl} 
                       alt={folder.name} 
                       fill 
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="object-cover group-hover:scale-105 transition-transform duration-700"
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
                     />
                   ) : (
@@ -67,10 +62,22 @@ export default async function GalleryPage() {
                       <FolderIcon className="w-16 h-16 text-on-surface-variant/30" />
                     </div>
                   )}
+
+                  {/* Top-left pill */}
+                  <div className="absolute top-5 left-5 z-10">
+                    <div className="backdrop-blur-md bg-black/40 border border-white/20 text-white text-[11px] font-medium px-3 py-1.5 rounded-full shadow-sm drop-shadow-md">
+                      {imageCount} {imageCount === 1 ? 'Photo' : 'Photos'}
+                    </div>
+                  </div>
                   
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-6 flex flex-col justify-end h-1/2">
-                    <h3 className="text-white text-xl font-semibold mb-1 group-hover:text-primary transition-colors">{folder.name}</h3>
-                    <p className="text-white/80 text-sm font-medium">{imageCount} {imageCount === 1 ? 'Photo' : 'Photos'}</p>
+                  {/* Bottom Gradient & Text */}
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/60 to-transparent p-6 flex flex-col justify-end pt-32 pb-7">
+                    <h3 className="text-white text-xl font-display font-medium mb-1 group-hover:text-primary transition-colors drop-shadow-lg">
+                      {folder.name}
+                    </h3>
+                    <p className="text-white/90 text-[13px] font-medium tracking-wide drop-shadow-md">
+                      Cricket & Community | KCSC
+                    </p>
                   </div>
                 </Link>
               );

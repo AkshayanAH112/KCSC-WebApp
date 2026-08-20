@@ -48,12 +48,12 @@ export default async function SingleNewsPage({ params }: Props) {
   return (
     <div className="bg-surface-container-lowest min-h-screen pt-24 pb-24">
       <div className="max-w-4xl mx-auto px-5 md:px-8">
-        <div className="mb-8">
+        <div className="mb-8 mt-6">
           <Link 
-            href="/"
+            href="/news"
             className="inline-flex items-center gap-2 text-primary font-semibold text-sm hover:underline"
           >
-            <ChevronLeft size={16} /> Back to Home
+            <ChevronLeft size={16} /> Back to News
           </Link>
         </div>
 
