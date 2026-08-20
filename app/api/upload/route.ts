@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 import {
   uploadImage,
-  isCloudinaryConfigured,
-  CLOUDINARY_FOLDER,
-  CLOUDINARY_MEMBERS_FOLDER,
-  CLOUDINARY_GALLERY_FOLDER,
-} from '@/lib/cloudinary';
+  isSpacesConfigured,
+  SPACES_NEWS_FOLDER,
+  SPACES_MEMBERS_FOLDER,
+  SPACES_GALLERY_FOLDER,
+} from '@/lib/spaces';
 import { isStaffRequest } from '@/lib/auth-guard';
 
 const MAX_BYTES = 8 * 1024 * 1024; // 8MB
@@ -13,9 +13,9 @@ const ALLOWED = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
 // Staff-authenticated, so the set of destination folders is deliberately fixed
 // rather than accepting an arbitrary string from the client.
 const FOLDERS: Record<string, string> = {
-  news: CLOUDINARY_FOLDER,
-  members: CLOUDINARY_MEMBERS_FOLDER,
-  gallery: CLOUDINARY_GALLERY_FOLDER,
+  news: SPACES_NEWS_FOLDER,
+  members: SPACES_MEMBERS_FOLDER,
+  gallery: SPACES_GALLERY_FOLDER,
 };
 
 export async function POST(request: Request) {
@@ -24,11 +24,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (!isCloudinaryConfigured()) {
+    if (!isSpacesConfigured()) {
       return NextResponse.json(
         {
           error:
-            'Image uploads are not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET.',
+            'Image uploads are not configured. Set DO_SPACES_ENDPOINT, DO_SPACES_REGION, DO_SPACES_BUCKET, DO_SPACES_KEY and DO_SPACES_SECRET.',
         },
         { status: 503 }
       );
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
     const folder = typeof folderKey === 'string' ? FOLDERS[folderKey] : undefined;
 
     const buffer = Buffer.from(await file.arrayBuffer());
-    const uploaded = await uploadImage(buffer, file.name, folder);
+    const uploaded = await uploadImage(buffer, file.name, folder, file.type);
 
     return NextResponse.json(uploaded, { status: 201 });
   } catch (error: any) {

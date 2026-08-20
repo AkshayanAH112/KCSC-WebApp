@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import { Member } from '@/models';
-import { uploadImage, isCloudinaryConfigured, CLOUDINARY_MEMBERS_FOLDER } from '@/lib/cloudinary';
+import { uploadImage, isSpacesConfigured, SPACES_MEMBERS_FOLDER } from '@/lib/spaces';
 import { isValidPhone, isPastDate } from '@/lib/validation';
 
 const MAX_PHOTO_BYTES = 8 * 1024 * 1024; // 8MB, same cap as /api/upload
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
     if (photo.size > MAX_PHOTO_BYTES) {
       return NextResponse.json({ error: 'Photo is larger than 8MB' }, { status: 413 });
     }
-    if (!isCloudinaryConfigured()) {
+    if (!isSpacesConfigured()) {
       return NextResponse.json({ error: 'Photo uploads are not configured yet — contact the club.' }, { status: 503 });
     }
 
@@ -63,7 +63,7 @@ export async function POST(request: Request) {
       typeof v === 'string' && v.trim() ? v.trim().slice(0, max) : undefined;
 
     const buffer = Buffer.from(await photo.arrayBuffer());
-    const uploaded = await uploadImage(buffer, photo.name, CLOUDINARY_MEMBERS_FOLDER);
+    const uploaded = await uploadImage(buffer, photo.name, SPACES_MEMBERS_FOLDER, photo.type);
 
     const ageValue = form.get('age');
 

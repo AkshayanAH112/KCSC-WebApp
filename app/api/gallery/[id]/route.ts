@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import { GalleryImage } from '@/models';
 import { isStaffRequest } from '@/lib/auth-guard';
-import { deleteImage } from '@/lib/cloudinary';
+import { deleteImage } from '@/lib/spaces';
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
   try {

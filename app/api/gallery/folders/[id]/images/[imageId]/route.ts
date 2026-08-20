@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import { GalleryFolder } from '@/models';
 import { isStaffRequest } from '@/lib/auth-guard';
+import { deleteImage } from '@/lib/spaces';
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string, imageId: string }> }) {
   try {
@@ -54,6 +55,8 @@ export async function DELETE(request: Request, context: { params: Promise<{ id: 
 
     folder.images.pull(imageId);
     await folder.save();
+
+    await deleteImage(image.publicId);
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

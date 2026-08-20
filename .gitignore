@@ -45,3 +45,6 @@ next-env.d.ts
 
 # vendored agent tooling, not part of the app
 .agent/
+
+# .env* above also catches the template — keep that one tracked
+!.env.example

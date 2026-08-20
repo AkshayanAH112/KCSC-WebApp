@@ -4,6 +4,7 @@ import connectToDatabase from '@/lib/mongodb';
 import { Member } from '@/models';
 import { isAdminOnlyRequest, getAuthPayload } from '@/lib/auth-guard';
 import { isValidPhone, isPastDate } from '@/lib/validation';
+import { deleteImage } from '@/lib/spaces';
 
 export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
@@ -81,6 +82,8 @@ export async function DELETE(request: Request, context: { params: Promise<{ id: 
 
     const member = await Member.findByIdAndDelete(id);
     if (!member) return NextResponse.json({ error: 'Member not found' }, { status: 404 });
+
+    await deleteImage(member.photoPublicId);
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

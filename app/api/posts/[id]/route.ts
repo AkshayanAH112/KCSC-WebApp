@@ -3,7 +3,7 @@ import connectToDatabase from '@/lib/mongodb';
 import { Post } from '@/models';
 import { isStaffRequest } from '@/lib/auth-guard';
 import { uniqueSlug } from '@/lib/slug';
-import { deleteImage } from '@/lib/cloudinary';
+import { deleteImage } from '@/lib/spaces';
 
 export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
