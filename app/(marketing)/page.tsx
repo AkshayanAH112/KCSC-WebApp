@@ -1,4 +1,4 @@
-import HeroSection from "@/components/landing/HeroSection";
+import VideoScrubHero from "@/components/landing/VideoScrubHero";
 import ClubIntro from "@/components/landing/ClubIntro";
 import ProgramsSection from "@/components/landing/ProgramsSection";
 import AchievementsSection from "@/components/landing/AchievementsSection";
@@ -6,12 +6,11 @@ import Gallery from "@/components/landing/Gallery";
 import News from "@/components/landing/News";
 import FinalCTA from "@/components/landing/FinalCTA";
 import Footer from "@/components/landing/layout/Footer";
-import GlobalCinematicExperience from "@/components/landing/GlobalCinematicExperience";
 
 export default function Home() {
   return (
-    <GlobalCinematicExperience>
-      <HeroSection />
+    <>
+      <VideoScrubHero />
       <ClubIntro />
       <ProgramsSection />
       <AchievementsSection />
@@ -19,6 +18,6 @@ export default function Home() {
       <News />
       <FinalCTA />
       <Footer />
-    </GlobalCinematicExperience>
+    </>
   );
 }
