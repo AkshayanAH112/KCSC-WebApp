@@ -34,9 +34,35 @@ const StudentSchema = new mongoose.Schema({
   photoUrl: { type: String },
   qrCode: { type: String, required: true, unique: true },
   batchId: { type: mongoose.Schema.Types.ObjectId, ref: 'Batch' },
-  isActive: { type: Boolean, default: true }
+  isActive: { type: Boolean, default: true },
+  // "KCSC/{batch year}/{0001..}" — human-readable registration ID, distinct from
+  // qrCode (the physical-card scan identifier, already printed, never changes).
+  // sparse: true because students created before this field existed have none
+  // until backfilled (see /api/students/backfill-registration-numbers).
+  registrationNumber: { type: String, unique: true, sparse: true },
+  // The mid-batch-registration cutoff: a student is only eligible for classes
+  // dated on/after this. sparse-by-absence — legacy students with no value are
+  // grandfathered (no eligibility gate applied) rather than retroactively
+  // excluded from every class that predates this field's existence.
+  registrationDate: { type: Date },
+  // Lifetime leave count — never resets, ever, even across deactivation/reactivation.
+  totalLeaves: { type: Number, default: 0 },
+  // Resets to 0 only when a deactivated student is reactivated. Drives the
+  // 2-leave/3-leave notification thresholds (see POST /api/attendance).
+  currentLeaveCycle: { type: Number, default: 0 },
+  // Increments once per reactivation. Scopes Notification uniqueness so the
+  // same 2/3-leave warning can legitimately fire again in a new cycle instead
+  // of being permanently deduped by the {studentId,type} pair alone.
+  cycleGeneration: { type: Number, default: 0 },
 }, { timestamps: true });
 export const Student = mongoose.models.Student || mongoose.model("Student", StudentSchema);
+
+/** Atomic per-year sequence generator for Student.registrationNumber (_id e.g. "regno-2026"). */
+const CounterSchema = new mongoose.Schema({
+  _id: { type: String, required: true },
+  seq: { type: Number, default: 0 },
+});
+export const Counter = mongoose.models.Counter || mongoose.model("Counter", CounterSchema);
 
 const BatchSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -59,9 +85,58 @@ const AttendanceSchema = new mongoose.Schema({
   classId: { type: mongoose.Schema.Types.ObjectId, ref: 'ClassSession', required: true },
   present: { type: Boolean, default: false },
   date: { type: Date, required: true },
+  // Source of truth for "has this specific row already contributed to
+  // Student.totalLeaves/currentLeaveCycle" — makes the counter math a pure
+  // function of the present->absent transition, so re-toggling the same
+  // class back and forth (correcting a mistake) never double- or under-counts.
+  countedAsLeave: { type: Boolean, default: false },
+  // Snapshot of Student.currentLeaveCycle right after this row first became a
+  // leave. Set once, never touched by a later correction — this is what makes
+  // the row a true "what the cycle was at the time" permanent ledger entry.
+  leaveCycleAtRecord: { type: Number },
+  remarks: { type: String },
 }, { timestamps: true });
 AttendanceSchema.index({ studentId: 1, classId: 1 }, { unique: true });
 export const Attendance = mongoose.models.Attendance || mongoose.model("Attendance", AttendanceSchema);
+
+/**
+ * Parent-warning (2 leaves) / admin-critical (3 leaves) alerts. Uniqueness is
+ * scoped to {studentId, type, cycleGeneration} so the same warning can never
+ * fire twice within one leave cycle, but legitimately fires again after a
+ * deactivate/reactivate bumps cycleGeneration and the cycle recrosses 2 or 3.
+ */
+export const NOTIFICATION_TYPES = ['parent_warning', 'admin_critical'] as const;
+export const NOTIFICATION_STATUSES = ['pending', 'acknowledged', 'resolved'] as const;
+
+const NotificationSchema = new mongoose.Schema({
+  studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student', required: true },
+  // Denormalized at creation so the alert list never needs a populate.
+  registrationNumber: { type: String },
+  studentName: { type: String },
+  type: { type: String, enum: NOTIFICATION_TYPES, required: true },
+  cycleGeneration: { type: Number, required: true },
+  leaveCount: { type: Number, required: true }, // 2 or 3
+  leaveDates: [{ type: Date }],
+  status: { type: String, enum: NOTIFICATION_STATUSES, default: 'pending' },
+}, { timestamps: true });
+NotificationSchema.index({ studentId: 1, type: 1, cycleGeneration: 1 }, { unique: true });
+export const Notification = mongoose.models.Notification || mongoose.model("Notification", NotificationSchema);
+
+/**
+ * A scheduled exam — subject/grade/batch/date/max-marks, created up front as its
+ * own record so staff can click into it any time afterward to add or correct
+ * individual students' marks (POST /api/exams/[id]/marks), rather than marks only
+ * ever existing as a side effect of a one-shot bulk upload.
+ */
+const ExamSchema = new mongoose.Schema({
+  subject: { type: String, required: true },
+  grade: { type: Number, required: true, enum: GRADES },
+  batchId: { type: mongoose.Schema.Types.ObjectId, ref: 'Batch', required: true },
+  examDate: { type: Date, required: true },
+  maxMarks: { type: Number, required: true },
+  name: { type: String }, // optional friendly label, e.g. "Mid-term"
+}, { timestamps: true });
+export const Exam = mongoose.models.Exam || mongoose.model("Exam", ExamSchema);
 
 const MarksSchema = new mongoose.Schema({
   studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student', required: true },
@@ -78,7 +153,17 @@ const MarksSchema = new mongoose.Schema({
   // starting while an older one is still running), so grade alone doesn't
   // uniquely scope an exam's roster — this does.
   batchId: { type: mongoose.Schema.Types.ObjectId, ref: 'Batch' },
+  // Not required — same reasoning as batchId above: rows predating the Exam
+  // model (see /api/exams/backfill) have no exam to point at. Every mark
+  // written through /api/exams/[id]/marks always sets this and denormalizes
+  // subject/examDate/maxMarks/grade/batchId from the parent Exam, so nothing
+  // that already queries those flat fields (analysis, dashboard stats, the
+  // student profile page) needs to change.
+  examId: { type: mongoose.Schema.Types.ObjectId, ref: 'Exam' },
 }, { timestamps: true });
+// sparse: only documents that HAVE examId participate in this uniqueness check,
+// so pre-migration rows (no examId) never collide with it or with each other.
+MarksSchema.index({ examId: 1, studentId: 1 }, { unique: true, sparse: true });
 export const Marks = mongoose.models.Marks || mongoose.model("Marks", MarksSchema);
 
 /**

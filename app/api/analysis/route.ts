@@ -69,7 +69,10 @@ export async function GET(request: Request) {
 
       for (const session of sessionsInRange) {
         const roster = rosterStudents.filter(
-          (s) => s.batchId?.toString() === session.batchId.toString() && s.grade === session.grade
+          (s) =>
+            s.batchId?.toString() === session.batchId.toString() &&
+            s.grade === session.grade &&
+            (!s.registrationDate || s.registrationDate <= session.date)
         );
         for (const student of roster) {
           const key = student._id.toString();

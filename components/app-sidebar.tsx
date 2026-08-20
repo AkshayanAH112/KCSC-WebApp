@@ -15,6 +15,9 @@ import {
   UserCog,
   ShieldCheck,
   LogOut,
+  LayoutGrid,
+  Bell,
+  FileSpreadsheet,
 } from "lucide-react";
 
 import {
@@ -36,8 +39,11 @@ const lmsNavItems = [
   { title: "Dashboard", url: "/admin/dashboard", icon: LayoutDashboard },
   { title: "Students", url: "/admin/students", icon: Users },
   { title: "Batches & Classes", url: "/admin/batches", icon: BookOpen },
+  { title: "Grades", url: "/admin/grades", icon: LayoutGrid },
   { title: "Scanner & Attendance", url: "/admin/scanner", icon: QrCode },
-  { title: "Marks & Reports", url: "/admin/marks", icon: GraduationCap },
+  { title: "Attendance Report", url: "/admin/attendance", icon: FileSpreadsheet },
+  { title: "Notifications", url: "/admin/notifications", icon: Bell },
+  { title: "Exams & Results", url: "/admin/marks", icon: GraduationCap },
   { title: "Analysis", url: "/admin/analysis", icon: LineChart },
   { title: "News & Blog", url: "/admin/news", icon: Newspaper },
   { title: "Gallery", url: "/admin/gallery", icon: ImageIcon },

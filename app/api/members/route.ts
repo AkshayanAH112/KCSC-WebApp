@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import { Member, MEMBER_STATUSES } from '@/models';
 import { isAdminOnlyRequest } from '@/lib/auth-guard';
+import { isValidPhone, isPastDate } from '@/lib/validation';
 
 /**
  * Admin-only. An lms_manager token is valid but still gets 401 here — that boundary
@@ -35,6 +36,16 @@ export async function POST(request: Request) {
     const data = await request.json();
     if (!data.fullName?.trim()) return NextResponse.json({ error: 'Full name is required' }, { status: 400 });
     if (!data.phone?.trim()) return NextResponse.json({ error: 'Phone number is required' }, { status: 400 });
+    if (!isValidPhone(data.phone)) return NextResponse.json({ error: 'Phone must contain only digits, with an optional leading +' }, { status: 400 });
+    if (data.whatsapp && !isValidPhone(data.whatsapp)) {
+      return NextResponse.json({ error: 'WhatsApp number must contain only digits, with an optional leading +' }, { status: 400 });
+    }
+    if (data.guardianPhone && !isValidPhone(data.guardianPhone)) {
+      return NextResponse.json({ error: 'Guardian phone must contain only digits, with an optional leading +' }, { status: 400 });
+    }
+    if (data.dateOfBirth && !isPastDate(data.dateOfBirth)) {
+      return NextResponse.json({ error: 'Date of birth must be in the past' }, { status: 400 });
+    }
 
     const member = await Member.create({ ...data, status: data.status ?? 'approved' });
     return NextResponse.json({ member }, { status: 201 });

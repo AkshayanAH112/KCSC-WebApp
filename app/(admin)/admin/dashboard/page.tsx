@@ -11,6 +11,9 @@ import {
   Newspaper,
   UserCog,
   ArrowRight,
+  ShieldAlert,
+  UserX,
+  Bell,
 } from "lucide-react";
 import { useCurrentUser } from "@/components/current-user-provider";
 
@@ -25,6 +28,10 @@ interface Stats {
   publishedPosts: number;
   pendingMembers: number | null;
   recentMarks: number;
+  studentsOnLeaveToday: number;
+  studentsAtCycle2: number;
+  studentsAtCycle3: number;
+  deactivatedStudents: number;
 }
 
 const statConfig = [
@@ -65,10 +72,47 @@ const statConfig = [
     bg: "bg-gold/20",
     hint: () => "new result records",
   },
+  {
+    key: "studentsOnLeaveToday" as const,
+    title: "On Leave Today",
+    href: "/admin/attendance",
+    icon: CalendarCheck,
+    tone: "text-warning",
+    bg: "bg-warning/10",
+    hint: () => "absent from today's classes",
+  },
+  {
+    key: "studentsAtCycle2" as const,
+    title: "At 2 Leaves",
+    href: "/admin/notifications",
+    icon: AlertTriangle,
+    tone: "text-warning",
+    bg: "bg-warning/10",
+    hint: () => "parent notification pending",
+  },
+  {
+    key: "studentsAtCycle3" as const,
+    title: "At 3 Leaves",
+    href: "/admin/notifications",
+    icon: ShieldAlert,
+    tone: "text-destructive",
+    bg: "bg-destructive/10",
+    hint: () => "admin action required",
+  },
+  {
+    key: "deactivatedStudents" as const,
+    title: "Deactivated",
+    href: "/admin/students",
+    icon: UserX,
+    tone: "text-muted-foreground",
+    bg: "bg-muted",
+    hint: () => "not currently active",
+  },
 ];
 
 const quickLinks = [
   { href: "/admin/scanner", label: "Scan attendance", icon: QrCode, desc: "Check students in for today's session" },
+  { href: "/admin/notifications", label: "Review notifications", icon: Bell, desc: "Parent-warning and admin-critical leave alerts" },
   { href: "/admin/marks", label: "Enter marks", icon: GraduationCap, desc: "Record and analyse exam results" },
   { href: "/admin/news", label: "Publish news", icon: Newspaper, desc: "Add a post to the club website" },
 ];

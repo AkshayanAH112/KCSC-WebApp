@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
-import { Student } from '@/models';
+import { Student, Batch, Counter } from '@/models';
 import { isStaffRequest } from '@/lib/auth-guard';
+import { isValidLocalPhone, isPastDate } from '@/lib/validation';
 import crypto from 'crypto';
 
 export async function GET(request: Request) {
@@ -33,9 +34,33 @@ export async function POST(request: Request) {
     await connectToDatabase();
     const data = await request.json();
 
+    if (!data.batchId) {
+      return NextResponse.json({ error: 'A batch is required to register a student' }, { status: 400 });
+    }
+    if (!isValidLocalPhone(data.guardianPhone)) {
+      return NextResponse.json({ error: 'Guardian phone must be a valid 10-digit number starting with 0 (e.g. 0701212234)' }, { status: 400 });
+    }
+    if (!isPastDate(data.dateOfBirth)) {
+      return NextResponse.json({ error: 'Date of birth must be in the past' }, { status: 400 });
+    }
+
     // Auto-generate unique QR code
     const uniqueId = crypto.randomBytes(4).toString('hex').toUpperCase();
     data.qrCode = `KCSC-${data.grade}-${uniqueId}`;
+
+    // Registration number "KCSC/{batch year}/{0001..}" — sequenced per batch
+    // year via an atomic counter, not a countDocuments() count: numbers must
+    // never be reused even after a student is later deleted, and two admins
+    // registering students back-to-back must never race onto the same number.
+    const batch = await Batch.findById(data.batchId);
+    const regYear = batch?.year ?? new Date().getFullYear();
+    const counter = await Counter.findOneAndUpdate(
+      { _id: `regno-${regYear}` },
+      { $inc: { seq: 1 } },
+      { upsert: true, new: true }
+    );
+    data.registrationNumber = `KCSC/${regYear}/${String(counter.seq).padStart(4, '0')}`;
+    data.registrationDate = data.registrationDate ? new Date(data.registrationDate) : new Date();
 
     const student = await Student.create(data);
     return NextResponse.json({ student }, { status: 201 });

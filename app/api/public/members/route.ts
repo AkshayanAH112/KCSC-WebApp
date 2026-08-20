@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import { Member } from '@/models';
 import { uploadImage, isCloudinaryConfigured, CLOUDINARY_MEMBERS_FOLDER } from '@/lib/cloudinary';
+import { isValidPhone, isPastDate } from '@/lib/validation';
 
 const MAX_PHOTO_BYTES = 8 * 1024 * 1024; // 8MB, same cap as /api/upload
 const ALLOWED_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
@@ -28,7 +29,20 @@ export async function POST(request: Request) {
 
     if (!fullName) return NextResponse.json({ error: 'Full name is required' }, { status: 400 });
     if (!phone) return NextResponse.json({ error: 'Phone number is required' }, { status: 400 });
+    if (!isValidPhone(phone)) return NextResponse.json({ error: 'Phone must contain only digits, with an optional leading +' }, { status: 400 });
     if (!nic) return NextResponse.json({ error: 'NIC number is required' }, { status: 400 });
+    const whatsappValue = form.get('whatsapp');
+    if (typeof whatsappValue === 'string' && whatsappValue.trim() && !isValidPhone(whatsappValue)) {
+      return NextResponse.json({ error: 'WhatsApp number must contain only digits, with an optional leading +' }, { status: 400 });
+    }
+    const guardianPhoneValue = form.get('guardianPhone');
+    if (typeof guardianPhoneValue === 'string' && guardianPhoneValue.trim() && !isValidPhone(guardianPhoneValue)) {
+      return NextResponse.json({ error: 'Guardian phone must contain only digits, with an optional leading +' }, { status: 400 });
+    }
+    const dobValue = form.get('dateOfBirth');
+    if (typeof dobValue === 'string' && dobValue.trim() && !isPastDate(dobValue)) {
+      return NextResponse.json({ error: 'Date of birth must be in the past' }, { status: 400 });
+    }
     if (!(photo instanceof File) || photo.size === 0) {
       return NextResponse.json({ error: 'A photo is required' }, { status: 400 });
     }

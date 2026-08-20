@@ -126,7 +126,7 @@ an `lms_manager` token is valid but still gets `401` there.
 Maroon (`#720000`, sampled from the club crest) and gold. Tokens live in
 [`app/globals.css`](app/globals.css); the rules behind them are in
 `design-system/kallar-central-sports-club/MASTER.md` at the repo root of the workspace.
-`Mobile app/src/index.css` holds an independent copy of the same tokens — **change both together.**
+`Mobileapp/src/index.css` holds an independent copy of the same tokens — **change both together.**
 
 ## Notes on this Next.js version
 

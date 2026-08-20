@@ -116,7 +116,7 @@ export default function JoinModal() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-sm font-medium text-on-surface">Date of Birth</label>
-                  <input name="dateOfBirth" type="date" required className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface" />
+                  <input name="dateOfBirth" type="date" required max={new Date().toISOString().slice(0, 10)} className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-sm font-medium text-on-surface">Age</label>
@@ -169,11 +169,11 @@ export default function JoinModal() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-sm font-medium text-on-surface">Phone Number</label>
-                  <input name="phone" required type="tel" className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface" placeholder="e.g. +94 77 000 0000" />
+                  <input name="phone" required type="tel" pattern="^\+?[0-9]{7,15}$" title="Digits only, with an optional leading +" className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface" placeholder="e.g. +94771234567" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-sm font-medium text-on-surface">WhatsApp Number</label>
-                  <input name="whatsapp" required type="tel" className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface" placeholder="e.g. +94 77 000 0000" />
+                  <input name="whatsapp" required type="tel" pattern="^\+?[0-9]{7,15}$" title="Digits only, with an optional leading +" className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface" placeholder="e.g. +94771234567" />
                 </div>
               </div>
             </fieldset>

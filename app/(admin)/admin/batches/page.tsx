@@ -1,16 +1,26 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { Plus, Loader2, Calendar, ChevronRight } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function BatchesPage() {
+  return (
+    <Suspense>
+      <BatchesPageContent />
+    </Suspense>
+  );
+}
+
+function BatchesPageContent() {
   const [batches, setBatches] = useState<any[]>([]);
   const [classes, setClasses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
   const [isClassModalOpen, setIsClassModalOpen] = useState(false);
-  
+  const searchParams = useSearchParams();
+  const [filterGrade, setFilterGrade] = useState(searchParams.get("grade") ?? "");
+
   const [batchForm, setBatchForm] = useState({ name: "", year: new Date().getFullYear(), grades: [3, 4, 5] });
   const [classForm, setClassForm] = useState({ batchId: "", grade: "3", date: "", time: "", subject: "" });
   const router = useRouter();
@@ -40,7 +50,15 @@ export default function BatchesPage() {
     e.preventDefault();
     await fetch("/api/batches", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(batchForm) });
     setIsBatchModalOpen(false);
+    setBatchForm({ name: "", year: new Date().getFullYear(), grades: [3, 4, 5] });
     fetchData();
+  };
+
+  const toggleBatchGrade = (g: number) => {
+    setBatchForm(prev => ({
+      ...prev,
+      grades: prev.grades.includes(g) ? prev.grades.filter(x => x !== g) : [...prev.grades, g].sort()
+    }));
   };
 
   const createClass = async (e: React.FormEvent) => {
@@ -52,15 +70,24 @@ export default function BatchesPage() {
 
   if (loading) return <div className="flex justify-center p-12"><Loader2 className="animate-spin text-gray-400" size={32} /></div>;
 
+  const filteredBatches = filterGrade ? batches.filter(v => v.grades.includes(Number(filterGrade))) : batches;
+  const filteredClasses = filterGrade ? classes.filter(c => c.grade === Number(filterGrade)) : classes;
+
   return (
     <div className="space-y-8">
       {/* Batches Header */}
-      <div className="flex justify-between items-center bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
+      <div className="flex flex-wrap justify-between items-center gap-4 bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
         <div>
           <h1 className="text-2xl font-bold dark:text-white">Batches & Classes</h1>
           <p className="text-gray-500 text-sm">Manage academic years and daily class sessions.</p>
         </div>
         <div className="flex gap-3">
+          <select className="field cursor-pointer sm:w-40" value={filterGrade} onChange={e => setFilterGrade(e.target.value)}>
+            <option value="">All Grades</option>
+            <option value="3">Grade 3</option>
+            <option value="4">Grade 4</option>
+            <option value="5">Grade 5</option>
+          </select>
           <button onClick={() => setIsBatchModalOpen(true)} className="px-4 py-2 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl font-medium transition-colors">New Batch</button>
           <button onClick={() => setIsClassModalOpen(true)} className="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-medium transition-colors flex items-center gap-2"><Plus size={18}/> New Session</button>
         </div>
@@ -71,7 +98,7 @@ export default function BatchesPage() {
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm">
           <h3 className="text-lg font-bold mb-4 dark:text-white">Active Batches</h3>
           <div className="space-y-4">
-            {batches.map(v => (
+            {filteredBatches.map(v => (
               <div 
                 key={v._id} 
                 onClick={() => router.push(`/admin/batches/${v._id}`)}
@@ -91,7 +118,7 @@ export default function BatchesPage() {
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm">
           <h3 className="text-lg font-bold mb-4 dark:text-white">Recent Daily Sessions</h3>
           <div className="space-y-4">
-            {classes.map(v => (
+            {filteredClasses.map(v => (
               <div key={v._id} className="p-4 rounded-xl border border-gray-200 dark:border-gray-800 flex items-center justify-between">
                 <div>
                   <div className="font-bold dark:text-white">Grade {v.grade} - {v.subject || 'General'}</div>
@@ -118,9 +145,24 @@ export default function BatchesPage() {
                 <label className="field-label">Starting Year</label>
                 <input type="number" required className="field" placeholder="Year" value={batchForm.year} onChange={e => setBatchForm({...batchForm, year: Number(e.target.value)})} />
               </div>
+              <div>
+                <label className="field-label">Grades Covered</label>
+                <div className="flex items-center gap-2 pt-1">
+                  {[3, 4, 5].map(g => (
+                    <button
+                      type="button"
+                      key={g}
+                      onClick={() => toggleBatchGrade(g)}
+                      className={`rounded-lg px-3 py-1 text-sm font-bold transition-colors ${batchForm.grades.includes(g) ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground border border-border"}`}
+                    >
+                      Grade {g}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setIsBatchModalOpen(false)} className="flex-1 py-2 border border-border bg-card rounded-xl font-medium text-foreground hover:bg-muted transition-colors">Cancel</button>
-                <button type="submit" className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground py-2 rounded-xl font-medium">Create</button>
+                <button type="submit" disabled={batchForm.grades.length === 0} className="flex-1 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground py-2 rounded-xl font-medium">Create</button>
               </div>
             </form>
           </div>

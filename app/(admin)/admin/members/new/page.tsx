@@ -119,7 +119,7 @@ export default function NewMemberPage() {
           </div>
           <div>
             <label htmlFor="phone" className="field-label">Phone</label>
-            <input id="phone" required className="field" value={form.phone} onChange={(e) => set("phone", e.target.value)} />
+            <input id="phone" type="tel" required pattern="^\+?[0-9]{7,15}$" title="Digits only, with an optional leading +" placeholder="e.g. +94771234567" className="field" value={form.phone} onChange={(e) => set("phone", e.target.value)} />
           </div>
           <div>
             <label htmlFor="email" className="field-label">Email</label>
@@ -127,7 +127,7 @@ export default function NewMemberPage() {
           </div>
           <div>
             <label htmlFor="dob" className="field-label">Date of birth</label>
-            <input id="dob" type="date" className="field" value={form.dateOfBirth} onChange={(e) => set("dateOfBirth", e.target.value)} />
+            <input id="dob" type="date" max={new Date().toISOString().slice(0, 10)} className="field" value={form.dateOfBirth} onChange={(e) => set("dateOfBirth", e.target.value)} />
           </div>
           <div>
             <label htmlFor="nic" className="field-label">NIC number</label>
@@ -152,7 +152,7 @@ export default function NewMemberPage() {
           </div>
           <div>
             <label htmlFor="guardianPhone" className="field-label">Guardian phone</label>
-            <input id="guardianPhone" className="field" value={form.guardianPhone} onChange={(e) => set("guardianPhone", e.target.value)} />
+            <input id="guardianPhone" type="tel" pattern="^\+?[0-9]{7,15}$" title="Digits only, with an optional leading +" placeholder="e.g. +94771234567" className="field" value={form.guardianPhone} onChange={(e) => set("guardianPhone", e.target.value)} />
           </div>
           <div className="sm:col-span-2">
             <label htmlFor="interest" className="field-label">Sport / activity interest</label>

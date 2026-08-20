@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Loader2, ArrowLeft, CheckCircle2, XCircle, Search } from "lucide-react";
+import { Loader2, ArrowLeft, CheckCircle2, XCircle, Search, Pencil, Trash2, X } from "lucide-react";
+import { ConfirmDialog, AlertModal } from "@/components/confirm-dialog";
 
 export default function ClassAttendancePage() {
   const params = useParams();
@@ -11,6 +12,9 @@ export default function ClassAttendancePage() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchClassData = useCallback(async () => {
     try {
@@ -48,6 +52,17 @@ export default function ClassAttendancePage() {
     } catch (e) {
       console.error("Failed to update attendance", e);
       fetchClassData(); // Revert on failure
+    }
+  };
+
+  const handleDelete = async () => {
+    setConfirmDeleteOpen(false);
+    const res = await fetch(`/api/classes/${classId}`, { method: "DELETE" });
+    if (res.ok) {
+      router.push(`/admin/batches/${data.classSession.batchId?._id ?? data.classSession.batchId}`);
+    } else {
+      const err = await res.json();
+      setError(err.error);
     }
   };
 
@@ -90,7 +105,7 @@ export default function ClassAttendancePage() {
             {new Date(classSession.date).toDateString()} at {classSession.time || "N/A"}
           </p>
         </div>
-        <div className="flex gap-4">
+        <div className="flex flex-wrap items-center gap-4">
           <div className="flex min-w-25 flex-col items-center justify-center rounded-lg bg-success/10 p-4">
             <span className="tabular text-2xl font-bold text-success">
               {presentCount}
@@ -101,6 +116,14 @@ export default function ClassAttendancePage() {
           <div className="flex min-w-25 flex-col items-center justify-center rounded-lg bg-muted p-4">
             <span className="tabular text-2xl font-bold text-muted-foreground">{absentCount}</span>
             <span className="mt-1 text-xs font-bold uppercase text-muted-foreground">Absent</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setIsEditOpen(true)} className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 font-medium text-sm text-foreground hover:bg-muted transition-colors">
+              <Pencil size={15} /> Edit
+            </button>
+            <button onClick={() => setConfirmDeleteOpen(true)} className="flex items-center gap-1.5 rounded-lg border border-destructive/30 px-3 py-2 font-medium text-sm text-destructive hover:bg-destructive/10 transition-colors">
+              <Trash2 size={15} /> Delete
+            </button>
           </div>
         </div>
       </div>
@@ -172,6 +195,99 @@ export default function ClassAttendancePage() {
           </table>
         </div>
       </div>
+
+      {isEditOpen && (
+        <EditClassModal
+          classSession={classSession}
+          onClose={() => setIsEditOpen(false)}
+          onSaved={() => { setIsEditOpen(false); fetchClassData(); }}
+        />
+      )}
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        onClose={() => setConfirmDeleteOpen(false)}
+        onConfirm={handleDelete}
+        title="Delete this class session?"
+        description="This cannot be undone."
+        confirmLabel="Delete"
+        tone="danger"
+      />
+      <AlertModal open={error !== null} onClose={() => setError(null)} title="Failed to delete" description={error ?? undefined} tone="danger" />
+    </div>
+  );
+}
+
+function EditClassModal({ classSession, onClose, onSaved }: { classSession: any; onClose: () => void; onSaved: () => void }) {
+  const [batches, setBatches] = useState<any[]>([]);
+  const [form, setForm] = useState({
+    batchId: classSession.batchId?._id ?? classSession.batchId,
+    grade: String(classSession.grade),
+    date: new Date(classSession.date).toISOString().slice(0, 10),
+    time: classSession.time ?? "",
+    subject: classSession.subject ?? "",
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/batches").then(r => r.json()).then(d => setBatches(d.batches || []));
+  }, []);
+
+  const save = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/classes/${classSession._id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, grade: Number(form.grade) }),
+      });
+      if (res.ok) onSaved();
+      else { const err = await res.json(); setError(err.error); }
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
+      <div className="w-full max-w-lg rounded-3xl border border-border bg-card p-6 shadow-2xl sm:p-8" onClick={(e) => e.stopPropagation()}>
+        <div className="mb-6 flex items-start justify-between">
+          <h2 className="text-xl font-bold text-foreground">Edit Class Session</h2>
+          <button onClick={onClose} className="cursor-pointer text-muted-foreground hover:text-foreground"><X size={20} /></button>
+        </div>
+        <form onSubmit={save} className="space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="field-label">Batch</label>
+              <select className="field cursor-pointer" required value={form.batchId} onChange={e => setForm({ ...form, batchId: e.target.value })}>
+                {batches.map(b => <option key={b._id} value={b._id}>{b.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="field-label">Grade</label>
+              <select className="field cursor-pointer" value={form.grade} onChange={e => setForm({ ...form, grade: e.target.value })}>
+                <option value="3">Grade 3</option>
+                <option value="4">Grade 4</option>
+                <option value="5">Grade 5</option>
+              </select>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div><label className="field-label">Date</label><input type="date" required className="field" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} /></div>
+            <div><label className="field-label">Time</label><input type="time" className="field" value={form.time} onChange={e => setForm({ ...form, time: e.target.value })} /></div>
+          </div>
+          <div><label className="field-label">Subject</label><input type="text" className="field" value={form.subject} onChange={e => setForm({ ...form, subject: e.target.value })} /></div>
+          <div className="flex gap-3 pt-2">
+            <button type="button" onClick={onClose} className="flex-1 py-2 border border-border bg-card rounded-xl font-medium text-foreground hover:bg-muted transition-colors">Cancel</button>
+            <button type="submit" disabled={saving} className="flex-1 bg-primary hover:bg-primary/90 disabled:opacity-50 text-primary-foreground py-2 rounded-xl font-medium">
+              {saving ? <Loader2 className="animate-spin mx-auto" size={18} /> : "Save"}
+            </button>
+          </div>
+        </form>
+      </div>
+      <AlertModal open={error !== null} onClose={() => setError(null)} title="Failed to save" description={error ?? undefined} tone="danger" />
     </div>
   );
 }

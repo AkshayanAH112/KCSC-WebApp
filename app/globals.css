@@ -62,7 +62,7 @@
  *
  * Maroon #720000 is sampled from the club crest. Gold is an ACCENT only —
  * it scores 3.25:1 on white, so it is valid for UI/large text and never for body copy.
- * NOTE: Mobile app/src/index.css is an independent copy of these tokens. Change both together.
+ * NOTE: Mobileapp/src/index.css is an independent copy of these tokens. Change both together.
  */
 :root {
   --card: oklch(1 0 0);

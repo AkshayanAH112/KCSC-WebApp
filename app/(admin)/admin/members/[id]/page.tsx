@@ -15,6 +15,7 @@ import {
   Mail,
 } from "lucide-react";
 import { MembershipCardFront, MembershipCardBack } from "@/components/membership-card";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 type Member = {
   _id: string;
@@ -165,8 +166,10 @@ export default function MemberDetailPage() {
     return () => clearTimeout(t);
   }, [autoSendPending, member, sendCardEmail]);
 
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+
   const remove = async () => {
-    if (!confirm(`Delete ${member?.fullName}'s application? This can't be undone.`)) return;
+    setConfirmDeleteOpen(false);
     setSaving(true);
     try {
       const res = await fetch(`/api/members/${id}`, { method: "DELETE" });
@@ -249,13 +252,23 @@ export default function MemberDetailPage() {
           </div>
         </div>
         <button
-          onClick={remove}
+          onClick={() => setConfirmDeleteOpen(true)}
           disabled={saving}
           className="flex cursor-pointer items-center gap-2 rounded-lg border border-destructive/30 px-4 py-2 font-medium text-destructive transition-colors duration-200 hover:bg-destructive/10 disabled:opacity-60"
         >
           <Trash2 size={16} aria-hidden /> Delete
         </button>
       </div>
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        onClose={() => setConfirmDeleteOpen(false)}
+        onConfirm={remove}
+        title="Delete this application?"
+        description={`Delete ${member?.fullName}'s application? This can't be undone.`}
+        confirmLabel="Delete"
+        tone="danger"
+      />
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="rounded-lg border border-border bg-card p-6 shadow-xs lg:col-span-2">

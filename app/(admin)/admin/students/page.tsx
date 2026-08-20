@@ -1,22 +1,37 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
-import QRCode from "qrcode";
-import { Plus, Search, Loader2, QrCode as QrIcon, Download } from "lucide-react";
+import { Suspense, useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Plus, Search, Loader2, QrCode as QrIcon, Power, PowerOff, Trash2 } from "lucide-react";
+import { StudentIdCardModal } from "@/components/student-id-card-modal";
+import { Modal, ConfirmDialog, AlertModal } from "@/components/confirm-dialog";
+import { useCurrentUser } from "@/components/current-user-provider";
+import { isValidPhoneLocal, PHONE_HINT } from "@/lib/phone";
 
 export default function StudentsPage() {
+  return (
+    <Suspense>
+      <StudentsPageContent />
+    </Suspense>
+  );
+}
+
+function StudentsPageContent() {
   const [students, setStudents] = useState<any[]>([]);
   const [batches, setBatches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [qrModalOpen, setQrModalOpen] = useState(false);
-  const [activeQr, setActiveQr] = useState<string | null>(null);
   const [activeStudent, setActiveStudent] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterBatch, setFilterBatch] = useState("");
+  const searchParams = useSearchParams();
+  const [filterGrade, setFilterGrade] = useState(searchParams.get("grade") ?? "");
   const router = useRouter();
+  const { user } = useCurrentUser();
+
+  const [deleteTarget, setDeleteTarget] = useState<any>(null);
+  const [blockedDeleteMessage, setBlockedDeleteMessage] = useState<string | null>(null);
+  const [deleteAlert, setDeleteAlert] = useState<string | null>(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -27,11 +42,20 @@ export default function StudentsPage() {
     grade: "3",
     dateOfBirth: "",
   });
+  const [phoneError, setPhoneError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
 
   // Inline "create new batch" — reached from the Batch select below when no
   // batch fits yet, instead of having to leave the registration form.
   const [isNewBatchModalOpen, setIsNewBatchModalOpen] = useState(false);
-  const [newBatchForm, setNewBatchForm] = useState({ name: "", year: new Date().getFullYear() });
+  const [newBatchForm, setNewBatchForm] = useState({ name: "", year: new Date().getFullYear(), grades: [3, 4, 5] as number[] });
+
+  const toggleNewBatchGrade = (g: number) => {
+    setNewBatchForm(prev => ({
+      ...prev,
+      grades: prev.grades.includes(g) ? prev.grades.filter(x => x !== g) : [...prev.grades, g].sort()
+    }));
+  };
 
   useEffect(() => {
     fetchData();
@@ -59,6 +83,11 @@ export default function StudentsPage() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isValidPhoneLocal(formData.guardianPhone)) {
+      setPhoneError(PHONE_HINT);
+      return;
+    }
+    setPhoneError(null);
     try {
       const res = await fetch("/api/students", {
         method: "POST",
@@ -69,9 +98,12 @@ export default function StudentsPage() {
         setIsModalOpen(false);
         setFormData({ name: "", guardianName: "", guardianPhone: "", batchId: batches[0]?._id || "", grade: "3", dateOfBirth: "" });
         fetchData();
+      } else {
+        const err = await res.json();
+        setFormError(err.error);
       }
     } catch (e) {
-      console.error(e);
+      setFormError(e instanceof Error ? e.message : "Failed to register student");
     }
   };
 
@@ -89,50 +121,64 @@ export default function StudentsPage() {
       const res = await fetch("/api/batches", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...newBatchForm, grades: [3, 4, 5] }),
+        body: JSON.stringify(newBatchForm),
       });
       const data = await res.json();
       if (res.ok) {
         setBatches(prev => [data.batch, ...prev]);
         setFormData(prev => ({ ...prev, batchId: data.batch._id }));
         setIsNewBatchModalOpen(false);
-        setNewBatchForm({ name: "", year: new Date().getFullYear() });
+        setNewBatchForm({ name: "", year: new Date().getFullYear(), grades: [3, 4, 5] });
       }
     } catch (e) {
       console.error(e);
     }
   };
 
-  const showQrCode = async (student: any) => {
-    try {
-      const url = await QRCode.toDataURL(student.qrCode, { margin: 1, scale: 10 });
-      setActiveQr(url);
-      setActiveStudent(student);
-      setQrModalOpen(true);
-    } catch (err) {
-      console.error(err);
+  const filteredStudents = students.filter(s =>
+    s.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+    (filterBatch === "" || s.batchId?._id === filterBatch) &&
+    (filterGrade === "" || String(s.grade) === filterGrade)
+  );
+
+  const toggleActive = async (student: any, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const nextActive = student.isActive === false;
+    await fetch(`/api/students/${student._id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ isActive: nextActive }),
+    });
+    fetchData();
+  };
+
+  const performDelete = async (student: any, force = false) => {
+    const res = await fetch(`/api/students/${student._id}${force ? "?force=true" : ""}`, { method: "DELETE" });
+    if (res.ok) {
+      setDeleteTarget(null);
+      fetchData();
+      return;
+    }
+    const err = await res.json();
+    if (res.status === 409) {
+      // Keep deleteTarget set — the follow-up modal (Deactivate/Force Delete) needs it.
+      setBlockedDeleteMessage(err.error);
+    } else {
+      setDeleteTarget(null);
+      setDeleteAlert(err.error);
     }
   };
 
-  const downloadIdCard = async () => {
-    // html2canvas-pro, not html2canvas: the plain package's color parser doesn't
-    // understand oklch()/lab()/color() — this app's whole design system is built on
-    // oklch CSS variables (Tailwind v4 default), so every capture would throw
-    // "unsupported color function". The -pro fork adds that support; same API.
-    const html2canvas = (await import('html2canvas-pro')).default;
-    const card = document.getElementById('printable-id-card');
-    if (!card) return;
-    const canvas = await html2canvas(card, { scale: 4, useCORS: true, backgroundColor: '#ffffff' });
-    const link = document.createElement('a');
-    link.download = `${activeStudent?.name?.replace(/\s+/g, '_')}_ID_Card.png`;
-    link.href = canvas.toDataURL('image/png');
-    link.click();
+  const deactivateInstead = async (student: any) => {
+    setBlockedDeleteMessage(null);
+    setDeleteTarget(null);
+    await fetch(`/api/students/${student._id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ isActive: false }),
+    });
+    fetchData();
   };
-
-  const filteredStudents = students.filter(s => 
-    s.name.toLowerCase().includes(searchQuery.toLowerCase()) && 
-    (filterBatch === "" || s.batchId?._id === filterBatch)
-  );
 
   return (
     <div className="space-y-6">
@@ -160,7 +206,17 @@ export default function StudentsPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <select 
+        <select
+          className="field sm:w-40"
+          value={filterGrade}
+          onChange={(e) => setFilterGrade(e.target.value)}
+        >
+          <option value="">All Grades</option>
+          <option value="3">Grade 3</option>
+          <option value="4">Grade 4</option>
+          <option value="5">Grade 5</option>
+        </select>
+        <select
           className="field sm:w-48"
           value={filterBatch}
           onChange={(e) => setFilterBatch(e.target.value)}
@@ -180,20 +236,25 @@ export default function StudentsPage() {
             <table className="w-full text-left text-sm">
               <thead className="bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 font-medium">
                 <tr>
+                  <th className="px-6 py-4">Reg. Number</th>
                   <th className="px-6 py-4">Name</th>
                   <th className="px-6 py-4">Batch / Grade</th>
-                  <th className="px-6 py-4">Guardian</th>
-                  <th className="px-6 py-4">Phone</th>
-                  <th className="px-6 py-4">QR Code</th>
+                  <th className="px-6 py-4">Registered</th>
+                  <th className="px-6 py-4">Leaves</th>
+                  <th className="px-6 py-4">Status</th>
+                  <th className="px-6 py-4">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-                {filteredStudents.map((sys) => (
-                  <tr 
-                    key={sys._id} 
+                {filteredStudents.map((sys) => {
+                  const isActive = sys.isActive !== false;
+                  return (
+                  <tr
+                    key={sys._id}
                     onClick={() => router.push(`/admin/students/${sys._id}`)}
                     className="hover:bg-gray-50 dark:hover:bg-gray-800/20 transition-colors text-gray-900 dark:text-gray-100 cursor-pointer"
                   >
+                    <td className="px-6 py-4 font-mono text-xs">{sys.registrationNumber ?? "—"}</td>
                     <td className="px-6 py-4 font-medium">{sys.name}</td>
                     <td className="px-6 py-4">
                       <div className="flex flex-col gap-1">
@@ -201,20 +262,54 @@ export default function StudentsPage() {
                         <span className="bg-primary/10 dark:bg-primary/15 text-primary px-2 py-1 rounded-md text-xs w-fit">Grade {sys.grade}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4">{sys.guardianName}</td>
-                    <td className="px-6 py-4">{sys.guardianPhone}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500">
+                      {sys.registrationDate ? new Date(sys.registrationDate).toLocaleDateString() : "—"}
+                    </td>
+                    <td className="px-6 py-4 text-sm">
+                      <span className="tabular">{sys.totalLeaves ?? 0} total</span>
+                      {(sys.currentLeaveCycle ?? 0) >= 2 && (
+                        <span className={`ml-2 rounded-md px-2 py-0.5 text-xs font-bold ${sys.currentLeaveCycle >= 3 ? "bg-destructive/10 text-destructive" : "bg-warning/15 text-warning"}`}>
+                          Cycle {sys.currentLeaveCycle}
+                        </span>
+                      )}
+                    </td>
                     <td className="px-6 py-4">
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); showQrCode(sys); }}
-                        className="text-primary hover:text-primary/80 font-medium flex items-center gap-2 bg-primary/10 px-3 py-1.5 rounded-lg transition-colors"
-                      >
-                        <QrIcon size={16} /> Get ID
-                      </button>
+                      <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${isActive ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
+                        {isActive ? "Active" : "Deactive"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setActiveStudent(sys); }}
+                          aria-label="Get ID card"
+                          className="text-primary hover:text-primary/80 font-medium flex items-center gap-2 bg-primary/10 px-3 py-1.5 rounded-lg transition-colors"
+                        >
+                          <QrIcon size={16} />
+                        </button>
+                        <button
+                          onClick={(e) => toggleActive(sys, e)}
+                          aria-label={isActive ? "Deactivate" : "Activate"}
+                          title={isActive ? "Deactivate" : "Activate"}
+                          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors ${isActive ? "text-destructive hover:text-destructive/80 bg-destructive/10" : "text-success hover:text-success/80 bg-success/10"}`}
+                        >
+                          {isActive ? <PowerOff size={16} /> : <Power size={16} />}
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setDeleteTarget(sys); }}
+                          aria-label="Delete"
+                          title="Delete"
+                          className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-destructive hover:text-destructive/80 bg-destructive/10 transition-colors"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
                 {students.length === 0 && (
-                  <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-500">No students registered yet.</td></tr>
+                  <tr><td colSpan={7} className="px-6 py-12 text-center text-gray-500">No students registered yet.</td></tr>
                 )}
               </tbody>
             </table>
@@ -230,7 +325,19 @@ export default function StudentsPage() {
             <form onSubmit={handleCreate} className="space-y-4">
               <div><label className="field-label">Full Name</label><input required className="field" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} /></div>
               <div><label className="field-label">Guardian Name</label><input required className="field" value={formData.guardianName} onChange={e => setFormData({...formData, guardianName: e.target.value})} /></div>
-              <div><label className="field-label">Guardian Phone (SMS)</label><input required className="field" placeholder="e.g. +94771234567" value={formData.guardianPhone} onChange={e => setFormData({...formData, guardianPhone: e.target.value})} /></div>
+              <div>
+                <label className="field-label">Guardian Phone</label>
+                <input
+                  type="tel"
+                  required
+                  className={`field ${phoneError ? "border-destructive focus:ring-destructive" : ""}`}
+                  placeholder="e.g. 0701212234"
+                  value={formData.guardianPhone}
+                  onChange={e => { setFormData({...formData, guardianPhone: e.target.value}); if (phoneError) setPhoneError(null); }}
+                  onBlur={e => setPhoneError(e.target.value && !isValidPhoneLocal(e.target.value) ? PHONE_HINT : null)}
+                />
+                {phoneError && <p className="mt-1 text-xs text-destructive">{phoneError}</p>}
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="field-label">Batch</label>
@@ -253,10 +360,10 @@ export default function StudentsPage() {
               </div>
               <div>
                 <label className="field-label">Date of Birth</label>
-                <input type="date" required className="field" value={formData.dateOfBirth} onChange={e => setFormData({...formData, dateOfBirth: e.target.value})} />
+                <input type="date" required max={new Date().toISOString().slice(0, 10)} className="field" value={formData.dateOfBirth} onChange={e => setFormData({...formData, dateOfBirth: e.target.value})} />
               </div>
               <div className="flex gap-3 pt-4">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 px-4 py-2 border border-border bg-card rounded-xl font-medium text-foreground hover:bg-muted transition-colors">Cancel</button>
+                <button type="button" onClick={() => { setIsModalOpen(false); setPhoneError(null); }} className="flex-1 px-4 py-2 border border-border bg-card rounded-xl font-medium text-foreground hover:bg-muted transition-colors">Cancel</button>
                 <button type="submit" className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-medium">Create & Generate QR</button>
               </div>
             </form>
@@ -279,6 +386,21 @@ export default function StudentsPage() {
                 <label className="field-label">Starting Year</label>
                 <input type="number" required className="field" value={newBatchForm.year} onChange={e => setNewBatchForm({ ...newBatchForm, year: Number(e.target.value) })} />
               </div>
+              <div>
+                <label className="field-label">Grades Covered</label>
+                <div className="flex items-center gap-2 pt-1">
+                  {[3, 4, 5].map(g => (
+                    <button
+                      type="button"
+                      key={g}
+                      onClick={() => toggleNewBatchGrade(g)}
+                      className={`rounded-lg px-3 py-1 text-sm font-bold transition-colors ${newBatchForm.grades.includes(g) ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground border border-border"}`}
+                    >
+                      Grade {g}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <div className="flex gap-3 pt-2">
                 <button
                   type="button"
@@ -287,95 +409,61 @@ export default function StudentsPage() {
                 >
                   Cancel
                 </button>
-                <button type="submit" className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground py-2 rounded-xl font-medium">Create</button>
+                <button type="submit" disabled={newBatchForm.grades.length === 0} className="flex-1 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground py-2 rounded-xl font-medium">Create</button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* QR Code Modal & Printable ID Card */}
-      {qrModalOpen && activeQr && activeStudent && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 print:p-0 print:bg-white" onClick={() => setQrModalOpen(false)}>
-          {/* CSS to isolate the ID card when physical printing is triggered */}
-          <style dangerouslySetInnerHTML={{__html: `
-            @media print {
-              body * { visibility: hidden; }
-              #printable-id-card, #printable-id-card * { visibility: visible; }
-              #printable-id-card { position: absolute; left: 0; top: 0; margin: 0; padding: 0; border: none; box-shadow: none; transform: scale(1.05); transform-origin: top left; }
-            }
-          `}} />
-          
-          <div className="bg-white rounded-3xl p-8 max-w-100 w-full shadow-2xl flex flex-col items-center print:shadow-none print:p-0 print:m-0" onClick={e => e.stopPropagation()}>
-            
-            <div className="flex justify-between w-full mb-6 print:hidden items-center">
-              <h3 className="text-xl font-bold text-gray-900">Student ID Card</h3>
-              <div className="flex gap-2">
-                <button className="text-primary bg-primary/10 px-3 py-1.5 rounded-lg font-bold hover:bg-primary/10 transition-colors" onClick={() => window.print()}>Print Card</button>
-                <button className="flex items-center gap-1.5 text-white bg-primary px-3 py-1.5 rounded-lg font-bold hover:bg-primary/90 transition-colors" onClick={downloadIdCard}><Download size={15}/>Download</button>
-              </div>
-            </div>
-            
-            {/* Card art is the club's Canva-designed template (public/id-card-template.png);
-                only the fields below are overlaid — everything else (crest, title, tagline,
-                icons, labels, footer line) is baked into that image. Positions are percentages
-                derived from the template's native 1586x992 canvas, so they hold up at any
-                render size including html2canvas's 4x capture scale. */}
-            {/* Height is 85.6mm scaled to the template's native 1586x992 ratio (not the
-                CR-80 standard 53.98mm) so the background image is never stretched. */}
-            <div
-              id="printable-id-card"
-              className="relative w-[85.6mm] h-[53.54mm] shrink-0 rounded-2xl overflow-hidden"
-            >
-              <Image src="/id-card-template.png" alt="" fill priority className="object-cover" />
-
-              <h4
-                className="absolute font-bold text-[#14213D] uppercase leading-[1.05] line-clamp-2"
-                style={{ left: "8%", top: "38%", width: "45%", height: "13%", fontSize: "17px" }}
-              >
-                {activeStudent.name}
-              </h4>
-
-              <p
-                className="absolute flex items-center font-extrabold text-white uppercase tracking-wide"
-                style={{ left: "8.5%", top: "52.3%", width: "30%", height: "7%", fontSize: "6.5px" }}
-              >
-                {activeStudent.batchId?.name ?? "Scholarship Batch"}
-              </p>
-
-              <p
-                className="absolute font-semibold text-gray-800"
-                style={{ left: "28%", top: "69.5%", width: "35%", fontSize: "8px", transform: "translateY(-50%)" }}
-              >
-                {activeStudent.grade}
-              </p>
-
-              <p
-                className="absolute font-semibold text-gray-800"
-                style={{ left: "28%", top: "79.3%", width: "35%", fontSize: "8px", transform: "translateY(-50%)" }}
-              >
-                {activeStudent.guardianPhone}
-              </p>
-
-              <div
-                className="absolute flex items-center justify-center"
-                style={{ left: "66.9%", top: "25.7%", width: "25.5%", height: "37.8%" }}
-              >
-                <Image src={activeQr} alt="QR Code" width={200} height={200} unoptimized className="w-[88%] h-auto" />
-              </div>
-
-              <p
-                className="absolute text-center text-gray-500 font-mono tracking-tight"
-                style={{ left: "66.9%", top: "64.8%", width: "25.5%", fontSize: "7px" }}
-              >
-                {activeStudent.qrCode}
-              </p>
-            </div>
-
-            <button onClick={() => setQrModalOpen(false)} className="w-full bg-gray-900 hover:bg-gray-800 text-white py-3 rounded-xl font-medium mt-8 print:hidden transition-colors">Close</button>
-          </div>
-        </div>
+      {activeStudent && (
+        <StudentIdCardModal student={activeStudent} onClose={() => setActiveStudent(null)} />
       )}
+
+      <ConfirmDialog
+        open={deleteTarget !== null && blockedDeleteMessage === null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => performDelete(deleteTarget, false)}
+        title="Delete this student?"
+        description={deleteTarget ? `Delete ${deleteTarget.name}? This cannot be undone.` : undefined}
+        confirmLabel="Delete"
+        tone="danger"
+      />
+
+      <Modal
+        open={blockedDeleteMessage !== null}
+        onClose={() => { setBlockedDeleteMessage(null); setDeleteTarget(null); }}
+        title="Cannot delete this student"
+        description={blockedDeleteMessage ?? undefined}
+        tone="danger"
+        footer={
+          <div className="flex w-full flex-col gap-2">
+            <button
+              onClick={() => deactivateInstead(deleteTarget)}
+              className="w-full py-2 rounded-xl font-medium text-primary-foreground bg-primary hover:bg-primary/90 transition-colors"
+            >
+              Deactivate Instead
+            </button>
+            {user?.role === "admin" && (
+              <button
+                onClick={() => { setBlockedDeleteMessage(null); performDelete(deleteTarget, true); }}
+                className="w-full py-2 rounded-xl font-medium text-white bg-destructive hover:bg-destructive/90 transition-colors"
+              >
+                Force Delete Everything (Admin Only)
+              </button>
+            )}
+            <button
+              onClick={() => { setBlockedDeleteMessage(null); setDeleteTarget(null); }}
+              className="w-full py-2 border border-border bg-card rounded-xl font-medium text-foreground hover:bg-muted transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        }
+      />
+
+      <AlertModal open={deleteAlert !== null} onClose={() => setDeleteAlert(null)} title="Something went wrong" description={deleteAlert ?? undefined} tone="danger" />
+      <AlertModal open={formError !== null} onClose={() => setFormError(null)} title="Failed to register student" description={formError ?? undefined} tone="danger" />
     </div>
   );
 }

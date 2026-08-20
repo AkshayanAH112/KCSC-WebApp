@@ -14,18 +14,30 @@ export async function GET(request: Request) {
     await connectToDatabase();
     const { start, end } = getTodayRange();
 
-    const [totalStudents, todaySessions, recentMarks, lowAttendanceCount, publishedPosts, pendingMembers] =
-      await Promise.all([
-        Student.countDocuments({ isActive: true }),
-        ClassSession.find({ date: { $gte: start, $lt: end } }),
-        Marks.countDocuments({ createdAt: { $gte: start, $lt: end } }),
-        countLowAttendanceStudents(),
-        Post.countDocuments({ status: 'published' }),
-        // Only an admin can act on membership applications, so an lms_manager
-        // shouldn't even see the count — keeps the dashboard honest about what
-        // this session can do.
-        auth.role === 'admin' ? Member.countDocuments({ status: 'pending' }) : null,
-      ]);
+    const [
+      totalStudents,
+      todaySessions,
+      recentMarks,
+      lowAttendanceCount,
+      publishedPosts,
+      pendingMembers,
+      studentsAtCycle2,
+      studentsAtCycle3,
+      deactivatedStudents,
+    ] = await Promise.all([
+      Student.countDocuments({ isActive: true }),
+      ClassSession.find({ date: { $gte: start, $lt: end } }),
+      Marks.countDocuments({ createdAt: { $gte: start, $lt: end } }),
+      countLowAttendanceStudents(),
+      Post.countDocuments({ status: 'published' }),
+      // Only an admin can act on membership applications, so an lms_manager
+      // shouldn't even see the count — keeps the dashboard honest about what
+      // this session can do.
+      auth.role === 'admin' ? Member.countDocuments({ status: 'pending' }) : null,
+      Student.countDocuments({ isActive: true, currentLeaveCycle: 2 }),
+      Student.countDocuments({ isActive: true, currentLeaveCycle: 3 }),
+      Student.countDocuments({ isActive: false }),
+    ]);
 
     // Today's attendance %: roster = students matching any (batchId, grade)
     // combo among today's sessions, scored against attendance for those
@@ -44,7 +56,10 @@ export async function GET(request: Request) {
 
       for (const session of todaySessions) {
         const roster = rosterStudents.filter(
-          (s) => s.batchId?.toString() === session.batchId.toString() && s.grade === session.grade
+          (s) =>
+            s.batchId?.toString() === session.batchId.toString() &&
+            s.grade === session.grade &&
+            (!s.registrationDate || s.registrationDate <= session.date)
         );
         totalRosterSlots += roster.length;
         for (const student of roster) {
@@ -60,6 +75,14 @@ export async function GET(request: Request) {
       ? Math.round((presentRosterSlots / totalRosterSlots) * 100)
       : 0;
 
+    // Distinct students marked absent (a leave) on any of today's sessions.
+    const studentsOnLeaveToday = new Set(
+      (await Attendance.find({
+        classId: { $in: todaySessions.map((s) => s._id.toString()) },
+        countedAsLeave: true,
+      })).map((a) => a.studentId.toString())
+    ).size;
+
     return NextResponse.json({
       totalStudents,
       hasClassesToday,
@@ -71,6 +94,10 @@ export async function GET(request: Request) {
       publishedPosts,
       pendingMembers,
       recentMarks,
+      studentsOnLeaveToday,
+      studentsAtCycle2,
+      studentsAtCycle3,
+      deactivatedStudents,
     });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

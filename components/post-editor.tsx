@@ -13,6 +13,7 @@ import {
   AlertTriangle,
   X,
 } from "lucide-react";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 export type PostImage = { url: string; publicId?: string; caption?: string };
 
@@ -149,9 +150,11 @@ export function PostEditor({ initial }: { initial: PostDraft }) {
     }
   };
 
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+
   const remove = async () => {
     if (!isEdit) return;
-    if (!confirm("Delete this post? Its images are removed from Cloudinary too.")) return;
+    setConfirmDeleteOpen(false);
     setSaving(true);
     try {
       const res = await fetch(`/api/posts/${post._id}`, { method: "DELETE" });
@@ -183,7 +186,7 @@ export function PostEditor({ initial }: { initial: PostDraft }) {
         <div className="flex flex-wrap gap-2">
           {isEdit && (
             <button
-              onClick={remove}
+              onClick={() => setConfirmDeleteOpen(true)}
               disabled={saving}
               className="flex cursor-pointer items-center gap-2 rounded-lg border border-destructive/30 px-4 py-2 font-medium text-destructive transition-colors duration-200 hover:bg-destructive/10 disabled:opacity-60"
             >
@@ -430,6 +433,16 @@ export function PostEditor({ initial }: { initial: PostDraft }) {
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        onClose={() => setConfirmDeleteOpen(false)}
+        onConfirm={remove}
+        title="Delete this post?"
+        description="Its images are removed from Cloudinary too. This cannot be undone."
+        confirmLabel="Delete"
+        tone="danger"
+      />
     </div>
   );
 }

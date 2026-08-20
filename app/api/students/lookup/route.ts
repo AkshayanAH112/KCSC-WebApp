@@ -38,6 +38,15 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: `Warning: Student is Grade ${student.grade}, Class is Grade ${classSession.grade}` }, { status: 400 });
     }
 
+    // Mid-batch registration guard — advisory here (POST /api/attendance is
+    // the hard block); legacy students with no registrationDate are grandfathered.
+    if (student.registrationDate && classSession.date < student.registrationDate) {
+      return NextResponse.json(
+        { error: `Warning: Student registered on ${student.registrationDate.toDateString()}, after this class (${classSession.date.toDateString()})` },
+        { status: 400 }
+      );
+    }
+
     // Check if they are already present today
     const currentAtt = await Attendance.findOne({ studentId: student._id, classId: classSession._id });
 

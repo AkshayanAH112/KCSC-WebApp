@@ -12,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { useCurrentUser } from "@/components/current-user-provider";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 type Staff = {
   _id: string;
@@ -92,8 +93,10 @@ export default function StaffPage() {
     }
   };
 
+  const [removeTarget, setRemoveTarget] = useState<Staff | null>(null);
+
   const remove = async (s: Staff) => {
-    if (!confirm(`Remove ${s.email}'s account? They will no longer be able to sign in.`)) return;
+    setRemoveTarget(null);
     setError(null);
     try {
       const res = await fetch(`/api/staff/${s._id}`, { method: "DELETE" });
@@ -243,7 +246,7 @@ export default function StaffPage() {
                           {s.isActive ? <UserX size={16} aria-hidden /> : <UserCheck size={16} aria-hidden />}
                         </button>
                         <button
-                          onClick={() => remove(s)}
+                          onClick={() => setRemoveTarget(s)}
                           title="Delete account"
                           className="cursor-pointer rounded-lg p-2 text-destructive transition-colors duration-200 hover:bg-destructive/10"
                         >
@@ -258,6 +261,16 @@ export default function StaffPage() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={removeTarget !== null}
+        onClose={() => setRemoveTarget(null)}
+        onConfirm={() => removeTarget && remove(removeTarget)}
+        title="Remove this staff account?"
+        description={removeTarget ? `Remove ${removeTarget.email}'s account? They will no longer be able to sign in.` : undefined}
+        confirmLabel="Remove"
+        tone="danger"
+      />
     </div>
   );
 }
