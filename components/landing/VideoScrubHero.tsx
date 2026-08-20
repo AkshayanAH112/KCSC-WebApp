@@ -24,6 +24,7 @@ const GATES = [
 export default function VideoScrubHero() {
   const heroRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const [scrubEnabled, setScrubEnabled] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
@@ -133,6 +134,18 @@ export default function VideoScrubHero() {
     return Math.min(1, Math.max(0, -rect.top / span));
   };
 
+  // The content drifts and fades at its own, linear rate as the hero
+  // scrolls — independent of the video's own footage-driven motion behind
+  // it, which is what actually reads as parallax depth rather than the
+  // two layers just moving in lockstep.
+  const applyParallax = (progress: number) => {
+    const el = contentRef.current;
+    if (!el) return;
+    const fade = 1 - Math.min(1, Math.max(0, (progress - 0.6) / 0.4)) * 0.9;
+    el.style.transform = `translateY(${progress * -60}px)`;
+    el.style.opacity = String(fade);
+  };
+
   useEffect(() => {
     if (!scrubEnabled || !videoReady) return;
 
@@ -150,6 +163,7 @@ export default function VideoScrubHero() {
       }
       const video = videoRef.current;
       if (video && video.duration) requestSeek(shown.current * video.duration);
+      applyParallax(shown.current);
     };
 
     const onScroll = () => {
@@ -164,6 +178,7 @@ export default function VideoScrubHero() {
     target.current = heroProgress();
     shown.current = target.current;
     if (videoRef.current?.duration) requestSeek(shown.current * videoRef.current.duration);
+    applyParallax(shown.current);
 
     return () => {
       window.removeEventListener("scroll", onScroll);
@@ -228,8 +243,13 @@ export default function VideoScrubHero() {
           />
         </div>
 
-        {/* Content, unaffected by scroll — the video is the moving part. */}
-        <div className="relative z-10 h-full w-full flex flex-col pt-20 md:pt-24 pb-16">
+        {/* Content — drifts and fades at its own rate as the hero scrolls,
+            independent of the video's motion behind it (see applyParallax). */}
+        <div
+          ref={contentRef}
+          className="relative z-10 h-full w-full flex flex-col pt-20 md:pt-24 pb-16"
+          style={{ willChange: "transform, opacity" }}
+        >
           <div className="w-full flex items-start mt-4 md:mt-6">
             <div className="w-full max-w-[1280px] mx-auto px-5 md:px-16">
               <div className="w-full lg:w-1/2 flex flex-col gap-4 md:gap-5">
