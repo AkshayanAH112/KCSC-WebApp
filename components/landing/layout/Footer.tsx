@@ -4,11 +4,11 @@ import Image from "next/image";
 
 export default function Footer() {
   return (
-    <footer id="contact" className="relative py-16 md:py-24 overflow-hidden border-t border-outline-variant/30 bg-surface/80 backdrop-blur-md mt-16 pointer-events-auto">
-      <div className="max-w-[1280px] mx-auto px-5 md:px-16 flex flex-col md:flex-row justify-between gap-12 md:gap-8">
+    <footer id="contact" className="relative py-4 md:py-6 overflow-hidden border-t border-outline-variant/30 bg-surface/80 backdrop-blur-md pointer-events-auto">
+      <div className="max-w-[1280px] mx-auto px-5 md:px-16 flex flex-col md:flex-row justify-between gap-6 md:gap-4">
         
         {/* Brand Section */}
-        <div className="flex flex-col gap-6 max-w-sm">
+        <div className="flex flex-col gap-2 max-w-sm">
           <div className="flex items-center gap-4">
             <div className="relative w-14 h-14 shrink-0 overflow-hidden rounded-full shadow-soft bg-surface border border-outline-variant/30">
               <Image src="/Logo.jpeg" alt="KCSC Logo" fill className="object-contain" />
@@ -28,10 +28,10 @@ export default function Footer() {
         </div>
 
         {/* Contact Info */}
-        <div className="flex flex-col gap-6">
-          <h3 className="text-xl font-display font-bold text-on-surface">Contact Us</h3>
+        <div className="flex flex-col gap-2">
+          <h3 className="text-base font-display font-bold text-on-surface">Contact Us</h3>
           
-          <ul className="flex flex-col gap-4">
+          <ul className="flex flex-col gap-1 text-sm">
             <li>
               <a 
                 href="https://www.google.com/maps/search/?api=1&query=Periyakallar+srilanka"
@@ -100,9 +100,9 @@ export default function Footer() {
         </div>
         
         {/* Quick Links */}
-        <div className="flex flex-col gap-6">
-          <h3 className="text-xl font-display font-bold text-on-surface">Quick Links</h3>
-          <ul className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2">
+          <h3 className="text-base font-display font-bold text-on-surface">Quick Links</h3>
+          <ul className="flex flex-col gap-1 text-sm">
             <li>
               <Link href="#home" className="text-on-surface-variant hover:text-primary transition-colors">
                 Home
@@ -132,7 +132,7 @@ export default function Footer() {
         </div>
       </div>
       
-      <div className="max-w-[1280px] mx-auto px-5 md:px-16 mt-16 pt-8 border-t border-outline-variant/30 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-on-surface-variant/70">
+      <div className="max-w-[1280px] mx-auto px-5 md:px-16 mt-4 pt-4 border-t border-outline-variant/30 flex flex-col md:flex-row justify-between items-center gap-2 text-xs text-on-surface-variant/70">
         <p>&copy; {new Date().getFullYear()} Kallar Central Sports Club. All rights reserved.</p>
         <div className="flex gap-4">
           <Link href="#" className="hover:text-primary transition-colors">Privacy Policy</Link>
