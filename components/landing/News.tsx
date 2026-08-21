@@ -8,6 +8,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { ArrowRight } from "lucide-react";
 import SectionHeading from "@/components/landing/ui/SectionHeading";
 import ParallaxDecor from "@/components/landing/ui/ParallaxDecor";
+import StackedSection from "@/components/landing/ui/StackedSection";
 
 interface Post {
   _id: string;
@@ -151,10 +152,7 @@ export default function News() {
   }, []);
 
   return (
-    <section 
-      id="news" 
-      className="relative py-16 md:py-20 overflow-hidden"
-    >
+    <StackedSection id="news" zIndex={50} className="bg-surface-container-lowest py-16 md:py-20">
       <ParallaxDecor variant="maroon" />
       <div className="absolute inset-0 bg-surface/50 backdrop-blur-sm pointer-events-none" />
       <div className="relative max-w-[1280px] mx-auto px-5 md:px-16">
@@ -194,6 +192,6 @@ export default function News() {
         )}
 
       </div>
-    </section>
+    </StackedSection>
   );
 }

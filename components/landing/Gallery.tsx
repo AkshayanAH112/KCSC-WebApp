@@ -9,6 +9,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 import SectionHeading from "@/components/landing/ui/SectionHeading";
 import ParallaxDecor from "@/components/landing/ui/ParallaxDecor";
+import StackedSection from "@/components/landing/ui/StackedSection";
 
 interface GalleryFolder {
   _id: string;
@@ -76,7 +77,7 @@ export default function Gallery() {
   };
 
   return (
-    <section id="gallery" className="relative py-16 md:py-20 overflow-hidden pointer-events-none">
+    <StackedSection id="gallery" zIndex={40} className="bg-surface py-16 md:py-20 pointer-events-none">
       <ParallaxDecor variant="gold" />
       <div className="absolute inset-0 bg-surface-container-low/30 backdrop-blur-3xl" />
       
@@ -227,6 +228,6 @@ export default function Gallery() {
         )}
 
       </div>
-    </section>
+    </StackedSection>
   );
 }
