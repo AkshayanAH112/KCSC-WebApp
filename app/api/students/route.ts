@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import { Student, Batch, Counter } from '@/models';
 import { isStaffRequest } from '@/lib/auth-guard';
-import { isValidLocalPhone, isPastDate } from '@/lib/validation';
+import { isValidLocalPhone } from '@/lib/validation';
 import crypto from 'crypto';
 
 export async function GET(request: Request) {
@@ -39,9 +39,6 @@ export async function POST(request: Request) {
     }
     if (!isValidLocalPhone(data.guardianPhone)) {
       return NextResponse.json({ error: 'Guardian phone must be a valid 10-digit number starting with 0 (e.g. 0701212234)' }, { status: 400 });
-    }
-    if (!isPastDate(data.dateOfBirth)) {
-      return NextResponse.json({ error: 'Date of birth must be in the past' }, { status: 400 });
     }
 
     // Auto-generate unique QR code

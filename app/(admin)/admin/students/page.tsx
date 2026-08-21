@@ -42,7 +42,6 @@ function StudentsPageContent() {
     guardianPhone: "",
     batchId: "",
     grade: "3",
-    dateOfBirth: "",
   });
   const [phoneError, setPhoneError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
@@ -98,7 +97,7 @@ function StudentsPageContent() {
       });
       if (res.ok) {
         setIsModalOpen(false);
-        setFormData({ name: "", school: "", address: "", guardianName: "", guardianPhone: "", batchId: batches[0]?._id || "", grade: "3", dateOfBirth: "" });
+        setFormData({ name: "", school: "", address: "", guardianName: "", guardianPhone: "", batchId: batches[0]?._id || "", grade: "3" });
         fetchData();
       } else {
         const err = await res.json();
@@ -361,10 +360,6 @@ function StudentsPageContent() {
                     <option value="5">Grade 5</option>
                   </select>
                 </div>
-              </div>
-              <div>
-                <label className="field-label">Date of Birth</label>
-                <input type="date" required max={new Date().toISOString().slice(0, 10)} className="field" value={formData.dateOfBirth} onChange={e => setFormData({...formData, dateOfBirth: e.target.value})} />
               </div>
               <div className="flex gap-3 pt-4">
                 <button type="button" onClick={() => { setIsModalOpen(false); setPhoneError(null); }} className="flex-1 px-4 py-2 border border-border bg-card rounded-xl font-medium text-foreground hover:bg-muted transition-colors">Cancel</button>

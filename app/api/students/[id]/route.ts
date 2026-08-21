@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import { Student, Attendance, Marks, Notification } from '@/models';
 import { isStaffRequest, isAdminOnlyRequest } from '@/lib/auth-guard';
-import { isValidLocalPhone, isPastDate } from '@/lib/validation';
+import { isValidLocalPhone } from '@/lib/validation';
 
 export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
@@ -26,12 +26,14 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
     const attendancePercentage = totalClasses > 0 ? Math.round((classesPresent / totalClasses) * 100) : 0;
 
     let totalMarks = 0, totalMax = 0;
-    marks.forEach(m => { totalMarks += m.marks; totalMax += m.maxMarks; });
+    marks.forEach(m => { if (m.isAbsent) return; totalMarks += m.marks; totalMax += m.maxMarks; });
     const averageMarks = totalMax > 0 ? Math.round((totalMarks / totalMax) * 100) : 0;
 
     // Per-subject averages drive the marks analysis chart on the student page.
+    // Absent entries are excluded — they aren't a score to average in.
     const bySubject = new Map<string, { subject: string; scored: number; max: number; count: number }>();
     for (const m of marks) {
+      if (m.isAbsent) continue;
       const entry = bySubject.get(m.subject) ?? { subject: m.subject, scored: 0, max: 0, count: 0 };
       entry.scored += m.marks;
       entry.max += m.maxMarks;
@@ -62,7 +64,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
 }
 
 const STUDENT_EDITABLE_FIELDS = [
-  'name', 'school', 'address', 'guardianName', 'guardianPhone', 'grade', 'dateOfBirth', 'batchId', 'photoUrl', 'isActive',
+  'name', 'school', 'address', 'guardianName', 'guardianPhone', 'grade', 'batchId', 'photoUrl', 'isActive',
 ] as const;
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
@@ -79,9 +81,6 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
 
     if (data.guardianPhone !== undefined && !isValidLocalPhone(data.guardianPhone)) {
       return NextResponse.json({ error: 'Guardian phone must be a valid 10-digit number starting with 0 (e.g. 0701212234)' }, { status: 400 });
-    }
-    if (data.dateOfBirth !== undefined && !isPastDate(data.dateOfBirth)) {
-      return NextResponse.json({ error: 'Date of birth must be in the past' }, { status: 400 });
     }
 
     // qrCode is deliberately never editable here — it's already printed on a

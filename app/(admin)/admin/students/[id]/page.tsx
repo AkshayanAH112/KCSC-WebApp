@@ -71,14 +71,18 @@ export default function StudentProfilePage() {
 
   const { student, analytics, marks } = data;
 
-  const chartData = marks.slice().reverse().map((m: any) => ({
+  // Absent entries have no score, so they're excluded from both charts below
+  // rather than plotting as a misleading 0%.
+  const scoredMarks = marks.filter((m: any) => !m.isAbsent);
+
+  const chartData = scoredMarks.slice().reverse().map((m: any) => ({
     name: m.subject,
     percentage: Math.round((m.marks / m.maxMarks) * 100)
   }));
 
   // Same records, ordered oldest-to-newest by exam date instead of grouped by
   // subject, so the line reads as a trend over time rather than a comparison.
-  const trendData = marks.slice().reverse().map((m: any) => ({
+  const trendData = scoredMarks.slice().reverse().map((m: any) => ({
     date: new Date(m.examDate).toLocaleDateString(undefined, { month: "short", day: "numeric" }),
     percentage: Math.round((m.marks / m.maxMarks) * 100),
   }));
@@ -262,8 +266,8 @@ export default function StudentProfilePage() {
                     <p className="truncate font-medium text-foreground">{m.subject}</p>
                     <p className="text-xs text-muted-foreground">{new Date(m.examDate).toLocaleDateString()}</p>
                   </div>
-                  <span className="tabular shrink-0 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
-                    {m.marks}/{m.maxMarks}
+                  <span className={`tabular shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${m.isAbsent ? "bg-muted text-muted-foreground" : "bg-primary/10 text-primary"}`}>
+                    {m.isAbsent ? "Absent" : `${m.marks}/${m.maxMarks}`}
                   </span>
                 </div>
               ))}
@@ -378,7 +382,6 @@ function EditStudentModal({ student, onClose, onSaved }: { student: any; onClose
     guardianName: student.guardianName,
     guardianPhone: student.guardianPhone,
     grade: String(student.grade),
-    dateOfBirth: student.dateOfBirth ? new Date(student.dateOfBirth).toISOString().slice(0, 10) : "",
     batchId: student.batchId?._id ?? "",
     isActive: student.isActive !== false,
   });
@@ -453,7 +456,6 @@ function EditStudentModal({ student, onClose, onSaved }: { student: any; onClose
               </select>
             </div>
           </div>
-          <div><label className="field-label">Date of Birth</label><input type="date" required max={new Date().toISOString().slice(0, 10)} className="field" value={form.dateOfBirth} onChange={e => setForm({ ...form, dateOfBirth: e.target.value })} /></div>
           <label className="flex items-center gap-2 text-sm font-medium text-foreground">
             <input type="checkbox" checked={form.isActive} onChange={e => setForm({ ...form, isActive: e.target.checked })} />
             Active in the programme
