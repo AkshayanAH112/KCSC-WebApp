@@ -6,6 +6,7 @@ import { ChevronDown } from "lucide-react";
 import Button from "@/components/landing/ui/Button";
 import HeroStats from "./HeroStats";
 import { siteConfig } from "@/lib/constants";
+import { useTranslations, useLocale } from "next-intl";
 
 const VIDEO_SRC = "/hero/hero-scrub.mp4";
 const POSTER_SRC = "/hero/hero-poster.jpg";
@@ -22,6 +23,8 @@ const GATES = [
 ];
 
 export default function VideoScrubHero() {
+  const t = useTranslations("VideoScrubHero");
+  const locale = useLocale();
   const heroRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -260,7 +263,7 @@ export default function VideoScrubHero() {
                   className="font-display text-5xl md:text-7xl leading-tight font-bold text-white tracking-tight"
                   style={{ textShadow: "0 1px 2px rgba(5,5,10,.95), 0 3px 12px rgba(5,5,10,.78), 0 10px 44px rgba(5,5,10,.8)" }}
                 >
-                  Where Cricket
+                  {t("headline_1")}
                   {/* text-gradient-gold's dark-bronze end reads fine on the rest of
                       the (light) marketing page, but disappears against this dark
                       video — a brighter, hero-only gold gradient instead. */}
@@ -271,7 +274,7 @@ export default function VideoScrubHero() {
                       textShadow: "0 2px 16px rgba(5,5,10,.7)",
                     }}
                   >
-                    Builds Champions.
+                    {t("headline_2")}
                   </span>
                 </motion.h1>
 
@@ -279,21 +282,21 @@ export default function VideoScrubHero() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.3, ease: [0.2, 0.8, 0.2, 1] }}
-                  className="text-base md:text-lg text-white/80 max-w-lg leading-relaxed"
+                  className={`${locale === "ta" ? "text-sm" : "text-base md:text-lg"} text-white/80 max-w-lg leading-relaxed`}
                   style={{ textShadow: "0 1px 2px rgba(5,5,10,.95), 0 3px 12px rgba(5,5,10,.78)" }}
                 >
-                  {siteConfig.description}
+                  {t("description")}
                 </motion.p>
 
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
-                  className="flex flex-wrap gap-4 mt-2"
+                  className={`flex flex-wrap gap-3 mt-2 ${locale === "ta" ? "text-sm" : ""}`}
                 >
-                  <Button href="#join">Join The Club</Button>
+                  <Button href="#join">{t("join")}</Button>
                   <Button href="#about" variant="secondary" className="border-white/70 text-white hover:bg-white hover:text-on-primary">
-                    Explore The Club
+                    {t("explore")}
                   </Button>
                 </motion.div>
 

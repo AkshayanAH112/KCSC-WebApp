@@ -5,6 +5,7 @@ import { ChevronRight } from "lucide-react";
 import connectToDatabase from "@/lib/mongodb";
 import { Post } from "@/models";
 import Footer from "@/components/landing/layout/Footer";
+import { getTranslations } from "next-intl/server";
 
 function formatDate(value: string | Date) {
   return new Date(value).toLocaleDateString("en-US", {
@@ -38,6 +39,7 @@ export async function generateMetadata({ params }: Props) {
 }
 
 export default async function SingleNewsPage({ params }: Props) {
+  const t = await getTranslations("SingleNewsPage");
   const { slug } = await params;
   await connectToDatabase();
   const post = await Post.findOne({ slug, status: "published" }).lean();
@@ -66,9 +68,9 @@ export default async function SingleNewsPage({ params }: Props) {
         <div className="max-w-[1280px] mx-auto px-5 md:px-16 relative z-10">
           <div className="flex flex-col lg:w-3/4">
             <div className="flex items-center gap-2 text-[10px] md:text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-4">
-              <Link href="/" className="hover:text-primary transition-colors">Home</Link>
+              <Link href="/" className="hover:text-primary transition-colors">{t("home")}</Link>
               <span className="text-on-surface-variant/40">/</span>
-              <Link href="/news" className="hover:text-primary transition-colors">News</Link>
+              <Link href="/news" className="hover:text-primary transition-colors">{t("news")}</Link>
             </div>
             
             <h1 className="text-3xl md:text-5xl lg:text-6xl font-display font-bold text-on-surface leading-[1.1] uppercase tracking-wide mb-6">
@@ -77,7 +79,7 @@ export default async function SingleNewsPage({ params }: Props) {
             
             <div className="flex items-center gap-4 text-on-surface-variant font-semibold">
               <span className="bg-primary text-on-primary px-3 py-1 text-[10px] md:text-xs font-bold uppercase tracking-widest rounded-md shadow-sm">
-                Published
+                {t("published")}
               </span>
               <time className="text-xs md:text-sm tracking-wide">
                 {formatDate(post.publishedAt || post.createdAt)}
@@ -134,7 +136,7 @@ export default async function SingleNewsPage({ params }: Props) {
 
               <div className="mt-12 pt-8 border-t border-outline-variant/30 text-left">
                 <Link href="/news" className="inline-flex items-center gap-2 px-8 py-3 bg-surface border-2 border-outline-variant/50 text-on-surface font-bold uppercase tracking-widest text-xs rounded-xl hover:bg-primary hover:text-on-primary hover:border-primary transition-all hover:-translate-y-1">
-                  Back to News
+                  {t("back")}
                 </Link>
               </div>
             </div>
@@ -146,13 +148,13 @@ export default async function SingleNewsPage({ params }: Props) {
               <div className="p-4 flex items-center justify-between border-b border-outline-variant/30 mx-3">
                 <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant flex items-center gap-2">
                   <span className="w-4 h-0.5 bg-primary"></span>
-                  Recent News
+                  {t("recent")}
                 </div>
               </div>
             
             <div className="flex flex-col flex-1">
               {recentPosts.length === 0 ? (
-                <div className="p-5 text-sm text-on-surface-variant">No other recent news available.</div>
+                <div className="p-5 text-sm text-on-surface-variant">{t("no_recent")}</div>
               ) : (
                 recentPosts.map((recentPost: any, index: number) => (
                   <Link 

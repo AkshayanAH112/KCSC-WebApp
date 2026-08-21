@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Folder as FolderIcon, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 import SectionHeading from "@/components/landing/ui/SectionHeading";
 import ParallaxDecor from "@/components/landing/ui/ParallaxDecor";
@@ -17,6 +18,8 @@ interface GalleryFolder {
 }
 
 export default function Gallery() {
+  const t = useTranslations("Gallery");
+  const locale = useLocale();
   const [folders, setFolders] = useState<GalleryFolder[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -80,19 +83,19 @@ export default function Gallery() {
       <div className="relative w-full max-w-[1280px] mx-auto px-5 md:px-16 pointer-events-auto flex flex-col items-center">
         
         {/* Sleek Header */}
-        <div className="w-full flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 max-w-5xl mx-auto">
+        <div className="w-full flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <SectionHeading
-            eyebrow="Gallery"
-            title="My Visual Diary"
-            accent="Moments Captured."
-            description="See the world through our lens: memories, matches, and milestones."
+            eyebrow={t("eyebrow")}
+            title={t("title")}
+            accent={t("accent")}
+            description={t("description")}
             className="flex-1"
           />
           <Link 
-            href="/gallery"
+            href={`/${locale}/gallery`}
             className="group flex items-center gap-2 text-primary font-semibold hover:text-on-surface transition-colors mb-2 md:mb-6"
           >
-            View Full Gallery 
+            {t("view_full")} 
             <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
@@ -104,7 +107,7 @@ export default function Gallery() {
         ) : folders.length <= 1 ? (
           <div className="flex flex-col items-center justify-center p-12 bg-surface-container-low rounded-3xl border border-outline-variant/30 text-on-surface-variant w-full max-w-xl mx-auto h-75">
             <FolderIcon className="w-12 h-12 mb-4 opacity-50" />
-            <p>No gallery albums uploaded yet.</p>
+            <p>{t("no_albums")}</p>
           </div>
         ) : (
           <div 
@@ -126,7 +129,7 @@ export default function Gallery() {
                 }
 
                 // Calculate transforms
-                const xOffset = diff * (typeof window !== 'undefined' && window.innerWidth < 768 ? 60 : 130); // tighter offset
+                const xOffset = diff * (typeof window !== 'undefined' && window.innerWidth < 768 ? 60 : 180); // wider offset for desktop
                 const scale = isActive ? 1 : Math.max(0.7, 1 - Math.abs(diff) * 0.15);
                 const zIndex = 50 - Math.abs(diff);
                 const opacity = Math.max(0, 1 - Math.abs(diff) * 0.4);
@@ -188,7 +191,7 @@ export default function Gallery() {
                               <h3 className="text-white text-2xl md:text-3xl font-display font-bold mb-2 tracking-tight leading-tight">{folder.name}</h3>
                               <p className="text-white/80 font-medium text-sm flex items-center gap-2">
                                 <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span>
-                                {folder.imageCount} {folder.imageCount === 1 ? 'Photo' : 'Photos'}
+                                {folder.imageCount} {folder.imageCount === 1 ? t("photo") : t("photos")}
                               </p>
                             </motion.div>
                           )}

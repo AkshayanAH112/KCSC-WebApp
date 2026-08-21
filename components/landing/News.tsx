@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
+import { useTranslations, useLocale } from "next-intl";
 import { ArrowRight } from "lucide-react";
 import SectionHeading from "@/components/landing/ui/SectionHeading";
 import ParallaxDecor from "@/components/landing/ui/ParallaxDecor";
@@ -130,6 +131,8 @@ function FlipCard({ post, index }: { post: Post; index: number }) {
 }
 
 export default function News() {
+  const t = useTranslations("News");
+  const locale = useLocale();
   const [posts, setPosts] = useState<Post[] | null>(null);
 
   useEffect(() => {
@@ -157,19 +160,19 @@ export default function News() {
       <div className="relative max-w-[1280px] mx-auto px-5 md:px-16">
 
         {/* Sleek Header matching Gallery/About */}
-        <div className="w-full flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 max-w-6xl mx-auto">
+        <div className="w-full flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <SectionHeading
-            eyebrow="Latest"
-            title="News & Stories"
-            accent="Updates from KCSC."
-            description="Catch up on the latest match reports, club announcements, and community events."
+            eyebrow={t("eyebrow")}
+            title={t("title")}
+            accent={t("accent")}
+            description={t("description")}
             className="flex-1"
           />
           <Link 
-            href="/news"
+            href={`/${locale}/news`}
             className="group flex items-center gap-2 text-primary font-semibold hover:text-on-surface transition-colors mb-2 md:mb-6"
           >
-            View All Stories 
+            {t("view_all")} 
             <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
@@ -180,10 +183,10 @@ export default function News() {
           </div>
         ) : posts.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-12 bg-surface-container-low rounded-3xl border border-outline-variant/30 text-on-surface-variant max-w-6xl mx-auto h-100">
-            <p>No news posted yet — check back soon.</p>
+            <p>{t("no_news")}</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
             {posts.map((post, index) => (
               <FlipCard key={post._id} post={post} index={index} />
             ))}

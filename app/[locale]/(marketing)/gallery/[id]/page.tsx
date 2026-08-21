@@ -4,6 +4,7 @@ import connectToDatabase from "@/lib/mongodb";
 import { GalleryFolder } from "@/models";
 import LightboxGallery from "@/components/landing/LightboxGallery";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 // Reads GalleryFolder straight from the DB — see app/(marketing)/gallery/page.tsx.
 export const dynamic = "force-dynamic";
@@ -24,6 +25,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 }
 
 export default async function FolderPage({ params }: { params: Promise<{ id: string }> }) {
+  const t = await getTranslations("SingleGalleryPage");
   await connectToDatabase();
   const { id } = await params;
   
@@ -53,7 +55,7 @@ export default async function FolderPage({ params }: { params: Promise<{ id: str
             href="/gallery"
             className="inline-flex items-center gap-2 text-primary font-semibold text-sm hover:underline"
           >
-            <ChevronLeft size={16} /> Back to Albums
+            <ChevronLeft size={16} /> {t("back")}
           </Link>
         </div>
         <div className="mb-12">
