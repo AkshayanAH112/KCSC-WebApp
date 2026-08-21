@@ -2,11 +2,10 @@ import Link from "next/link";
 import { Phone, MapPin, Mail } from "lucide-react";
 import Image from "next/image";
 import RenewLink from "@/components/landing/ui/RenewLink";
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 
 export default function Footer() {
   const t = useTranslations("Footer");
-  const locale = useLocale();
   return (
     <footer id="contact" className="relative py-4 md:py-6 overflow-hidden border-t border-outline-variant/30 bg-surface/80 backdrop-blur-md pointer-events-auto">
       <div className="max-w-[1280px] mx-auto px-5 md:px-16 flex flex-col md:flex-row justify-between gap-6 md:gap-4">
@@ -131,7 +130,7 @@ export default function Footer() {
               <RenewLink className="text-on-surface-variant hover:text-primary transition-colors cursor-pointer" />
             </li>
             <li>
-              <Link href={`/${locale}/login`} className="text-on-surface-variant hover:text-primary transition-colors">
+              <Link href="/login" className="text-on-surface-variant hover:text-primary transition-colors">
                 {t("admin")}
               </Link>
             </li>
