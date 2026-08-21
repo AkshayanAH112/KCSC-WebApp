@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import SectionHeading from "@/components/landing/ui/SectionHeading";
 import ParallaxDecor from "@/components/landing/ui/ParallaxDecor";
-import StackedSection from "@/components/landing/ui/StackedSection";
+import FadeInSection from "@/components/landing/ui/FadeInSection";
 import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 
@@ -10,7 +10,7 @@ export default function ClubIntro() {
   const t = useTranslations("ClubIntro");
   const locale = useLocale();
   return (
-    <StackedSection id="about" zIndex={10} className="bg-background py-24 md:py-32">
+    <FadeInSection id="about" className="relative overflow-hidden min-h-[120vh] flex flex-col justify-center py-24 md:py-32">
       <ParallaxDecor variant="maroon" />
       <div className="max-w-[1280px] mx-auto px-5 md:px-16 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center w-full">
         <div className="flex flex-col gap-6">
@@ -66,6 +66,6 @@ export default function ClubIntro() {
           ))}
         </div>
       </div>
-    </StackedSection>
+    </FadeInSection>
   );
 }

@@ -2,7 +2,7 @@ import { Sprout, Shield, GraduationCap } from "lucide-react";
 import SectionHeading from "@/components/landing/ui/SectionHeading";
 import GlassCard from "@/components/landing/ui/GlassCard";
 import ParallaxDecor from "@/components/landing/ui/ParallaxDecor";
-import StackedSection from "@/components/landing/ui/StackedSection";
+import FadeInSection from "@/components/landing/ui/FadeInSection";
 import { programs } from "@/lib/constants";
 import { useTranslations } from "next-intl";
 
@@ -11,7 +11,7 @@ const icons = { sprout: Sprout, shield: Shield, cap: GraduationCap };
 export default function ProgramsSection() {
   const t = useTranslations("ProgramsSection");
   return (
-    <StackedSection id="programs" zIndex={20} className="bg-surface py-24 md:py-32">
+    <FadeInSection id="programs" className="relative overflow-hidden min-h-[120vh] flex flex-col justify-center py-24 md:py-32">
       <ParallaxDecor variant="gold" />
       <div className="max-w-[1280px] mx-auto px-5 md:px-16 w-full">
         <div className="flex items-center justify-between mb-16">
@@ -21,12 +21,12 @@ export default function ProgramsSection() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {programs.map((program) => {
             const Icon = icons[program.icon as keyof typeof icons];
-
+            
             let key = "";
             if (program.title === "Junior Cricket & Coaching") key = "coaching";
             else if (program.title === "Competitive & League Cricket") key = "league";
             else if (program.title === "Free Educational Support") key = "education";
-
+            
             return (
               <GlassCard key={program.title} className="p-8 flex flex-col gap-4 hover:shadow-elevated transition-shadow duration-300">
                 <div className="w-12 h-12 rounded-full bg-linear-to-br from-primary-fixed to-primary-container flex items-center justify-center text-on-primary shadow-soft">
@@ -39,6 +39,6 @@ export default function ProgramsSection() {
           })}
         </div>
       </div>
-    </StackedSection>
+    </FadeInSection>
   );
 }

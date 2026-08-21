@@ -3,15 +3,12 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Button from "@/components/landing/ui/Button";
-import StackedSection from "@/components/landing/ui/StackedSection";
+import FadeInSection from "@/components/landing/ui/FadeInSection";
 import { useTranslations } from "next-intl";
 
 export default function FinalCTA() {
-  // Tracks the outer wrapper (not the sticky inner section, whose rect stops
-  // changing while pinned), so this parallax keeps animating smoothly across
-  // the card's whole visit instead of freezing during the held phase.
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: wrapperRef, offset: ["start end", "end start"] });
+  const sectionRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start end", "end start"] });
   // The photo overscans its box (h-[130%]) so this shift never reveals empty edges.
   const y = useTransform(scrollYProgress, [0, 1], ["-8%", "8%"]);
   const t = useTranslations("FinalCTA");
@@ -22,11 +19,10 @@ export default function FinalCTA() {
   };
 
   return (
-    <StackedSection
+    <FadeInSection
+      ref={sectionRef}
       id="join"
-      zIndex={60}
-      wrapperRef={wrapperRef}
-      className="bg-surface-container-lowest pt-32 pb-12 md:pt-48 md:pb-16"
+      className="relative flex flex-col justify-center pt-32 pb-12 md:pt-48 md:pb-16 overflow-hidden"
     >
       <div className="absolute inset-0 overflow-hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -73,6 +69,6 @@ export default function FinalCTA() {
           {t("join")}
         </Button>
       </div>
-    </StackedSection>
+    </FadeInSection>
   );
 }

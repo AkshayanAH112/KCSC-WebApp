@@ -3,7 +3,7 @@
 import SectionHeading from "@/components/landing/ui/SectionHeading";
 import AnimatedCounter from "@/components/landing/ui/AnimatedCounter";
 import ParallaxDecor from "@/components/landing/ui/ParallaxDecor";
-import StackedSection from "@/components/landing/ui/StackedSection";
+import FadeInSection from "@/components/landing/ui/FadeInSection";
 import { achievements } from "@/lib/constants";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
@@ -11,7 +11,7 @@ import { motion } from "framer-motion";
 export default function AchievementsSection() {
   const t = useTranslations("AchievementsSection");
   return (
-    <StackedSection id="achievements" zIndex={30} className="bg-surface-container py-24 md:py-32">
+    <FadeInSection id="achievements" className="relative overflow-hidden min-h-[120vh] flex flex-col justify-center py-24 md:py-32">
       <ParallaxDecor variant="maroon" />
       <div className="max-w-[1280px] mx-auto px-5 md:px-16 flex flex-col md:flex-row gap-16 md:gap-24 items-center w-full">
         <div className="flex-1 w-full relative">
@@ -44,6 +44,6 @@ export default function AchievementsSection() {
           })}
         </div>
       </div>
-    </StackedSection>
+    </FadeInSection>
   );
 }
