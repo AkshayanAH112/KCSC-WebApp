@@ -9,10 +9,8 @@ export const siteConfig = {
 export const navLinks = [
   { label: "Home", href: "/#home" },
   { label: "About", href: "/about" },
-  { label: "Programs", href: "/#programs" },
   { label: "Gallery", href: "/gallery" },
   { label: "News", href: "/news" },
-  { label: "Legacy", href: "/#achievements" },
 ];
 
 // Real club facts (see about.txt): founded 2007, 170+ members, 8+ trophies
