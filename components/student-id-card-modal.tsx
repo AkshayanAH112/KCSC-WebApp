@@ -9,6 +9,17 @@ import { Download } from "lucide-react";
  * Shared by the students list page ("Get ID" per row) and the student detail
  * page, so a card is reachable any time after registration, not just once.
  */
+// The name box has a fixed budget (14% of card height) before it runs into the
+// batch ribbon baked into the template art below it — a long name at a single
+// fixed font size wraps to a second line that gets clipped mid-glyph and
+// visually collides with that ribbon. Shrinking the font for longer names
+// keeps two wrapped lines inside that budget instead.
+function nameFontSize(name: string): number {
+  if (name.length <= 12) return 17;
+  if (name.length <= 20) return 13;
+  return 10;
+}
+
 export function StudentIdCardModal({ student, onClose }: { student: any; onClose: () => void }) {
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
 
@@ -69,7 +80,7 @@ export function StudentIdCardModal({ student, onClose }: { student: any; onClose
 
           <h4
             className="absolute font-bold text-[#14213D] uppercase leading-[1.05] line-clamp-2"
-            style={{ left: "8%", top: "38%", width: "45%", height: "13%", fontSize: "17px" }}
+            style={{ left: "8%", top: "38%", width: "45%", height: "14%", fontSize: `${nameFontSize(student.name)}px` }}
           >
             {student.name}
           </h4>
