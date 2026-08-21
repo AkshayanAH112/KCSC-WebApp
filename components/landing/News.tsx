@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import SectionHeading from "@/components/landing/ui/SectionHeading";
+import ParallaxDecor from "@/components/landing/ui/ParallaxDecor";
 
 interface Post {
   _id: string;
@@ -55,7 +56,7 @@ function FlipCard({ post, index }: { post: Post; index: number }) {
 
   return (
     <div 
-      className="relative w-full h-[400px] md:h-[450px] cursor-pointer group"
+      className="relative w-full h-100 md:h-112.5 cursor-pointer group"
       style={{ perspective: 1500 }}
       onClick={() => setIsFlipped(!isFlipped)}
       onMouseEnter={() => (isHoveredRef.current = true)}
@@ -69,7 +70,7 @@ function FlipCard({ post, index }: { post: Post; index: number }) {
       >
         {/* Front Side: Cover Image */}
         <div 
-          className="absolute inset-0 bg-black rounded-[2rem] overflow-hidden shadow-lg group-hover:shadow-xl transition-shadow border border-outline-variant/20"
+          className="absolute inset-0 bg-black rounded-4xl overflow-hidden shadow-lg group-hover:shadow-xl transition-shadow border border-outline-variant/20"
           style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
         >
           {post.coverImageUrl ? (
@@ -83,7 +84,7 @@ function FlipCard({ post, index }: { post: Post; index: number }) {
           ) : (
             <div className="absolute inset-0 bg-surface-variant flex items-center justify-center" />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-linear-to-t from-black via-black/40 to-transparent pointer-events-none" />
           <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
             <span className="px-3 py-1 bg-primary text-on-primary text-[10px] font-bold uppercase tracking-wider rounded-full mb-4 inline-block shadow-sm">
               {post.category}
@@ -96,7 +97,7 @@ function FlipCard({ post, index }: { post: Post; index: number }) {
 
         {/* Back Side: Text Content */}
         <div 
-          className="absolute inset-0 bg-surface-container-lowest border border-outline-variant/30 rounded-[2rem] shadow-lg p-6 md:p-8 flex flex-col"
+          className="absolute inset-0 bg-surface-container-lowest border border-outline-variant/30 rounded-4xl shadow-lg p-6 md:p-8 flex flex-col"
           style={{ transform: "rotateY(180deg)", backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
         >
           <div className="flex items-center justify-between gap-3 mb-6">
@@ -108,12 +109,12 @@ function FlipCard({ post, index }: { post: Post; index: number }) {
             </span>
           </div>
           
-          <h3 className="text-xl md:text-2xl font-display font-bold text-on-surface mb-4 leading-tight line-clamp-3 h-[75px] md:h-[90px]">
+          <h3 className="text-xl md:text-2xl font-display font-bold text-on-surface mb-4 leading-tight line-clamp-3 h-18.75 md:h-22.5">
             {post.title}
           </h3>
           
           <div className="relative flex-1 overflow-hidden mb-4">
-            <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-surface-container-lowest to-transparent pointer-events-none z-10" />
+            <div className="absolute inset-x-0 bottom-0 h-16 bg-linear-to-t from-surface-container-lowest to-transparent pointer-events-none z-10" />
             <p className="text-on-surface-variant text-sm md:text-base whitespace-pre-line absolute inset-0">
               {post.excerpt ? `${post.excerpt}\n\n${post.content.replace(/<[^>]*>?/gm, '')}` : post.content.replace(/<[^>]*>?/gm, '')}
             </p>
@@ -151,6 +152,7 @@ export default function News() {
       id="news" 
       className="relative py-16 md:py-20 overflow-hidden"
     >
+      <ParallaxDecor variant="maroon" />
       <div className="absolute inset-0 bg-surface/50 backdrop-blur-sm pointer-events-none" />
       <div className="relative max-w-[1280px] mx-auto px-5 md:px-16">
 
@@ -174,10 +176,10 @@ export default function News() {
 
         {posts === null ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-            {[1, 2, 3].map(i => <div key={i} className="h-[400px] md:h-[450px] bg-surface-container rounded-[2rem] animate-pulse" />)}
+            {[1, 2, 3].map(i => <div key={i} className="h-100 md:h-112.5 bg-surface-container rounded-4xl animate-pulse" />)}
           </div>
         ) : posts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center p-12 bg-surface-container-low rounded-3xl border border-outline-variant/30 text-on-surface-variant max-w-6xl mx-auto h-[400px]">
+          <div className="flex flex-col items-center justify-center p-12 bg-surface-container-low rounded-3xl border border-outline-variant/30 text-on-surface-variant max-w-6xl mx-auto h-100">
             <p>No news posted yet — check back soon.</p>
           </div>
         ) : (

@@ -1,8 +1,10 @@
 import SectionHeading from "@/components/landing/ui/SectionHeading";
+import ParallaxDecor from "@/components/landing/ui/ParallaxDecor";
 
 export default function ClubIntro() {
   return (
-    <section id="about" className="relative min-h-[120vh] flex flex-col justify-center py-24 md:py-32">
+    <section id="about" className="relative overflow-hidden min-h-[120vh] flex flex-col justify-center py-24 md:py-32">
+      <ParallaxDecor variant="maroon" />
       <div className="max-w-[1280px] mx-auto px-5 md:px-16 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
         <SectionHeading
           eyebrow="About KCSC"

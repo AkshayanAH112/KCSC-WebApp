@@ -40,7 +40,7 @@ export default function Footer() {
                 rel="noopener noreferrer"
                 className="flex items-start gap-3 text-on-surface-variant hover:text-primary transition-colors group"
               >
-                <div className="p-2 rounded-full bg-surface-container-high group-hover:bg-primary/10 transition-colors mt-[-4px]">
+                <div className="p-2 rounded-full bg-surface-container-high group-hover:bg-primary/10 transition-colors -mt-1">
                   <MapPin size={18} className="text-on-surface-variant group-hover:text-primary" />
                 </div>
                 <span>Periyakallar<br />Sri Lanka</span>

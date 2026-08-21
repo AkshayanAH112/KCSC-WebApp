@@ -1,10 +1,12 @@
 import SectionHeading from "@/components/landing/ui/SectionHeading";
 import AnimatedCounter from "@/components/landing/ui/AnimatedCounter";
+import ParallaxDecor from "@/components/landing/ui/ParallaxDecor";
 import { achievements } from "@/lib/constants";
 
 export default function AchievementsSection() {
   return (
-    <section id="achievements" className="relative min-h-[120vh] flex flex-col justify-center py-24 md:py-32">
+    <section id="achievements" className="relative overflow-hidden min-h-[120vh] flex flex-col justify-center py-24 md:py-32">
+      <ParallaxDecor variant="maroon" />
       <div className="max-w-[1280px] mx-auto px-5 md:px-16">
         <SectionHeading
           eyebrow="Club Legacy"

@@ -1,13 +1,15 @@
 import { Sprout, Target, Shield } from "lucide-react";
 import SectionHeading from "@/components/landing/ui/SectionHeading";
 import GlassCard from "@/components/landing/ui/GlassCard";
+import ParallaxDecor from "@/components/landing/ui/ParallaxDecor";
 import { programs } from "@/lib/constants";
 
 const icons = { sprout: Sprout, target: Target, shield: Shield };
 
 export default function ProgramsSection() {
   return (
-    <section id="programs" className="relative min-h-[120vh] flex flex-col justify-center py-24 md:py-32">
+    <section id="programs" className="relative overflow-hidden min-h-[120vh] flex flex-col justify-center py-24 md:py-32">
+      <ParallaxDecor variant="gold" />
       <div className="max-w-[1280px] mx-auto px-5 md:px-16">
         <div className="flex items-center justify-between mb-16">
           <SectionHeading eyebrow="Programs" title="Cricket Programs" />

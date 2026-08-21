@@ -1,22 +1,34 @@
 "use client";
 
+import { useRef } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
 import Button from "@/components/landing/ui/Button";
 
 export default function FinalCTA() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start end", "end start"] });
+  // The photo overscans its box (h-[130%]) so this shift never reveals empty edges.
+  const y = useTransform(scrollYProgress, [0, 1], ["-8%", "8%"]);
+
   const handleJoinClick = (e: React.MouseEvent) => {
     e.preventDefault();
     window.dispatchEvent(new Event("open-join-modal"));
   };
 
   return (
-    <section id="join" className="relative flex flex-col justify-center pt-32 pb-12 md:pt-48 md:pb-16 overflow-hidden">
-      <div className="absolute inset-0">
+    <section
+      ref={sectionRef}
+      id="join"
+      className="relative flex flex-col justify-center pt-32 pb-12 md:pt-48 md:pb-16 overflow-hidden"
+    >
+      <div className="absolute inset-0 overflow-hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <motion.img
           src="/sections/finalcta-bg.jpg"
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 h-full w-full object-cover"
+          style={{ y }}
+          className="absolute -top-[15%] left-0 h-[130%] w-full object-cover"
         />
         {/* Base darken, so the photo never sits raw behind the page. */}
         <div className="absolute inset-0 bg-black/45" />

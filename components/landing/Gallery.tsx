@@ -7,6 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import SectionHeading from "@/components/landing/ui/SectionHeading";
+import ParallaxDecor from "@/components/landing/ui/ParallaxDecor";
 
 interface GalleryFolder {
   _id: string;
@@ -73,6 +74,7 @@ export default function Gallery() {
 
   return (
     <section id="gallery" className="relative py-16 md:py-20 overflow-hidden pointer-events-none">
+      <ParallaxDecor variant="gold" />
       <div className="absolute inset-0 bg-surface-container-low/30 backdrop-blur-3xl" />
       
       <div className="relative w-full max-w-[1280px] mx-auto px-5 md:px-16 pointer-events-auto flex flex-col items-center">
@@ -96,17 +98,17 @@ export default function Gallery() {
         </div>
 
         {loading ? (
-          <div className="h-[300px] md:h-[400px] w-full flex items-center justify-center">
+          <div className="h-75 md:h-100 w-full flex items-center justify-center">
             <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
           </div>
         ) : folders.length <= 1 ? (
-          <div className="flex flex-col items-center justify-center p-12 bg-surface-container-low rounded-3xl border border-outline-variant/30 text-on-surface-variant w-full max-w-xl mx-auto h-[300px]">
+          <div className="flex flex-col items-center justify-center p-12 bg-surface-container-low rounded-3xl border border-outline-variant/30 text-on-surface-variant w-full max-w-xl mx-auto h-75">
             <FolderIcon className="w-12 h-12 mb-4 opacity-50" />
             <p>No gallery albums uploaded yet.</p>
           </div>
         ) : (
           <div 
-            className="relative w-full h-[300px] md:h-[400px] flex items-center justify-center perspective-[1200px]"
+            className="relative w-full h-75 md:h-100 flex items-center justify-center perspective-distant"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >
@@ -163,7 +165,7 @@ export default function Gallery() {
                             fill
                             className={cn(
                               "object-cover transition-opacity duration-300",
-                              !isActive && "opacity-40 grayscale-[30%]" // dim background items
+                              !isActive && "opacity-40 grayscale-30" // dim background items
                             )}
                             sizes="(max-width: 768px) 260px, 380px"
                             priority={Math.abs(diff) <= 1}
@@ -181,7 +183,7 @@ export default function Gallery() {
                               initial={{ opacity: 0, y: 20 }}
                               animate={{ opacity: 1, y: 0 }}
                               exit={{ opacity: 0, transition: { duration: 0.1 } }}
-                              className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/60 to-transparent p-6 md:p-8 flex flex-col justify-end pt-24 pointer-events-none"
+                              className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black via-black/60 to-transparent p-6 md:p-8 flex flex-col justify-end pt-24 pointer-events-none"
                             >
                               <h3 className="text-white text-2xl md:text-3xl font-display font-bold mb-2 tracking-tight leading-tight">{folder.name}</h3>
                               <p className="text-white/80 font-medium text-sm flex items-center gap-2">
