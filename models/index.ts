@@ -32,7 +32,6 @@ const StudentSchema = new mongoose.Schema({
   guardianName: { type: String, required: true },
   guardianPhone: { type: String, required: true },
   grade: { type: Number, required: true, enum: GRADES },
-  dateOfBirth: { type: Date, required: true },
   photoUrl: { type: String },
   qrCode: { type: String, required: true, unique: true },
   batchId: { type: mongoose.Schema.Types.ObjectId, ref: 'Batch' },
@@ -145,7 +144,12 @@ const MarksSchema = new mongoose.Schema({
   subject: { type: String, required: true },
   examName: { type: String },
   examDate: { type: Date, required: true },
-  marks: { type: Number, required: true },
+  // Not required when isAbsent is true — an absent student has no score to
+  // record; stored as 0 in that case so every consumer that reads marks as a
+  // number keeps working, with isAbsent as the actual signal to exclude them
+  // from averages (see the reduce loops in students/[id], analysis, and exams).
+  marks: { type: Number, required: function (this: { isAbsent?: boolean }) { return !this.isAbsent; }, default: 0 },
+  isAbsent: { type: Boolean, default: false },
   maxMarks: { type: Number, required: true },
   grade: { type: Number, required: true, enum: GRADES },
   // Not required — existing Marks documents predate this field, and POST

@@ -46,9 +46,11 @@ export async function GET(request: Request) {
       ClassSession.find(sessionQuery),
     ]);
 
-    // Marks: average % per student.
+    // Marks: average % per student. Absent entries are excluded — they aren't
+    // a score to average in.
     const marksByStudent = new Map<string, { total: number; count: number }>();
     for (const m of marksInRange) {
+      if (m.isAbsent) continue;
       const key = m.studentId.toString();
       const percent = (m.marks / m.maxMarks) * 100;
       const entry = marksByStudent.get(key) ?? { total: 0, count: 0 };

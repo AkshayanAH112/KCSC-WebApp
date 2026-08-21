@@ -13,7 +13,12 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     const data = await request.json();
 
     const update: Record<string, unknown> = {};
-    if (data.marks !== undefined) update.marks = data.marks;
+    if (data.isAbsent !== undefined) {
+      update.isAbsent = Boolean(data.isAbsent);
+      update.marks = data.isAbsent ? 0 : (data.marks ?? 0);
+    } else if (data.marks !== undefined) {
+      update.marks = data.marks;
+    }
 
     const mark = await Marks.findOneAndUpdate({ _id: markId, examId: id }, update, { new: true, runValidators: true });
     if (!mark) return NextResponse.json({ error: 'Mark not found for this exam' }, { status: 404 });

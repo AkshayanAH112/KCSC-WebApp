@@ -55,12 +55,32 @@ export default function ExamDetailPage() {
     }
   };
 
+  const toggleAbsent = async (studentId: string, isAbsent: boolean) => {
+    setSaving(true);
+    try {
+      await fetch(`/api/exams/${examId}/marks`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ studentId, isAbsent }),
+      });
+      setEntries((prev) => {
+        const next = { ...prev };
+        delete next[studentId];
+        return next;
+      });
+      fetchData();
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleDownloadTemplate = () => {
     if (!data?.roster) return;
     const templateData = data.roster.map((r: any) => ({
       "Student ID": r.student._id,
       Name: r.student.name,
       "Marks (Required)": r.mark?.marks ?? 0,
+      Absent: r.mark?.isAbsent ? "Yes" : "No",
     }));
     const ws = XLSX.utils.json_to_sheet(templateData);
     const wb = XLSX.utils.book_new();
@@ -77,10 +97,14 @@ export default function ExamDetailPage() {
       try {
         const wb = XLSX.read(event.target?.result, { type: "binary" });
         const wsData = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-        const payload = wsData.map((row: any) => ({
-          studentId: row["Student ID"],
-          marks: Number(row["Marks (Required)"]),
-        }));
+        const payload = wsData.map((row: any) => {
+          const isAbsent = String(row["Absent"] ?? "").trim().toLowerCase() === "yes";
+          return {
+            studentId: row["Student ID"],
+            marks: isAbsent ? 0 : Number(row["Marks (Required)"]),
+            isAbsent,
+          };
+        });
         const res = await fetch(`/api/exams/${examId}/marks`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -191,38 +215,60 @@ export default function ExamDetailPage() {
             <thead className="bg-secondary font-medium text-secondary-foreground">
               <tr>
                 <th className="px-6 py-3">Student</th>
+                <th className="px-6 py-3 text-center">Absent</th>
                 <th className="px-6 py-3 text-right">Marks (out of {exam.maxMarks})</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {filteredRoster.map((r: any) => (
+              {filteredRoster.map((r: any) => {
+                const isAbsent = Boolean(r.mark?.isAbsent);
+                return (
                 <tr key={r.student._id} className="transition-colors duration-200 hover:bg-muted">
                   <td className="px-6 py-2.5 font-semibold text-foreground">{r.student.name}</td>
+                  <td className="px-6 py-2.5 text-center">
+                    <input
+                      type="checkbox"
+                      checked={isAbsent}
+                      onChange={(e) => toggleAbsent(r.student._id, e.target.checked)}
+                      aria-label={`Mark ${r.student.name} absent`}
+                    />
+                  </td>
                   <td className="px-6 py-2.5">
                     <div className="flex items-center justify-end gap-2">
-                      <input
-                        type="number"
-                        min={0}
-                        max={exam.maxMarks}
-                        className="field w-24 text-center"
-                        placeholder={r.mark ? String(r.mark.marks) : "—"}
-                        value={entries[r.student._id] ?? ""}
-                        onChange={(e) => setEntries({ ...entries, [r.student._id]: e.target.value })}
-                        onBlur={() => saveOne(r.student._id)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") e.currentTarget.blur();
-                        }}
-                      />
+                      {isAbsent ? (
+                        <span className="w-24 rounded-lg border border-dashed border-border py-2 text-center text-xs font-bold uppercase text-muted-foreground">
+                          Absent
+                        </span>
+                      ) : (
+                        <input
+                          type="number"
+                          min={0}
+                          max={exam.maxMarks}
+                          className="field w-24 text-center"
+                          placeholder={r.mark ? String(r.mark.marks) : "—"}
+                          value={entries[r.student._id] ?? ""}
+                          onChange={(e) => setEntries({ ...entries, [r.student._id]: e.target.value })}
+                          onBlur={() => saveOne(r.student._id)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") e.currentTarget.blur();
+                          }}
+                        />
+                      )}
                       {r.isRecorded && entries[r.student._id] === undefined && (
                         <span className="text-xs font-bold text-success">Saved</span>
                       )}
                     </div>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
               {filteredRoster.length === 0 && (
                 <tr>
-                  <td colSpan={2} className="p-12 text-center text-muted-foreground">No students found.</td>
+                  <td colSpan={3} className="p-12 text-center text-muted-foreground">
+                    {roster.length === 0
+                      ? `No Grade ${exam.grade} students are registered in ${exam.batchId?.name ?? "this batch"} yet.`
+                      : "No students match your search."}
+                  </td>
                 </tr>
               )}
             </tbody>

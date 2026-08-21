@@ -187,6 +187,18 @@ function NewExamModal({
   const [examDate, setExamDate] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [students, setStudents] = useState<any[]>([]);
+
+  // A batch's declared `grades` (its intake coverage) can drift from which
+  // grade its actually-registered students are in now — e.g. after a year of
+  // promotions. Cross-checking against real students here, instead of trusting
+  // `batches`, is what stops an exam from being created against an empty
+  // roster (the marks page and its Excel template would then have nothing to show).
+  useEffect(() => {
+    fetch("/api/students").then((r) => r.json()).then((d) => setStudents(d.students || []));
+  }, []);
+
+  const eligibleCount = students.filter((s) => String(s.grade) === grade && s.batchId?._id === batchId).length;
 
   const handleGradeChange = (g: string) => {
     setGrade(g);
@@ -281,6 +293,12 @@ function NewExamModal({
               />
             </div>
           </div>
+
+          {batchId && eligibleCount === 0 && (
+            <p className="rounded-lg bg-warning/15 px-3 py-2 text-xs font-medium text-warning">
+              No Grade {grade} students are registered in this batch yet — the exam will start with an empty roster.
+            </p>
+          )}
 
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose} className="flex-1 rounded-xl border border-border bg-card py-2 font-medium text-foreground transition-colors hover:bg-muted">

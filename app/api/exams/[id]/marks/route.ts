@@ -24,11 +24,13 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     const entries = Array.isArray(data) ? data : [data];
 
     for (const entry of entries) {
+      const isAbsent = Boolean(entry.isAbsent);
       await Marks.findOneAndUpdate(
         { examId: id, studentId: entry.studentId },
         {
           studentId: entry.studentId,
-          marks: entry.marks,
+          marks: isAbsent ? 0 : entry.marks,
+          isAbsent,
           examId: id,
           subject: exam.subject,
           examDate: exam.examDate,

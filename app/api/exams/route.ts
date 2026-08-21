@@ -22,6 +22,8 @@ export async function GET(request: Request) {
 
     // Per-exam results count/average, same manual-reduce style every other
     // route in this API uses — there is no aggregation pipeline anywhere here.
+    // Absent entries still count as "recorded" (the student was reviewed) but
+    // are excluded from the score/max sums that drive the average.
     const examIds = exams.map((e) => e._id);
     const allMarks = await Marks.find({ examId: { $in: examIds } });
     const byExam = new Map<string, { count: number; scored: number; max: number }>();
@@ -29,8 +31,10 @@ export async function GET(request: Request) {
       const key = m.examId!.toString();
       const entry = byExam.get(key) ?? { count: 0, scored: 0, max: 0 };
       entry.count += 1;
-      entry.scored += m.marks;
-      entry.max += m.maxMarks;
+      if (!m.isAbsent) {
+        entry.scored += m.marks;
+        entry.max += m.maxMarks;
+      }
       byExam.set(key, entry);
     }
 
