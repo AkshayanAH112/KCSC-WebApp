@@ -15,11 +15,12 @@ export const navLinks = [
   { label: "Legacy", href: "/#achievements" },
 ];
 
-// placeholder — replace with real club data
+// Real club facts (see about.txt): founded 2007, 170+ members, 8+ trophies
+// (B Division Champion Cup plus 1st/2nd/3rd place cups across T20/ODI play).
 export const clubStats = [
-  { value: 50, suffix: "+", label: "Years of Cricket" },
-  { value: 500, suffix: "+", label: "Players & Members" },
-  { value: 20, suffix: "+", label: "Championships" },
+  { value: 19, suffix: "+", label: "Years of Cricket" },
+  { value: 170, suffix: "+", label: "Players & Members" },
+  { value: 8, suffix: "+", label: "Championships" },
 ];
 
 export const programs = [
