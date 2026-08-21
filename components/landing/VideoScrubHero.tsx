@@ -260,7 +260,7 @@ export default function VideoScrubHero() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.2, ease: [0.2, 0.8, 0.2, 1] }}
-                  className="font-display text-5xl md:text-7xl leading-tight font-bold text-white tracking-tight"
+                  className="font-display text-5xl md:text-7xl leading-tight font-bold text-white tracking-tight text-center md:text-left"
                   style={{ textShadow: "0 1px 2px rgba(5,5,10,.95), 0 3px 12px rgba(5,5,10,.78), 0 10px 44px rgba(5,5,10,.8)" }}
                 >
                   {t("headline_1")}
@@ -282,7 +282,7 @@ export default function VideoScrubHero() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.3, ease: [0.2, 0.8, 0.2, 1] }}
-                  className={`${locale === "ta" ? "text-sm" : "text-base md:text-lg"} text-white/80 max-w-lg leading-relaxed`}
+                  className={`${locale === "ta" ? "text-sm" : "text-base md:text-lg"} text-white/80 max-w-lg mx-auto md:mx-0 leading-relaxed text-center md:text-left`}
                   style={{ textShadow: "0 1px 2px rgba(5,5,10,.95), 0 3px 12px rgba(5,5,10,.78)" }}
                 >
                   {t("description")}
@@ -292,7 +292,7 @@ export default function VideoScrubHero() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
-                  className={`flex flex-wrap gap-3 mt-2 ${locale === "ta" ? "text-sm" : ""}`}
+                  className={`flex flex-wrap justify-center md:justify-start gap-3 mt-2 ${locale === "ta" ? "text-sm" : ""}`}
                 >
                   <Button href="#join">{t("join")}</Button>
                   <Button href="#about" variant="secondary" className="border-white/70 text-white hover:bg-white hover:text-on-primary">
