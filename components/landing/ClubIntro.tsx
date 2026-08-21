@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react";
 import SectionHeading from "@/components/landing/ui/SectionHeading";
 import ParallaxDecor from "@/components/landing/ui/ParallaxDecor";
 import { useTranslations, useLocale } from "next-intl";
+import { cn } from "@/lib/utils";
 
 export default function ClubIntro() {
   const t = useTranslations("ClubIntro");
@@ -28,14 +29,20 @@ export default function ClubIntro() {
         </div>
         <div className="grid grid-cols-2 gap-6">
           {[
-            { key: "founded" },
-            { key: "members" },
-            { key: "countries" },
-            { key: "division" },
+            { key: "founded", dark: false },
+            { key: "members", dark: true },
+            { key: "countries", dark: true },
+            { key: "division", dark: false },
           ].map((item) => (
-            <div key={item.key} className="card-surface shadow-soft rounded-2xl p-6">
+            <div
+              key={item.key}
+              className={cn(
+                "rounded-2xl p-6 shadow-elevated transition-transform duration-300 hover:-translate-y-1",
+                item.dark ? "bg-on-background" : "bg-primary"
+              )}
+            >
               <p className="font-display text-3xl font-bold text-gradient-gold mb-1">{t(`${item.key}_value`)}</p>
-              <h3 className="text-sm font-bold text-primary uppercase tracking-wide">
+              <h3 className="text-sm font-bold text-white uppercase tracking-wide">
                 {t(`${item.key}_label`)}
               </h3>
             </div>
