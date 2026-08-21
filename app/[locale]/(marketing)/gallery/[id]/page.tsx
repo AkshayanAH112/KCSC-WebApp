@@ -4,7 +4,8 @@ import connectToDatabase from "@/lib/mongodb";
 import { GalleryFolder } from "@/models";
 import LightboxGallery from "@/components/landing/LightboxGallery";
 import { notFound } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
+import { localeAlternates, breadcrumbJsonLd, DEFAULT_OG_IMAGE } from "@/lib/seo";
 
 // Reads GalleryFolder straight from the DB — see app/(marketing)/gallery/page.tsx.
 export const dynamic = "force-dynamic";
@@ -12,20 +13,28 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   await connectToDatabase();
   const { id } = await params;
+  const alternates = localeAlternates(`/gallery/${id}`);
   try {
-    const folder = await GalleryFolder.findById(id).select("name").lean();
-    if (!folder) return { title: "Album Not Found | KCSC" };
+    const folder = await GalleryFolder.findById(id).select("name coverImageUrl").lean();
+    if (!folder) return { title: "Album Not Found | KCSC", alternates };
+    const description = `View photos from ${folder.name} at Kallar Central Sports Club.`;
+    const images = folder.coverImageUrl ? [folder.coverImageUrl] : [DEFAULT_OG_IMAGE];
     return {
       title: `${folder.name} | Gallery | KCSC`,
-      description: `View photos from ${folder.name} at Kallar Central Sports Club.`,
+      description,
+      alternates,
+      openGraph: { title: folder.name, description, type: "website", images },
+      twitter: { card: "summary_large_image", title: folder.name, description, images },
     };
   } catch (e) {
-    return { title: "Gallery | KCSC" };
+    return { title: "Gallery | KCSC", alternates };
   }
 }
 
 export default async function FolderPage({ params }: { params: Promise<{ id: string }> }) {
   const t = await getTranslations("SingleGalleryPage");
+  const tGallery = await getTranslations("GalleryPage");
+  const locale = await getLocale();
   await connectToDatabase();
   const { id } = await params;
   
@@ -47,8 +56,15 @@ export default async function FolderPage({ params }: { params: Promise<{ id: str
     caption: img.caption,
   }));
 
+  const jsonLd = breadcrumbJsonLd(locale, [
+    { name: tGallery("home"), path: "" },
+    { name: tGallery("gallery"), path: "/gallery" },
+    { name: folder.name, path: `/gallery/${id}` },
+  ]);
+
   return (
     <div className="bg-surface-container-lowest min-h-screen pt-24 pb-24">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div className="max-w-[1280px] mx-auto px-5 md:px-16">
         <div className="mb-8 mt-6">
           <Link 

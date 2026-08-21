@@ -4,6 +4,9 @@ export const siteConfig = {
   tagline: "Where Cricket Builds Champions.",
   description:
     "Kallar Central Sports Club brings together passionate cricketers, experienced coaches, competitive teams, and a community committed to developing the next generation of players.",
+  // No trailing slash — every consumer (metadataBase, sitemap, JSON-LD) composes
+  // its own leading slash onto this.
+  url: "https://kallarcentralsc.com",
 };
 
 export const navLinks = [

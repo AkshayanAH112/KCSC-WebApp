@@ -5,7 +5,9 @@ import { ChevronRight } from "lucide-react";
 import connectToDatabase from "@/lib/mongodb";
 import { Post } from "@/models";
 import Footer from "@/components/landing/layout/Footer";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
+import { localeAlternates, breadcrumbJsonLd, absoluteUrl, DEFAULT_OG_IMAGE } from "@/lib/seo";
+import { siteConfig } from "@/lib/constants";
 
 function formatDate(value: string | Date) {
   return new Date(value).toLocaleDateString("en-US", {
@@ -27,19 +29,37 @@ export async function generateMetadata({ params }: Props) {
   const { slug } = await params;
   await connectToDatabase();
   const post = await Post.findOne({ slug, status: "published" }).lean();
-  
+  const alternates = localeAlternates(`/news/${slug}`);
+
   if (!post) {
-    return { title: "Post Not Found | KCSC" };
+    return { title: "Post Not Found | KCSC", alternates };
   }
 
+  const description = post.excerpt || `Read ${post.title} on Kallar Central Sports Club.`;
+  const images = post.coverImageUrl ? [post.coverImageUrl] : [DEFAULT_OG_IMAGE];
   return {
     title: `${post.title} | KCSC News`,
-    description: post.excerpt || `Read ${post.title} on Kallar Central Sports Club.`,
+    description,
+    alternates,
+    openGraph: {
+      title: post.title,
+      description,
+      type: "article",
+      publishedTime: (post.publishedAt || post.createdAt)?.toISOString?.(),
+      images,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description,
+      images,
+    },
   };
 }
 
 export default async function SingleNewsPage({ params }: Props) {
   const t = await getTranslations("SingleNewsPage");
+  const locale = await getLocale();
   const { slug } = await params;
   await connectToDatabase();
   const post = await Post.findOne({ slug, status: "published" }).lean();
@@ -49,7 +69,7 @@ export default async function SingleNewsPage({ params }: Props) {
   }
 
   // Fetch recent posts for the sidebar (exclude current post)
-  const recentPosts = await Post.find({ 
+  const recentPosts = await Post.find({
     status: "published",
     _id: { $ne: post._id }
   })
@@ -57,9 +77,34 @@ export default async function SingleNewsPage({ params }: Props) {
     .limit(4)
     .lean();
 
+  const breadcrumb = breadcrumbJsonLd(locale, [
+    { name: t("home"), path: "" },
+    { name: t("news"), path: "/news" },
+    { name: post.title, path: `/news/${slug}` },
+  ]);
+
+  const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    headline: post.title,
+    description: post.excerpt || undefined,
+    image: post.coverImageUrl ? [post.coverImageUrl] : undefined,
+    datePublished: (post.publishedAt || post.createdAt)?.toISOString?.(),
+    dateModified: post.updatedAt?.toISOString?.(),
+    author: { "@type": "Organization", name: siteConfig.name },
+    publisher: {
+      "@type": "Organization",
+      name: siteConfig.name,
+      logo: { "@type": "ImageObject", url: absoluteUrl("/logo.png") },
+    },
+    mainEntityOfPage: absoluteUrl(`/${locale}/news/${slug}`),
+  };
+
   return (
     <div className="bg-surface-container-lowest min-h-screen flex flex-col pt-24 pb-0">
-      
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }} />
+
       {/* Hero Section */}
       <header className="bg-surface relative border-b-2 border-primary/20 pb-16 pt-8 md:pt-16 overflow-hidden">
         {/* Subtle grid pattern background */}

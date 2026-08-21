@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import { AboutSection } from "@/components/landing/about/AboutSection";
 import Footer from "@/components/landing/layout/Footer";
+import { localeAlternates, breadcrumbJsonLd, DEFAULT_OG_IMAGE } from "@/lib/seo";
 
 const SECTION_KEYS = [
   "journey",
@@ -18,17 +19,28 @@ const SECTION_KEYS = [
 
 export async function generateMetadata() {
   const t = await getTranslations("AboutPage");
+  const title = `${t("title")} ${t("accent")} | KCSC`;
+  const description = t("description");
   return {
-    title: `${t("title")} ${t("accent")} | KCSC`,
-    description: t("description"),
+    title,
+    description,
+    alternates: localeAlternates("/about"),
+    openGraph: { title, description, type: "website", images: [DEFAULT_OG_IMAGE] },
+    twitter: { card: "summary_large_image", title, description, images: [DEFAULT_OG_IMAGE.url] },
   };
 }
 
 export default async function AboutPage() {
   const t = await getTranslations("AboutPage");
+  const locale = await getLocale();
+  const jsonLd = breadcrumbJsonLd(locale, [
+    { name: t("home"), path: "" },
+    { name: t("about"), path: "/about" },
+  ]);
 
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div className="min-h-screen bg-surface-container-lowest pt-24 pb-24">
         <header className="mx-auto mb-16 max-w-[1280px] px-5 md:px-16">
           <div className="mb-6 flex items-center gap-2 text-xs font-bold tracking-widest text-on-surface-variant uppercase md:text-sm">
