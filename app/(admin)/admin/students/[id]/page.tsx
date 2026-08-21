@@ -121,6 +121,18 @@ export default function StudentProfilePage() {
             </div>
 
             <div className="w-full mt-8 space-y-4">
+              {student.school && (
+                <div className="flex justify-between border-b border-gray-100 dark:border-gray-800 pb-2">
+                  <span className="text-gray-500">School</span>
+                  <span className="font-medium dark:text-gray-200">{student.school}</span>
+                </div>
+              )}
+              {student.address && (
+                <div className="flex justify-between border-b border-gray-100 dark:border-gray-800 pb-2">
+                  <span className="text-gray-500">Address</span>
+                  <span className="font-medium dark:text-gray-200 text-right">{student.address}</span>
+                </div>
+              )}
               <div className="flex justify-between border-b border-gray-100 dark:border-gray-800 pb-2">
                 <span className="text-gray-500">Guardian</span>
                 <span className="font-medium dark:text-gray-200">{student.guardianName}</span>
@@ -361,6 +373,8 @@ function EditStudentModal({ student, onClose, onSaved }: { student: any; onClose
   const [batches, setBatches] = useState<any[]>([]);
   const [form, setForm] = useState({
     name: student.name,
+    school: student.school ?? "",
+    address: student.address ?? "",
     guardianName: student.guardianName,
     guardianPhone: student.guardianPhone,
     grade: String(student.grade),
@@ -406,6 +420,8 @@ function EditStudentModal({ student, onClose, onSaved }: { student: any; onClose
         </div>
         <form onSubmit={save} className="space-y-4">
           <div><label className="field-label">Full Name</label><input required className="field" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /></div>
+          <div><label className="field-label">School</label><input className="field" value={form.school} onChange={e => setForm({ ...form, school: e.target.value })} /></div>
+          <div><label className="field-label">Address</label><input className="field" value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} /></div>
           <div><label className="field-label">Guardian Name</label><input required className="field" value={form.guardianName} onChange={e => setForm({ ...form, guardianName: e.target.value })} /></div>
           <div>
             <label className="field-label">Guardian Phone</label>

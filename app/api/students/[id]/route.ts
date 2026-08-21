@@ -62,7 +62,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
 }
 
 const STUDENT_EDITABLE_FIELDS = [
-  'name', 'guardianName', 'guardianPhone', 'grade', 'dateOfBirth', 'batchId', 'photoUrl', 'isActive',
+  'name', 'school', 'address', 'guardianName', 'guardianPhone', 'grade', 'dateOfBirth', 'batchId', 'photoUrl', 'isActive',
 ] as const;
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {

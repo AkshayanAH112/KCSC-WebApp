@@ -36,6 +36,8 @@ function StudentsPageContent() {
   // Form state
   const [formData, setFormData] = useState({
     name: "",
+    school: "",
+    address: "",
     guardianName: "",
     guardianPhone: "",
     batchId: "",
@@ -96,7 +98,7 @@ function StudentsPageContent() {
       });
       if (res.ok) {
         setIsModalOpen(false);
-        setFormData({ name: "", guardianName: "", guardianPhone: "", batchId: batches[0]?._id || "", grade: "3", dateOfBirth: "" });
+        setFormData({ name: "", school: "", address: "", guardianName: "", guardianPhone: "", batchId: batches[0]?._id || "", grade: "3", dateOfBirth: "" });
         fetchData();
       } else {
         const err = await res.json();
@@ -324,6 +326,8 @@ function StudentsPageContent() {
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Register New Student</h3>
             <form onSubmit={handleCreate} className="space-y-4">
               <div><label className="field-label">Full Name</label><input required className="field" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} /></div>
+              <div><label className="field-label">School</label><input className="field" value={formData.school} onChange={e => setFormData({...formData, school: e.target.value})} /></div>
+              <div><label className="field-label">Address</label><input className="field" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} /></div>
               <div><label className="field-label">Guardian Name</label><input required className="field" value={formData.guardianName} onChange={e => setFormData({...formData, guardianName: e.target.value})} /></div>
               <div>
                 <label className="field-label">Guardian Phone</label>

@@ -27,6 +27,8 @@ export const User = mongoose.models.User || mongoose.model("User", UserSchema);
 
 const StudentSchema = new mongoose.Schema({
   name: { type: String, required: true },
+  school: { type: String },
+  address: { type: String },
   guardianName: { type: String, required: true },
   guardianPhone: { type: String, required: true },
   grade: { type: Number, required: true, enum: GRADES },
