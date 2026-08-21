@@ -116,7 +116,7 @@ export default function NewsClientPage({ posts }: { posts: any[] }) {
             
             {/* Featured Post (Left, 7 columns) */}
             {featuredPost && (
-              <Link href={`/news/${featuredPost.slug}`} className="lg:col-span-7 group flex flex-col relative rounded-3xl overflow-hidden border border-outline-variant/30 shadow-sm transition-transform hover:-translate-y-1 min-h-[400px]">
+              <Link href={`/news/${featuredPost.slug}`} className="lg:col-span-7 group flex flex-col relative rounded-3xl overflow-hidden border border-outline-variant/30 shadow-sm transition-transform hover:-translate-y-1 min-h-100">
                 <div className="absolute top-4 left-4 z-10 bg-primary text-on-primary text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg shadow-sm">
                   {featuredPost.category}
                 </div>
@@ -129,7 +129,7 @@ export default function NewsClientPage({ posts }: { posts: any[] }) {
                     className="object-cover transition-transform duration-700 group-hover:scale-105" 
                   />
                   {/* Gradient Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0A1A1A] via-[#0A1A1A]/60 to-transparent"></div>
+                  <div className="absolute inset-0 bg-linear-to-t from-[#0A1A1A] via-[#0A1A1A]/60 to-transparent"></div>
                 </div>
 
                 <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 z-10">
@@ -199,7 +199,7 @@ export default function NewsClientPage({ posts }: { posts: any[] }) {
                 <h2 className="text-2xl md:text-3xl font-display font-bold text-on-surface uppercase tracking-wide">
                   {t("trending")}
                 </h2>
-                <div className="h-0.5 flex-1 bg-gradient-to-r from-primary to-transparent max-w-[120px]"></div>
+                <div className="h-0.5 flex-1 bg-linear-to-r from-primary to-transparent max-w-30"></div>
               </div>
               <p className="text-sm text-on-surface-variant mb-8">{t("trending_desc")}</p>
               
@@ -237,7 +237,7 @@ export default function NewsClientPage({ posts }: { posts: any[] }) {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {recentPosts.map(post => (
                   <Link key={post._id} href={`/news/${post.slug}`} className="flex flex-col rounded-2xl bg-surface border border-outline-variant/30 shadow-sm hover:border-primary/40 hover:shadow-md transition-all overflow-hidden group">
-                    <div className="relative aspect-[16/10] w-full overflow-hidden bg-surface-container-high">
+                    <div className="relative aspect-16/10 w-full overflow-hidden bg-surface-container-high">
                       <Image 
                         src={post.coverImageUrl || "/Logo.jpeg"} 
                         alt={post.title} 
