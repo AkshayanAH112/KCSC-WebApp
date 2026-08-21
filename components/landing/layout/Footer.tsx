@@ -140,6 +140,7 @@ export default function Footer() {
       
       <div className="max-w-[1280px] mx-auto px-5 md:px-16 mt-4 pt-4 border-t border-outline-variant/30 flex flex-col md:flex-row justify-between items-center gap-2 text-xs text-on-surface-variant/70">
         <p>&copy; {new Date().getFullYear()} {t("copyright")}</p>
+        <p>{t("developed_by")}</p>
         <div className="flex gap-4">
           <Link href="#" className="hover:text-primary transition-colors">{t("privacy")}</Link>
           <Link href="#" className="hover:text-primary transition-colors">{t("terms")}</Link>
