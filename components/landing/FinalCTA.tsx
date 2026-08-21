@@ -1,8 +1,10 @@
 "use client";
 
 import Button from "@/components/landing/ui/Button";
+import { useTranslations } from "next-intl";
 
 export default function FinalCTA() {
+  const t = useTranslations("FinalCTA");
   const handleJoinClick = (e: React.MouseEvent) => {
     e.preventDefault();
     window.dispatchEvent(new Event("open-join-modal"));
@@ -36,14 +38,14 @@ export default function FinalCTA() {
           className="text-4xl md:text-6xl font-display font-bold text-white tracking-tight"
           style={{ textShadow: "0 1px 2px rgba(5,5,10,.95), 0 3px 12px rgba(5,5,10,.78), 0 10px 44px rgba(5,5,10,.8)" }}
         >
-          Your Next Innings Starts Here.
+          {t("title")}
         </h2>
 
         <p
           className="text-lg md:text-xl text-white/80 max-w-2xl mx-auto leading-snug"
           style={{ textShadow: "0 1px 2px rgba(5,5,10,.95), 0 3px 12px rgba(5,5,10,.78)" }}
         >
-          Whether you&apos;re looking to learn the basics, play competitively, or just be part of a great community—KCSC has a place for you.
+          {t("description")}
         </p>
 
         <Button
@@ -51,7 +53,7 @@ export default function FinalCTA() {
           className="bg-primary text-on-primary hover:bg-primary-hover shadow-elevated"
           onClick={handleJoinClick}
         >
-          Join The Club
+          {t("join")}
         </Button>
       </div>
     </section>

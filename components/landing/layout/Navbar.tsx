@@ -8,6 +8,8 @@ import { navLinks } from "@/lib/constants";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Button from "@/components/landing/ui/Button";
+import LanguageSwitcher from "@/components/landing/layout/LanguageSwitcher";
+import { useTranslations, useLocale } from "next-intl";
 
 function KcscMark() {
   return (
@@ -28,12 +30,16 @@ function KcscMark() {
 }
 
 export default function Navbar() {
+  const t = useTranslations("Navbar");
+  const locale = useLocale();
+  const isTamil = locale === "ta";
   const [isScrolled, setIsScrolled] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("Home");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const isHomePage = pathname === "/" || pathname === `/${locale}`;
   
   const lastScrollY = useRef(0);
 
@@ -46,7 +52,7 @@ export default function Navbar() {
         
         setIsScrolled(currentScrollY > 10);
 
-        if (pathname === "/") {
+        if (isHomePage) {
           // Scroll Spy Logic
           const sections = navLinks.map(link => link.href.replace('/#', ''));
           let current = "Home"; // default
@@ -87,8 +93,9 @@ export default function Navbar() {
       window.addEventListener("modal-toggle", handleModalToggle);
       
       // Also update immediately if pathname changes but scroll doesn't happen
-      if (pathname !== "/") {
-        const currentNav = navLinks.find(link => link.href.startsWith('/') && pathname.startsWith(link.href) && link.href !== '/#home');
+      if (!isHomePage) {
+        const normalizedPath = pathname.replace(`/${locale}`, "") || "/";
+        const currentNav = navLinks.find(link => link.href.startsWith('/') && normalizedPath.startsWith(link.href) && link.href !== '/#home');
         setActiveSection(currentNav ? currentNav.label : "");
       } else {
         handleScroll();
@@ -102,7 +109,7 @@ export default function Navbar() {
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (href.startsWith("/#")) {
-      if (pathname === "/") {
+      if (isHomePage) {
         e.preventDefault();
         setIsMobileMenuOpen(false);
         const id = href.replace("/", "");
@@ -135,7 +142,7 @@ export default function Navbar() {
         <nav
           className={cn(
             "pointer-events-auto w-full transition-all duration-500 flex items-center px-5 md:px-12 border-b",
-            isScrolled
+            isScrolled || !isHomePage
               ? "bg-surface/90 backdrop-blur-xl border-outline-variant/50 shadow-sm py-3"
               : "bg-transparent border-transparent py-5 md:py-6"
           )}
@@ -143,7 +150,7 @@ export default function Navbar() {
           {/* Left: Logo */}
           <div className="flex-1 flex items-center justify-start">
             <Link
-              href="/#home"
+              href={`/${locale}/#home`}
               className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-full"
               onClick={(e) => handleNavClick(e, "/#home")}
             >
@@ -152,34 +159,39 @@ export default function Navbar() {
           </div>
 
           {/* Center: Desktop Nav Links */}
-          <div className="hidden md:flex items-center justify-center gap-8">
+          <div className={cn("hidden md:flex items-center justify-center", isTamil ? "gap-4" : "gap-8")}>
             {navLinks.map((link) => (
               <Link
                 key={link.label}
-                href={link.href}
+                href={`/${locale}${link.href}`}
                 onClick={(e) => handleNavClick(e, link.href)}
                 className={cn(
-                  "relative text-[15px] font-semibold transition-colors duration-300 focus-visible:outline-none focus-visible:text-primary",
+                  "relative font-semibold transition-colors duration-300 focus-visible:outline-none whitespace-nowrap",
+                  isTamil ? "text-[13px]" : "text-[15px]",
                   activeSection === link.label
                     ? "text-primary"
-                    : "text-on-surface-variant hover:text-primary"
+                    : (isScrolled || !isHomePage)
+                      ? "text-on-surface-variant hover:text-primary"
+                      : "text-white/80 hover:text-white"
                 )}
               >
-                {link.label}
+                {t(link.label)}
               </Link>
             ))}
           </div>
 
           {/* Right: CTA & Mobile Menu Toggle */}
-          <div className="flex-1 flex items-center justify-end gap-4">
+          <div className="flex-1 flex items-center justify-end gap-2 md:gap-4">
+            <LanguageSwitcher isScrolled={isScrolled || !isHomePage} />
+            
             <Button 
               className={cn(
                 "hidden md:inline-flex rounded-full shadow-soft transition-all duration-300",
-                isScrolled ? "px-6" : "px-8"
+                isTamil ? "text-[12px] px-4" : (isScrolled || !isHomePage) ? "px-6" : "px-8"
               )}
               onClick={handleJoinClick}
             >
-              Join The Club
+              {t("join")}
             </Button>
 
             <button
@@ -199,19 +211,20 @@ export default function Navbar() {
           {navLinks.map((link) => (
             <Link
               key={link.label}
-              href={link.href}
+              href={`/${locale}${link.href}`}
               className={cn(
-                "text-2xl font-display font-bold transition-colors",
-                activeSection === link.label ? "text-primary" : "text-on-surface-variant"
-              )}
+                  "font-display font-bold transition-colors",
+                  isTamil ? "text-xl" : "text-2xl",
+                  activeSection === link.label ? "text-primary" : "text-on-surface-variant"
+                )}
               onClick={(e) => handleNavClick(e, link.href)}
             >
-              {link.label}
+              {t(link.label)}
             </Link>
           ))}
           <div className="h-px w-full bg-outline-variant/50 my-2" />
           <Button size="lg" className="w-full justify-center rounded-full" onClick={handleJoinClick}>
-            Join The Club
+            {t("join")}
           </Button>
         </div>
       )}

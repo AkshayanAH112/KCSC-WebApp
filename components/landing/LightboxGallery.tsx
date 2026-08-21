@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { X, ChevronLeft, ChevronRight, ImageIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface GalleryImage {
   _id: string;
@@ -15,6 +16,7 @@ interface LightboxGalleryProps {
 }
 
 export default function LightboxGallery({ images }: LightboxGalleryProps) {
+  const t = useTranslations("LightboxGallery");
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const openLightbox = (index: number) => setLightboxIndex(index);
@@ -38,7 +40,7 @@ export default function LightboxGallery({ images }: LightboxGalleryProps) {
     return (
       <div className="flex flex-col items-center justify-center p-12 bg-surface-container-low rounded-2xl border border-outline-variant/30 text-on-surface-variant">
         <ImageIcon className="w-12 h-12 mb-4 opacity-50" />
-        <p>No photos uploaded to this album yet.</p>
+        <p>{t("no_photos")}</p>
       </div>
     );
   }
@@ -70,10 +72,10 @@ export default function LightboxGallery({ images }: LightboxGalleryProps) {
 
       {lightboxIndex !== null && (
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-sm"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm"
           onClick={closeLightbox}
         >
-          <div className="absolute top-4 right-4 z-50">
+          <div className="absolute top-4 right-4 z-[110]">
             <button 
               onClick={closeLightbox}
               className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
@@ -85,13 +87,13 @@ export default function LightboxGallery({ images }: LightboxGalleryProps) {
           
           <button 
             onClick={showPrev}
-            className="absolute left-4 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors z-50"
+            className="absolute left-4 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors z-[110]"
             aria-label="Previous image"
           >
             <ChevronLeft size={32} />
           </button>
           
-          <div className="relative w-full h-full max-w-6xl max-h-[90vh] mx-16 flex items-center justify-center">
+          <div className="relative w-full h-full max-w-7xl max-h-[95vh] px-4 md:px-20 flex items-center justify-center">
             <div className="relative w-full h-full" onClick={(e) => e.stopPropagation()}>
               <Image 
                 src={images[lightboxIndex].url}
@@ -112,7 +114,7 @@ export default function LightboxGallery({ images }: LightboxGalleryProps) {
 
           <button 
             onClick={showNext}
-            className="absolute right-4 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors z-50"
+            className="absolute right-4 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors z-[110]"
             aria-label="Next image"
           >
             <ChevronRight size={32} />

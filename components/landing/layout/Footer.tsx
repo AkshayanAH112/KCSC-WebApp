@@ -2,8 +2,11 @@ import Link from "next/link";
 import { Phone, MapPin, Mail } from "lucide-react";
 import Image from "next/image";
 import RenewLink from "@/components/landing/ui/RenewLink";
+import { useTranslations, useLocale } from "next-intl";
 
 export default function Footer() {
+  const t = useTranslations("Footer");
+  const locale = useLocale();
   return (
     <footer id="contact" className="relative py-4 md:py-6 overflow-hidden border-t border-outline-variant/30 bg-surface/80 backdrop-blur-md pointer-events-auto">
       <div className="max-w-[1280px] mx-auto px-5 md:px-16 flex flex-col md:flex-row justify-between gap-6 md:gap-4">
@@ -24,13 +27,13 @@ export default function Footer() {
             </div>
           </div>
           <p className="text-on-surface-variant leading-relaxed">
-            Building the next generation of champions. Join us in celebrating a legacy of excellence, community, and sportsmanship.
+            {t("description")}
           </p>
         </div>
 
         {/* Contact Info */}
         <div className="flex flex-col gap-2">
-          <h3 className="text-base font-display font-bold text-on-surface">Contact Us</h3>
+          <h3 className="text-base font-display font-bold text-on-surface">{t("contact")}</h3>
           
           <ul className="flex flex-col gap-1 text-sm">
             <li>
@@ -102,34 +105,34 @@ export default function Footer() {
         
         {/* Quick Links */}
         <div className="flex flex-col gap-2">
-          <h3 className="text-base font-display font-bold text-on-surface">Quick Links</h3>
+          <h3 className="text-base font-display font-bold text-on-surface">{t("quick_links")}</h3>
           <ul className="flex flex-col gap-1 text-sm">
             <li>
               <Link href="#home" className="text-on-surface-variant hover:text-primary transition-colors">
-                Home
+                {t("link_home")}
               </Link>
             </li>
             <li>
               <Link href="#about" className="text-on-surface-variant hover:text-primary transition-colors">
-                About Us
+                {t("link_about")}
               </Link>
             </li>
             <li>
               <Link href="#gallery" className="text-on-surface-variant hover:text-primary transition-colors">
-                Gallery
+                {t("link_gallery")}
               </Link>
             </li>
             <li>
               <Link href="#news" className="text-on-surface-variant hover:text-primary transition-colors">
-                News & Updates
+                {t("link_news")}
               </Link>
             </li>
             <li>
               <RenewLink className="text-on-surface-variant hover:text-primary transition-colors cursor-pointer" />
             </li>
             <li>
-              <Link href="/login" className="text-on-surface-variant hover:text-primary transition-colors">
-                Admin Login
+              <Link href={`/${locale}/login`} className="text-on-surface-variant hover:text-primary transition-colors">
+                {t("admin")}
               </Link>
             </li>
           </ul>
@@ -137,10 +140,10 @@ export default function Footer() {
       </div>
       
       <div className="max-w-[1280px] mx-auto px-5 md:px-16 mt-4 pt-4 border-t border-outline-variant/30 flex flex-col md:flex-row justify-between items-center gap-2 text-xs text-on-surface-variant/70">
-        <p>&copy; {new Date().getFullYear()} Kallar Central Sports Club. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} {t("copyright")}</p>
         <div className="flex gap-4">
-          <Link href="#" className="hover:text-primary transition-colors">Privacy Policy</Link>
-          <Link href="#" className="hover:text-primary transition-colors">Terms of Service</Link>
+          <Link href="#" className="hover:text-primary transition-colors">{t("privacy")}</Link>
+          <Link href="#" className="hover:text-primary transition-colors">{t("terms")}</Link>
         </div>
       </div>
     </footer>
