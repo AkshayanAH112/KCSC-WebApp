@@ -34,22 +34,22 @@
     "read_story": "Read Our Full Story"
   },
   "ProgramsSection": {
-    "eyebrow": "Programs",
-    "title": "Cricket Programs",
-    "junior_title": "Junior Cricket",
-    "junior_desc": "Developing young players through structured coaching and competitive experience.",
-    "highperf_title": "High Performance",
-    "highperf_desc": "Advanced training for players committed to taking their game further.",
-    "competitive_title": "Competitive Cricket",
-    "competitive_desc": "Represent the club, compete with purpose, and play for the badge."
+    "eyebrow": "What We Do",
+    "title": "Our Programs",
+    "coaching_title": "Junior Cricket & Coaching",
+    "coaching_desc": "Club members serve as coaches and mentors, training and guiding young players through the Battle of the Everest schools rivalry and beyond.",
+    "league_title": "Competitive & League Cricket",
+    "league_desc": "Competing in the Batticaloa District Cricket Association's A Division since 2009, alongside T20, ODI, and league tournaments.",
+    "education_title": "Free Educational Support",
+    "education_desc": "Free tuition classes for Grade 05 Scholarship Examination students, regardless of financial background."
   },
   "AchievementsSection": {
     "eyebrow": "Club Legacy",
     "title": "Built on Achievement.",
-    "championships": "Championships",
-    "players": "Players Developed",
-    "teams": "Active Teams",
-    "years": "Years of Legacy"
+    "trophies": "Trophies Won",
+    "rivalry": "Years of Rivalry",
+    "division": "Years in A Division",
+    "founding": "Founding Members"
   },
   "FinalCTA": {
     "title": "Ready to take the field?",

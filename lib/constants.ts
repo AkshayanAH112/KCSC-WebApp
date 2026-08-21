@@ -21,24 +21,25 @@ export const clubStats = [
   { value: 8, suffix: "+", label: "Championships" },
 ];
 
+// Real club activities (see about.txt).
 export const programs = [
   {
-    title: "Junior Cricket",
+    title: "Junior Cricket & Coaching",
     description:
-      "Developing young players through structured coaching and competitive experience.",
+      "Club members serve as coaches and mentors, training and guiding young players through the Battle of the Everest schools rivalry and beyond.",
     icon: "sprout",
   },
   {
-    title: "High Performance",
+    title: "Competitive & League Cricket",
     description:
-      "Advanced training for players committed to taking their game further.",
-    icon: "target",
+      "Competing in the Batticaloa District Cricket Association's A Division since 2009, alongside T20, ODI, and league tournaments.",
+    icon: "shield",
   },
   {
-    title: "Competitive Cricket",
+    title: "Free Educational Support",
     description:
-      "Represent the club, compete with purpose, and play for the badge.",
-    icon: "shield",
+      "Free tuition classes for Grade 05 Scholarship Examination students, regardless of financial background.",
+    icon: "cap",
   },
 ];
 
@@ -58,10 +59,10 @@ export const teams = [
   },
 ];
 
-// placeholder — replace with real club history
+// Real club history (see about.txt).
 export const achievements = [
-  { value: 20, suffix: "+", label: "Championships" },
-  { value: 300, suffix: "+", label: "Players Developed" },
-  { value: 8, suffix: "", label: "Active Teams" },
-  { value: 50, suffix: "+", label: "Years of Legacy" },
+  { value: 8, suffix: "+", label: "Trophies Won" },
+  { value: 11, suffix: "+", label: "Years of Rivalry" },
+  { value: 17, suffix: "+", label: "Years in A Division" },
+  { value: 12, suffix: "", label: "Founding Members" },
 ];

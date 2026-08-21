@@ -25,10 +25,10 @@ export default function AchievementsSection() {
         <div className="flex-1 w-full grid grid-cols-2 gap-8 md:gap-12">
           {achievements.map((stat) => {
             let key = "";
-            if (stat.label === "Championships") key = "championships";
-            else if (stat.label === "Players Developed") key = "players";
-            else if (stat.label === "Active Teams") key = "teams";
-            else if (stat.label === "Years of Legacy") key = "years";
+            if (stat.label === "Trophies Won") key = "trophies";
+            else if (stat.label === "Years of Rivalry") key = "rivalry";
+            else if (stat.label === "Years in A Division") key = "division";
+            else if (stat.label === "Founding Members") key = "founding";
 
             return (
               <motion.div key={stat.label} className="flex flex-col items-center text-center gap-2">

@@ -1,11 +1,11 @@
-import { Sprout, Target, Shield } from "lucide-react";
+import { Sprout, Shield, GraduationCap } from "lucide-react";
 import SectionHeading from "@/components/landing/ui/SectionHeading";
 import GlassCard from "@/components/landing/ui/GlassCard";
 import ParallaxDecor from "@/components/landing/ui/ParallaxDecor";
 import { programs } from "@/lib/constants";
 import { useTranslations } from "next-intl";
 
-const icons = { sprout: Sprout, target: Target, shield: Shield };
+const icons = { sprout: Sprout, shield: Shield, cap: GraduationCap };
 
 export default function ProgramsSection() {
   const t = useTranslations("ProgramsSection");
@@ -22,9 +22,9 @@ export default function ProgramsSection() {
             const Icon = icons[program.icon as keyof typeof icons];
             
             let key = "";
-            if (program.title === "Junior Cricket") key = "junior";
-            else if (program.title === "High Performance") key = "highperf";
-            else if (program.title === "Competitive Cricket") key = "competitive";
+            if (program.title === "Junior Cricket & Coaching") key = "coaching";
+            else if (program.title === "Competitive & League Cricket") key = "league";
+            else if (program.title === "Free Educational Support") key = "education";
             
             return (
               <GlassCard key={program.title} className="p-8 flex flex-col gap-4 hover:shadow-elevated transition-shadow duration-300">
