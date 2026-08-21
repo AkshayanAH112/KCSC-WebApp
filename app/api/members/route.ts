@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
-import { Member, MEMBER_STATUSES } from '@/models';
+import { Member, MEMBER_STATUSES, Counter } from '@/models';
 import { isAdminOnlyRequest } from '@/lib/auth-guard';
 import { isValidPhone, isPastDate } from '@/lib/validation';
+import { isJobCategory, jobFee, jobLabel, oneYearFrom, computeAge } from '@/lib/membership';
+import { findDuplicateMemberError } from '@/lib/member-duplicate-check';
 
 /**
  * Admin-only. An lms_manager token is valid but still gets 401 here — that boundary
@@ -47,7 +49,38 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Date of birth must be in the past' }, { status: 400 });
     }
 
-    const member = await Member.create({ ...data, status: data.status ?? 'approved' });
+    const age = data.dateOfBirth ? computeAge(data.dateOfBirth) : undefined;
+    const duplicateError = await findDuplicateMemberError({
+      age,
+      email: data.email,
+      phone: data.phone,
+      nic: data.nic,
+    });
+    if (duplicateError) return NextResponse.json({ error: duplicateError }, { status: 409 });
+
+    const status = data.status ?? 'approved';
+    const extra: Record<string, unknown> = {};
+    if (isJobCategory(data.jobCategory)) {
+      extra.jobCategory = data.jobCategory;
+      extra.annualFee = jobFee(data.jobCategory);
+      extra.job = data.jobCategory === 'other' ? String(data.jobOther ?? '').trim().slice(0, 80) : jobLabel(data.jobCategory);
+    }
+    // A walk-in is entered as already-approved by the admin present, so it gets
+    // the same one-year validity window — and the same sequential member code —
+    // an online approval sets (see PATCH /api/members/[id]).
+    if (status === 'approved') {
+      const validFrom = new Date();
+      extra.validFrom = validFrom;
+      extra.validUntil = oneYearFrom(validFrom);
+      const counter = await Counter.findOneAndUpdate(
+        { _id: 'membercode' },
+        { $inc: { seq: 1 } },
+        { upsert: true, new: true }
+      );
+      extra.memberCode = `KCSC-M-${String(counter.seq).padStart(4, '0')}`;
+    }
+
+    const member = await Member.create({ ...data, ...extra, status });
     return NextResponse.json({ member }, { status: 201 });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

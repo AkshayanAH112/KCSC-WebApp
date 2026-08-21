@@ -4,6 +4,7 @@ import "./marketing.css";
 import { siteConfig } from "@/lib/constants";
 import Navbar from "@/components/landing/layout/Navbar";
 import JoinModal from "@/components/landing/ui/JoinModal";
+import RenewModal from "@/components/landing/ui/RenewModal";
 import { MotionConfig } from "framer-motion";
 
 const inter = Inter({
@@ -29,6 +30,7 @@ export default function MarketingRootLayout({
           <Navbar />
           <main className="min-h-screen relative">{children}</main>
           <JoinModal />
+          <RenewModal />
         </MotionConfig>
       </body>
     </html>

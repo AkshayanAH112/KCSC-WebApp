@@ -3,12 +3,20 @@
 import { useState, useEffect } from "react";
 import { X, CheckCircle2, AlertCircle } from "lucide-react";
 import Button from "./Button";
+import { JOB_CATEGORIES, CLUB_BANK_DETAILS, FEE_CURRENCY, isNicRequired } from "@/lib/membership";
 
 export default function JoinModal() {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [age, setAge] = useState("");
+  const [jobCategory, setJobCategory] = useState<string>(JOB_CATEGORIES[0].value);
+  const [jobOther, setJobOther] = useState("");
+
+  const nicRequired = isNicRequired(age === "" ? undefined : Number(age));
+  const fee = JOB_CATEGORIES.find((c) => c.value === jobCategory)?.fee ?? 0;
 
   useEffect(() => {
     const handleOpen = () => setIsOpen(true);
@@ -31,6 +39,16 @@ export default function JoinModal() {
     const firstName = String(form.get("firstName") ?? "").trim();
     const lastName = String(form.get("lastName") ?? "").trim();
     const photo = form.get("photo");
+    const paymentSlip = form.get("paymentSlip");
+
+    if (jobCategory === "other" && !jobOther.trim()) {
+      setError("Please describe your occupation.");
+      return;
+    }
+    if (!(paymentSlip instanceof File) || paymentSlip.size === 0) {
+      setError("Please upload your bank transfer slip.");
+      return;
+    }
 
     const payload = new FormData();
     payload.set("fullName", [firstName, lastName].filter(Boolean).join(" "));
@@ -40,14 +58,17 @@ export default function JoinModal() {
     payload.set("nic", String(form.get("nic") ?? "").trim());
     payload.set("address", String(form.get("address") ?? "").trim());
     payload.set("dateOfBirth", String(form.get("dateOfBirth") ?? ""));
-    payload.set("age", String(form.get("age") ?? ""));
+    payload.set("age", age);
     payload.set("gender", String(form.get("gender") ?? ""));
     payload.set("dateOfJoining", String(form.get("dateOfJoining") ?? ""));
     payload.set("previousClub", String(form.get("previousClub") ?? "").trim());
     payload.set("memberType", String(form.get("membershipType") ?? ""));
     payload.set("interest", String(form.get("role") ?? ""));
     payload.set("message", String(form.get("achievements") ?? "").trim());
+    payload.set("jobCategory", jobCategory);
+    if (jobCategory === "other") payload.set("jobOther", jobOther.trim());
     if (photo instanceof File && photo.size > 0) payload.set("photo", photo);
+    payload.set("paymentSlip", paymentSlip);
 
     setIsSubmitting(true);
     try {
@@ -120,14 +141,24 @@ export default function JoinModal() {
                 </div>
                 <div className="space-y-1">
                   <label className="text-sm font-medium text-on-surface">Age</label>
-                  <input name="age" type="number" required className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface" placeholder="25" />
+                  <input
+                    name="age"
+                    type="number"
+                    required
+                    value={age}
+                    onChange={(e) => setAge(e.target.value)}
+                    className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface"
+                    placeholder="25"
+                  />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-on-surface">NIC Number</label>
-                  <input name="nic" type="text" required className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface" placeholder="e.g. 123456789V" />
+                  <label className="text-sm font-medium text-on-surface">
+                    NIC Number {!nicRequired && <span className="text-on-surface-variant font-normal">(not required under 16)</span>}
+                  </label>
+                  <input name="nic" type="text" required={nicRequired} className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface" placeholder="e.g. 123456789V" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-sm font-medium text-on-surface">Gender</label>
@@ -139,6 +170,32 @@ export default function JoinModal() {
                   </select>
                 </div>
               </div>
+
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-on-surface">Occupation</label>
+                <select
+                  value={jobCategory}
+                  onChange={(e) => setJobCategory(e.target.value)}
+                  className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface appearance-none"
+                >
+                  {JOB_CATEGORIES.map((c) => (
+                    <option key={c.value} value={c.value}>{c.label}</option>
+                  ))}
+                </select>
+              </div>
+              {jobCategory === "other" && (
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-on-surface">Please specify your occupation</label>
+                  <input
+                    type="text"
+                    required
+                    value={jobOther}
+                    onChange={(e) => setJobOther(e.target.value)}
+                    className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface"
+                    placeholder="e.g. Teacher, Engineer, Business Owner"
+                  />
+                </div>
+              )}
             </fieldset>
 
             {/* SECTION: Contact Information */}
@@ -217,6 +274,41 @@ export default function JoinModal() {
               <div className="space-y-1">
                 <label className="text-sm font-medium text-on-surface">Sports Achievements</label>
                 <textarea name="achievements" className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface min-h-25" placeholder="Tell us about your past clubs, highest scores, best bowling figures, or championships won..."></textarea>
+              </div>
+            </fieldset>
+
+            {/* SECTION: Membership Fee & Payment */}
+            <fieldset className="space-y-4">
+              <legend className="text-lg font-display font-semibold text-primary mb-2 border-b border-outline-variant pb-2 w-full">Membership Fee & Payment</legend>
+
+              <div className="rounded-lg border border-outline-variant bg-surface-container-low p-4 space-y-2">
+                <p className="text-sm text-on-surface">
+                  Annual membership fee for <strong>{JOB_CATEGORIES.find((c) => c.value === jobCategory)?.label}</strong>:{" "}
+                  <span className="font-bold text-primary">{FEE_CURRENCY} {fee}</span>
+                </p>
+                <p className="text-xs text-on-surface-variant">Pay by bank transfer to:</p>
+                <dl className="text-xs text-on-surface grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5">
+                  <dt className="font-medium text-on-surface-variant">Account Name</dt>
+                  <dd>{CLUB_BANK_DETAILS.accountName}</dd>
+                  <dt className="font-medium text-on-surface-variant">Bank</dt>
+                  <dd>{CLUB_BANK_DETAILS.bankName}</dd>
+                  <dt className="font-medium text-on-surface-variant">Branch</dt>
+                  <dd>{CLUB_BANK_DETAILS.branch}</dd>
+                  <dt className="font-medium text-on-surface-variant">Account Number</dt>
+                  <dd>{CLUB_BANK_DETAILS.accountNumber}</dd>
+                </dl>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-on-surface">Payment Slip</label>
+                <input
+                  name="paymentSlip"
+                  required
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/avif,application/pdf"
+                  className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface text-sm file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-on-primary"
+                />
+                <p className="text-xs text-on-surface-variant">A photo or PDF of your bank transfer receipt. Your membership is confirmed once the club verifies this.</p>
               </div>
             </fieldset>
 

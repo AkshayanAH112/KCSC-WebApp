@@ -192,12 +192,36 @@ const MemberSchema = new mongoose.Schema({
   // field was added, and PATCH (approve/reject) runs with runValidators: true, so
   // a hard-required field here would break reviewing those. Required by the forms
   // and API validation for new submissions instead — see /api/public/members.
+  // Not required at the schema level — under-16 applicants don't need one
+  // (see lib/membership.ts's isNicRequired), enforced by the forms/API instead.
   nic: { type: String },
-  // Cloudinary asset — photoPublicId is what lets a delete actually remove it
-  // from Cloudinary too (same url/publicId pairing Post uses for its images).
+  // Spaces asset — photoPublicId is what lets a delete actually remove it from
+  // the bucket too (same url/publicId pairing Post uses for its images).
   photoUrl: { type: String },
   photoPublicId: { type: String },
   memberType: { type: String }, // Playing Member / Non-Playing Member / Junior Member / Coach-Staff
+  // Occupation category, drives the annual fee (lib/membership.ts) — 'job' is
+  // the resolved display text (the category label, or the free-typed value
+  // when jobCategory is 'other'); jobCategory is what the fee is computed from.
+  job: { type: String },
+  jobCategory: { type: String },
+  annualFee: { type: Number },
+  // Proof of the bank transfer for the current membership period.
+  paymentSlipUrl: { type: String },
+  paymentSlipPublicId: { type: String },
+  // The current membership period — set (and reset, on renewal) to one year
+  // from whenever an application or renewal is approved (lib/membership.ts).
+  validFrom: { type: Date },
+  validUntil: { type: Date },
+  // A renewal request sits here, separate from the fields above, so an
+  // existing membership stays untouched while a renewal awaits verification.
+  renewalStatus: { type: String, enum: ['none', 'pending'], default: 'none' },
+  renewalJob: { type: String },
+  renewalJobCategory: { type: String },
+  renewalAnnualFee: { type: Number },
+  renewalPaymentSlipUrl: { type: String },
+  renewalPaymentSlipPublicId: { type: String },
+  renewalSubmittedAt: { type: Date },
   // The card's "MEMBER ID" — generated once, when status first leaves 'pending'
   // for 'approved' (see PATCH /api/members/[id]). sparse: true because pending/
   // rejected applicants never get one.

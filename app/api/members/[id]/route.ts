@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
-import crypto from 'crypto';
 import connectToDatabase from '@/lib/mongodb';
-import { Member } from '@/models';
+import { Member, Counter } from '@/models';
 import { isAdminOnlyRequest, getAuthPayload } from '@/lib/auth-guard';
 import { isValidPhone, isPastDate } from '@/lib/validation';
 import { deleteImage } from '@/lib/spaces';
+import { oneYearFrom } from '@/lib/membership';
 
 export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
@@ -59,10 +59,23 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     }
 
     // Card "MEMBER ID" — assigned once, the moment a member is first approved.
-    // Same format as Student.qrCode (app/api/students/route.ts), just an 'M' marker
-    // instead of a grade since general club membership isn't grade-scoped.
+    // Sequential, same atomic Counter pattern as Student.registrationNumber
+    // (app/api/students/route.ts), just not year-scoped — club membership
+    // numbering runs as one continuous sequence.
     if (data.status === 'approved' && existing.status !== 'approved' && !existing.memberCode) {
-      update.memberCode = `KCSC-M-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+      const counter = await Counter.findOneAndUpdate(
+        { _id: 'membercode' },
+        { $inc: { seq: 1 } },
+        { upsert: true, new: true }
+      );
+      update.memberCode = `KCSC-M-${String(counter.seq).padStart(4, '0')}`;
+    }
+
+    // The membership period — one year from the moment it's (first) approved.
+    if (data.status === 'approved' && existing.status !== 'approved') {
+      const validFrom = new Date();
+      update.validFrom = validFrom;
+      update.validUntil = oneYearFrom(validFrom);
     }
 
     const member = await Member.findByIdAndUpdate(id, update, { new: true, runValidators: true });

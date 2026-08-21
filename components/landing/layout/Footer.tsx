@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Phone, MapPin, Mail } from "lucide-react";
 import Image from "next/image";
+import RenewLink from "@/components/landing/ui/RenewLink";
 
 export default function Footer() {
   return (
@@ -122,6 +123,9 @@ export default function Footer() {
               <Link href="#news" className="text-on-surface-variant hover:text-primary transition-colors">
                 News & Updates
               </Link>
+            </li>
+            <li>
+              <RenewLink className="text-on-surface-variant hover:text-primary transition-colors cursor-pointer" />
             </li>
             <li>
               <Link href="/login" className="text-on-surface-variant hover:text-primary transition-colors">

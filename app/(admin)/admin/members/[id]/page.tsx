@@ -13,6 +13,8 @@ import {
   UserRound,
   Download,
   Mail,
+  RefreshCw,
+  FileText,
 } from "lucide-react";
 import { MembershipCardFront, MembershipCardBack } from "@/components/membership-card";
 import { ConfirmDialog } from "@/components/confirm-dialog";
@@ -37,6 +39,17 @@ type Member = {
   previousClub?: string;
   interest?: string;
   message?: string;
+  job?: string;
+  jobCategory?: string;
+  annualFee?: number;
+  paymentSlipUrl?: string;
+  validFrom?: string;
+  validUntil?: string;
+  renewalStatus?: "none" | "pending";
+  renewalJob?: string;
+  renewalAnnualFee?: number;
+  renewalPaymentSlipUrl?: string;
+  renewalSubmittedAt?: string;
   status: "pending" | "approved" | "rejected";
   reviewNotes?: string;
   reviewedBy?: { email: string } | null;
@@ -166,6 +179,24 @@ export default function MemberDetailPage() {
     return () => clearTimeout(t);
   }, [autoSendPending, member, sendCardEmail]);
 
+  const [renewalSaving, setRenewalSaving] = useState(false);
+  const [renewalError, setRenewalError] = useState<string | null>(null);
+
+  const decideRenewal = async (action: "approve" | "reject") => {
+    setRenewalSaving(true);
+    setRenewalError(null);
+    try {
+      const res = await fetch(`/api/members/${id}/renewal`, { method: action === "approve" ? "POST" : "DELETE" });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error);
+      setMember(d.member);
+    } catch (e: any) {
+      setRenewalError(e.message);
+    } finally {
+      setRenewalSaving(false);
+    }
+  };
+
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   const remove = async () => {
@@ -205,6 +236,10 @@ export default function MemberDetailPage() {
     ["Guardian phone", member.guardianPhone],
     ["Sport / interest", member.interest],
     ["Member ID", member.memberCode],
+    ["Occupation", member.job],
+    ["Annual fee", member.annualFee != null ? `LKR ${member.annualFee}` : undefined],
+    ["Valid from", member.validFrom ? new Date(member.validFrom).toLocaleDateString() : undefined],
+    ["Valid until", member.validUntil ? new Date(member.validUntil).toLocaleDateString() : undefined],
   ];
 
   return (
@@ -270,6 +305,60 @@ export default function MemberDetailPage() {
         tone="danger"
       />
 
+      {member.renewalStatus === "pending" && (
+        <div className="rounded-lg border border-warning/30 bg-warning/10 p-6 shadow-xs">
+          <div className="mb-3 flex items-center gap-2">
+            <RefreshCw size={18} className="text-warning" aria-hidden />
+            <h2 className="text-lg text-foreground">Pending renewal</h2>
+          </div>
+          {renewalError && (
+            <div role="alert" className="mb-3 flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+              <AlertTriangle size={16} aria-hidden /> {renewalError}
+            </div>
+          )}
+          <dl className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div>
+              <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Occupation</dt>
+              <dd className="mt-0.5 text-foreground">{member.renewalJob ?? "—"}</dd>
+            </div>
+            <div>
+              <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Fee</dt>
+              <dd className="mt-0.5 text-foreground">{member.renewalAnnualFee != null ? `LKR ${member.renewalAnnualFee}` : "—"}</dd>
+            </div>
+            <div>
+              <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Submitted</dt>
+              <dd className="mt-0.5 text-foreground">{member.renewalSubmittedAt ? new Date(member.renewalSubmittedAt).toLocaleDateString() : "—"}</dd>
+            </div>
+          </dl>
+          {member.renewalPaymentSlipUrl && (
+            <a
+              href={member.renewalPaymentSlipUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mb-4 inline-flex items-center gap-1.5 text-primary hover:underline"
+            >
+              <FileText size={14} aria-hidden /> View renewal payment slip
+            </a>
+          )}
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => decideRenewal("approve")}
+              disabled={renewalSaving}
+              className="flex cursor-pointer items-center gap-2 rounded-lg bg-success px-4 py-2 font-semibold text-success-foreground transition-colors duration-200 hover:bg-success/90 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <CheckCircle2 size={16} aria-hidden /> Approve renewal
+            </button>
+            <button
+              onClick={() => decideRenewal("reject")}
+              disabled={renewalSaving}
+              className="flex cursor-pointer items-center gap-2 rounded-lg border border-destructive/30 px-4 py-2 font-semibold text-destructive transition-colors duration-200 hover:bg-destructive/10 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <XCircle size={16} aria-hidden /> Reject renewal
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="rounded-lg border border-border bg-card p-6 shadow-xs lg:col-span-2">
           <h2 className="mb-4 text-lg text-foreground">Application details</h2>
@@ -291,6 +380,23 @@ export default function MemberDetailPage() {
                 Message
               </dt>
               <dd className="mt-0.5 whitespace-pre-wrap text-foreground">{member.message}</dd>
+            </div>
+          )}
+          {member.paymentSlipUrl && (
+            <div className="mt-4">
+              <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Payment slip
+              </dt>
+              <dd className="mt-0.5">
+                <a
+                  href={member.paymentSlipUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-primary hover:underline"
+                >
+                  <FileText size={14} aria-hidden /> View uploaded slip
+                </a>
+              </dd>
             </div>
           )}
         </div>
