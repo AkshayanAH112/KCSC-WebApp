@@ -30,14 +30,14 @@ function formatDate(value: string) {
   });
 }
 
-function FlipCard({ post, index }: { post: Post; index: number }) {
+function FlipCard({ post, index, locale }: { post: Post; index: number; locale: string }) {
   const [isFlipped, setIsFlipped] = useState(false);
   const isHoveredRef = useRef(false);
 
   useEffect(() => {
     // Stagger the flips so they don't all flip at the exact same time
     const timeout = setTimeout(() => {
-      
+
       // Perform initial flip to teach the user
       if (!isHoveredRef.current) {
         setIsFlipped(true);
@@ -57,10 +57,10 @@ function FlipCard({ post, index }: { post: Post; index: number }) {
   }, [index]);
 
   return (
-    <div 
-      className="relative w-full h-100 md:h-112.5 cursor-pointer group"
+    <Link
+      href={`/${locale}/news/${post.slug}`}
+      className="relative w-full h-100 md:h-112.5 cursor-pointer group block"
       style={{ perspective: 1500 }}
-      onClick={() => setIsFlipped(!isFlipped)}
       onMouseEnter={() => (isHoveredRef.current = true)}
       onMouseLeave={() => (isHoveredRef.current = false)}
     >
@@ -127,7 +127,7 @@ function FlipCard({ post, index }: { post: Post; index: number }) {
           </div>
         </div>
       </motion.div>
-    </div>
+    </Link>
   );
 }
 
@@ -189,7 +189,7 @@ export default function News() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
             {posts.map((post, index) => (
-              <FlipCard key={post._id} post={post} index={index} />
+              <FlipCard key={post._id} post={post} index={index} locale={locale} />
             ))}
           </div>
         )}

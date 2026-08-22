@@ -105,7 +105,7 @@ export default function Gallery() {
           <div className="h-75 md:h-100 w-full flex items-center justify-center">
             <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
           </div>
-        ) : folders.length <= 1 ? (
+        ) : folders.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-12 bg-surface-container-low rounded-3xl border border-outline-variant/30 text-on-surface-variant w-full max-w-xl mx-auto h-75">
             <FolderIcon className="w-12 h-12 mb-4 opacity-50" />
             <p>{t("no_albums")}</p>
