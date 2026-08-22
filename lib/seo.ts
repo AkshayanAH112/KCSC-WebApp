@@ -5,13 +5,17 @@ export const LOCALES = ["en", "ta"] as const;
 export type Locale = (typeof LOCALES)[number];
 
 /**
- * hreflang alternates for a given locale-agnostic marketing path (e.g. "" for
- * the homepage, "/about", "/news/some-slug"). Returned as relative paths —
- * resolved against the root layout's `metadataBase` into absolute URLs.
+ * hreflang alternates + a self-referencing canonical for a given
+ * locale-agnostic marketing path (e.g. "" for the homepage, "/about",
+ * "/news/some-slug"). `locale` is the current page's own locale — without an
+ * explicit canonical here, Google has no declared preference between /en and
+ * /ta (or any other near-duplicate) and picks one on its own, which is what
+ * "Duplicate without user-selected canonical" in Search Console means.
  */
-export function localeAlternates(path: string) {
+export function localeAlternates(path: string, locale: string) {
   return {
-    languages: Object.fromEntries(LOCALES.map((locale) => [locale, `/${locale}${path}`])),
+    canonical: `/${locale}${path}`,
+    languages: Object.fromEntries(LOCALES.map((l) => [l, `/${l}${path}`])),
   };
 }
 

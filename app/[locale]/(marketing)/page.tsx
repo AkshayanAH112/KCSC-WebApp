@@ -6,11 +6,13 @@ import Gallery from "@/components/landing/Gallery";
 import News from "@/components/landing/News";
 import FinalCTA from "@/components/landing/FinalCTA";
 import Footer from "@/components/landing/layout/Footer";
+import { getLocale } from "next-intl/server";
 import { siteConfig } from "@/lib/constants";
 import { localeAlternates, DEFAULT_OG_IMAGE } from "@/lib/seo";
 
 export async function generateMetadata() {
-  return { alternates: localeAlternates("") };
+  const locale = await getLocale();
+  return { alternates: localeAlternates("", locale) };
 }
 
 // SportsOrganization is schema.org's actual type for a club like this (there

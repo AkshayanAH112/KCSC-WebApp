@@ -10,13 +10,16 @@ export const dynamic = "force-dynamic";
 const title = "Gallery | KCSC";
 const description = "View all photo albums from Kallar Central Sports Club.";
 
-export const metadata = {
-  title,
-  description,
-  alternates: localeAlternates("/gallery"),
-  openGraph: { title, description, type: "website", images: [DEFAULT_OG_IMAGE] },
-  twitter: { card: "summary_large_image", title, description, images: [DEFAULT_OG_IMAGE.url] },
-};
+export async function generateMetadata() {
+  const locale = await getLocale();
+  return {
+    title,
+    description,
+    alternates: localeAlternates("/gallery", locale),
+    openGraph: { title, description, type: "website" as const, images: [DEFAULT_OG_IMAGE] },
+    twitter: { card: "summary_large_image" as const, title, description, images: [DEFAULT_OG_IMAGE.url] },
+  };
+}
 
 export default async function GalleryPage() {
   const locale = await getLocale();

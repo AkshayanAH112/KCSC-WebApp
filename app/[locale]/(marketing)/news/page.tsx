@@ -12,13 +12,16 @@ export const dynamic = "force-dynamic";
 const title = "All News & Updates | KCSC";
 const description = "Read all the latest news, updates, and announcements from Kallar Central Sports Club.";
 
-export const metadata = {
-  title,
-  description,
-  alternates: localeAlternates("/news"),
-  openGraph: { title, description, type: "website", images: [DEFAULT_OG_IMAGE] },
-  twitter: { card: "summary_large_image", title, description, images: [DEFAULT_OG_IMAGE.url] },
-};
+export async function generateMetadata() {
+  const locale = await getLocale();
+  return {
+    title,
+    description,
+    alternates: localeAlternates("/news", locale),
+    openGraph: { title, description, type: "website" as const, images: [DEFAULT_OG_IMAGE] },
+    twitter: { card: "summary_large_image" as const, title, description, images: [DEFAULT_OG_IMAGE.url] },
+  };
+}
 
 export default async function NewsPage() {
   const locale = await getLocale();

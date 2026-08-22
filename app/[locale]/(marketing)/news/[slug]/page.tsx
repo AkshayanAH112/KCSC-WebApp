@@ -29,7 +29,8 @@ export async function generateMetadata({ params }: Props) {
   const { slug } = await params;
   await connectToDatabase();
   const post = await Post.findOne({ slug, status: "published" }).lean();
-  const alternates = localeAlternates(`/news/${slug}`);
+  const locale = await getLocale();
+  const alternates = localeAlternates(`/news/${slug}`, locale);
 
   if (!post) {
     return { title: "Post Not Found | KCSC", alternates };

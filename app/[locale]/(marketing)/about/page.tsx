@@ -19,12 +19,13 @@ const SECTION_KEYS = [
 
 export async function generateMetadata() {
   const t = await getTranslations("AboutPage");
+  const locale = await getLocale();
   const title = `${t("title")} ${t("accent")} | KCSC`;
   const description = t("description");
   return {
     title,
     description,
-    alternates: localeAlternates("/about"),
+    alternates: localeAlternates("/about", locale),
     openGraph: { title, description, type: "website", images: [DEFAULT_OG_IMAGE] },
     twitter: { card: "summary_large_image", title, description, images: [DEFAULT_OG_IMAGE.url] },
   };

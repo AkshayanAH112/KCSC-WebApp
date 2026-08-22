@@ -13,7 +13,8 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   await connectToDatabase();
   const { id } = await params;
-  const alternates = localeAlternates(`/gallery/${id}`);
+  const locale = await getLocale();
+  const alternates = localeAlternates(`/gallery/${id}`, locale);
   try {
     const folder = await GalleryFolder.findById(id).select("name coverImageUrl").lean();
     if (!folder) return { title: "Album Not Found | KCSC", alternates };
