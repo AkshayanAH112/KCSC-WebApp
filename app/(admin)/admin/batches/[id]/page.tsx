@@ -139,7 +139,7 @@ export default function BatchDetailsPage() {
 }
 
 function EditBatchModal({ batch, onClose, onSaved }: { batch: any; onClose: () => void; onSaved: () => void }) {
-  const [form, setForm] = useState({ name: batch.name, year: batch.year, grades: [...batch.grades] as number[] });
+  const [form, setForm] = useState({ name: batch.name, year: batch.year, grades: [...batch.grades] as number[], autoPromote: Boolean(batch.autoPromote) });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -197,6 +197,16 @@ function EditBatchModal({ batch, onClose, onSaved }: { batch: any; onClose: () =
               ))}
             </div>
           </div>
+          <label className="flex items-start gap-2 pt-1 text-sm text-foreground">
+            <input
+              type="checkbox"
+              className="mt-0.5"
+              checked={form.autoPromote}
+              onChange={e => setForm({ ...form, autoPromote: e.target.checked })}
+            />
+            Automatically promote students to the next grade each January (same
+            students continue into next year&apos;s grade in this batch).
+          </label>
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose} className="flex-1 py-2 border border-border bg-card rounded-xl font-medium text-foreground hover:bg-muted transition-colors">Cancel</button>
             <button type="submit" disabled={saving || form.grades.length === 0} className="flex-1 bg-primary hover:bg-primary/90 disabled:opacity-50 text-primary-foreground py-2 rounded-xl font-medium">

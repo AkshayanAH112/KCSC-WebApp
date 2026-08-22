@@ -21,7 +21,7 @@ function BatchesPageContent() {
   const searchParams = useSearchParams();
   const [filterGrade, setFilterGrade] = useState(searchParams.get("grade") ?? "");
 
-  const [batchForm, setBatchForm] = useState({ name: "", year: new Date().getFullYear(), grades: [3, 4, 5] });
+  const [batchForm, setBatchForm] = useState({ name: "", year: new Date().getFullYear(), grades: [3, 4, 5], autoPromote: false });
   const [classForm, setClassForm] = useState({ batchId: "", grade: "3", date: "", time: "", subject: "" });
   const router = useRouter();
 
@@ -50,7 +50,7 @@ function BatchesPageContent() {
     e.preventDefault();
     await fetch("/api/batches", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(batchForm) });
     setIsBatchModalOpen(false);
-    setBatchForm({ name: "", year: new Date().getFullYear(), grades: [3, 4, 5] });
+    setBatchForm({ name: "", year: new Date().getFullYear(), grades: [3, 4, 5], autoPromote: false });
     fetchData();
   };
 
@@ -105,7 +105,14 @@ function BatchesPageContent() {
                 className="p-4 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-primary cursor-pointer transition-colors flex justify-between items-center group"
               >
                 <div>
-                  <div className="font-bold text-gray-900 dark:text-white">{v.name} ({v.year})</div>
+                  <div className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    {v.name} ({v.year})
+                    {v.autoPromote && (
+                      <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary">
+                        Auto-promotes
+                      </span>
+                    )}
+                  </div>
                   <div className="text-sm text-gray-500 mt-1">Grades supported: {v.grades.join(', ')}</div>
                 </div>
                 <ChevronRight className="text-gray-400 group-hover:text-primary transition-colors" />
@@ -160,6 +167,16 @@ function BatchesPageContent() {
                   ))}
                 </div>
               </div>
+              <label className="flex items-start gap-2 pt-1 text-sm text-foreground">
+                <input
+                  type="checkbox"
+                  className="mt-0.5"
+                  checked={batchForm.autoPromote}
+                  onChange={e => setBatchForm({ ...batchForm, autoPromote: e.target.checked })}
+                />
+                Automatically promote students to the next grade each January (same
+                students continue into next year&apos;s grade in this batch).
+              </label>
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setIsBatchModalOpen(false)} className="flex-1 py-2 border border-border bg-card rounded-xl font-medium text-foreground hover:bg-muted transition-colors">Cancel</button>
                 <button type="submit" disabled={batchForm.grades.length === 0} className="flex-1 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground py-2 rounded-xl font-medium">Create</button>

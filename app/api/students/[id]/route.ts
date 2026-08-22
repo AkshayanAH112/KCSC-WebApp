@@ -21,8 +21,14 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
     ]);
 
     // Analytics
-    const totalClasses = attendance.length;
-    const classesPresent = attendance.filter(a => a.present).length;
+    // Scoped to the student's CURRENT grade — a promoted student (grade 4 ->
+    // grade 5, see app/api/cron/promote-students) keeps their full Attendance
+    // history, but the summary rate should reflect the new grade fresh, not
+    // blend in the old grade's classes. The full `attendance` list returned
+    // below stays unfiltered so the history table still shows everything.
+    const currentGradeAttendance = attendance.filter((a: any) => a.classId?.grade === student.grade);
+    const totalClasses = currentGradeAttendance.length;
+    const classesPresent = currentGradeAttendance.filter(a => a.present).length;
     const attendancePercentage = totalClasses > 0 ? Math.round((classesPresent / totalClasses) * 100) : 0;
 
     let totalMarks = 0, totalMax = 0;

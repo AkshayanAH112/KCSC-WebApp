@@ -68,7 +68,13 @@ export const Counter = mongoose.models.Counter || mongoose.model("Counter", Coun
 const BatchSchema = new mongoose.Schema({
   name: { type: String, required: true },
   year: { type: Number, required: true },
-  grades: [{ type: Number, enum: GRADES }]
+  grades: [{ type: Number, enum: GRADES }],
+  // Explicit opt-in for the yearly grade-rollover cron (see
+  // app/api/cron/promote-students). `grades` alone is ambiguous — a batch could
+  // have e.g. [4,5] just because it teaches two separate grade cohorts side by
+  // side, not because it's the same students progressing year to year. This
+  // flag is what actually says "yes, promote this batch's students each January."
+  autoPromote: { type: Boolean, default: false },
 }, { timestamps: true });
 export const Batch = mongoose.models.Batch || mongoose.model("Batch", BatchSchema);
 
