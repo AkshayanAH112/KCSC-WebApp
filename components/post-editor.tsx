@@ -14,6 +14,7 @@ import {
   X,
 } from "lucide-react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { RichTextEditor } from "@/components/rich-text-editor";
 
 export type PostImage = { url: string; publicId?: string; caption?: string };
 
@@ -264,12 +265,11 @@ export function PostEditor({ initial }: { initial: PostDraft }) {
                 <label htmlFor="content" className="field-label">
                   Content
                 </label>
-                <textarea
+                <RichTextEditor
                   id="content"
-                  className="field min-h-80"
-                  value={post.content}
-                  onChange={(e) => set("content", e.target.value)}
-                  placeholder="Write the full post here. Blank lines separate paragraphs."
+                  content={post.content}
+                  onChange={(html) => set("content", html)}
+                  placeholder="Write the full post here…"
                 />
               </div>
             </div>

@@ -7,7 +7,7 @@ import News from "@/components/landing/News";
 import FinalCTA from "@/components/landing/FinalCTA";
 import Footer from "@/components/landing/layout/Footer";
 import { siteConfig } from "@/lib/constants";
-import { localeAlternates } from "@/lib/seo";
+import { localeAlternates, DEFAULT_OG_IMAGE } from "@/lib/seo";
 
 export async function generateMetadata() {
   return { alternates: localeAlternates("") };
@@ -23,6 +23,7 @@ const ORG_JSON_LD = {
   alternateName: siteConfig.shortName,
   url: siteConfig.url,
   logo: `${siteConfig.url}/logo.png`,
+  image: `${siteConfig.url}${DEFAULT_OG_IMAGE.url}`,
   description: siteConfig.description,
   foundingDate: "2007",
   address: {

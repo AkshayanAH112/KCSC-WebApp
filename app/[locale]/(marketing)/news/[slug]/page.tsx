@@ -91,7 +91,7 @@ export default async function SingleNewsPage({ params }: Props) {
     image: post.coverImageUrl ? [post.coverImageUrl] : undefined,
     datePublished: (post.publishedAt || post.createdAt)?.toISOString?.(),
     dateModified: post.updatedAt?.toISOString?.(),
-    author: { "@type": "Organization", name: siteConfig.name },
+    author: { "@type": "Organization", name: siteConfig.name, url: siteConfig.url },
     publisher: {
       "@type": "Organization",
       name: siteConfig.name,
@@ -164,7 +164,7 @@ export default async function SingleNewsPage({ params }: Props) {
 
               {/* Prose Content */}
               <div 
-                className="prose prose-lg md:prose-xl prose-invert prose-headings:font-display prose-headings:text-on-surface prose-headings:tracking-wide prose-p:text-on-surface-variant prose-a:text-primary max-w-none text-on-surface-variant break-words"
+                className="prose prose-lg md:prose-xl prose-headings:font-display prose-headings:text-on-surface prose-headings:tracking-wide prose-p:text-on-surface-variant prose-strong:text-on-surface prose-a:text-primary prose-blockquote:text-on-surface-variant prose-blockquote:border-primary max-w-none text-on-surface-variant wrap-break-word whitespace-pre-line"
                 dangerouslySetInnerHTML={{ __html: post.content }}
               />
 
