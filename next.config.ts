@@ -7,6 +7,16 @@ const nextConfig: NextConfig = {
   // Allow other devices on the LAN (phone testing the dev server) to load
   // Next.js dev resources like HMR. Dev-only setting; ignored in production.
   allowedDevOrigins: ["192.168.1.17"],
+  // sharp's actual dependency is a native shared library (libvips-cpp.so),
+  // loaded at runtime via dlopen rather than a plain require() — Next's file
+  // tracer doesn't follow that and leaves it out of the deployed serverless
+  // function by default, which is what broke image uploads in production
+  // (ERR_DLOPEN_FAILED). This is Next's own documented fix for exactly this
+  // — but it only takes effect under webpack; Turbopack's production-build
+  // tracer doesn't honor it yet, hence `next build --webpack` in package.json.
+  outputFileTracingIncludes: {
+    "/api/upload": ["./node_modules/sharp/**/*"],
+  },
   // News/blog images are served from DigitalOcean Spaces (see lib/spaces.ts).
   // res.cloudinary.com stays for posts/members/gallery entries created before
   // the migration — their stored URLs still point there.

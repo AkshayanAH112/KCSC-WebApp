@@ -69,14 +69,51 @@ export default function FolderGalleryPage() {
     return data.image as GalleryImage;
   };
 
+  // Bulk uploads used to fire every file at once (Promise.all with no cap) —
+  // at real-world batch sizes (100+ photos) that opens that many concurrent
+  // serverless invocations, each opening its own fresh MongoDB connection at
+  // the same instant, which the cluster can't accept all of at once and
+  // starts refusing with TLS-level errors. Capping how many run at a time
+  // keeps concurrent DB connections bounded regardless of batch size.
+  const UPLOAD_CONCURRENCY = 4;
+  const runWithConcurrency = async <T,>(
+    items: File[],
+    limit: number,
+    worker: (file: File) => Promise<T>
+  ): Promise<PromiseSettledResult<T>[]> => {
+    const results: PromiseSettledResult<T>[] = new Array(items.length);
+    let cursor = 0;
+    const runners = Array.from({ length: Math.min(limit, items.length) }, async () => {
+      while (cursor < items.length) {
+        const current = cursor++;
+        try {
+          results[current] = { status: "fulfilled", value: await worker(items[current]) };
+        } catch (err) {
+          results[current] = { status: "rejected", reason: err };
+        }
+      }
+    });
+    await Promise.all(runners);
+    return results;
+  };
+
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     if (files.length === 0) return;
     setUploading(true);
     setError(null);
     try {
-      const uploaded = await Promise.all(files.map(uploadOne));
-      setFolder((prev) => prev ? { ...prev, images: [...uploaded, ...prev.images] } : null);
+      const settled = await runWithConcurrency(files, UPLOAD_CONCURRENCY, uploadOne);
+      const succeeded = settled
+        .filter((r): r is PromiseFulfilledResult<GalleryImage> => r.status === "fulfilled")
+        .map((r) => r.value);
+      const failedCount = settled.length - succeeded.length;
+      if (succeeded.length > 0) {
+        setFolder((prev) => prev ? { ...prev, images: [...succeeded, ...prev.images] } : null);
+      }
+      if (failedCount > 0) {
+        setError(`${failedCount} of ${settled.length} photo${settled.length === 1 ? "" : "s"} failed to upload. Please try again for the ones missing.`);
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {
