@@ -1,3 +1,4 @@
+import { useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 
 export default function SectionHeading({
@@ -17,6 +18,13 @@ export default function SectionHeading({
   light?: boolean;
   className?: string;
 }) {
+  // Tamil compounds are single long words with no break opportunity —
+  // "களுவாஞ்சிக்குடியின்" alone is wider than a half-width grid column at the
+  // Latin heading size, and was overflowing ClubIntro's column into the stat
+  // cards beside it. Tamil drops a step; break-words is the safety net so no
+  // future string can overflow rather than wrap, in either language.
+  const isTamil = useLocale() === "ta";
+
   return (
     <div className={cn("flex flex-col gap-4", align === "center" && "items-center text-center", className)}>
       {eyebrow && (
@@ -34,7 +42,8 @@ export default function SectionHeading({
           different design system dropped on top of it. */}
       <h2
         className={cn(
-          "font-display text-4xl md:text-5xl font-extrabold tracking-tight leading-tight",
+          "font-display font-extrabold tracking-tight leading-tight wrap-break-word",
+          isTamil ? "text-2xl sm:text-3xl md:text-4xl" : "text-4xl md:text-5xl",
           light ? "text-on-primary" : "text-on-primary-container"
         )}
       >

@@ -1,5 +1,11 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Plus_Jakarta_Sans, Cinzel, Noto_Sans_Tamil } from "next/font/google";
+import {
+  Playfair_Display,
+  Plus_Jakarta_Sans,
+  Cinzel,
+  Noto_Sans_Tamil,
+  Noto_Serif_Tamil,
+} from "next/font/google";
 import "./marketing.css";
 import { siteConfig } from "@/lib/constants";
 import Navbar from "@/components/landing/layout/Navbar";
@@ -12,13 +18,25 @@ import { DEFAULT_OG_IMAGE } from "@/lib/seo";
 
 // Three Latin families carry the design — Playfair for headlines, Plus Jakarta
 // for body, Cinzel for the club wordmark only. None of them ships Tamil
-// glyphs, so Noto Sans Tamil is loaded alongside and listed as the fallback on
-// every variable below; without it the `ta` locale silently drops to whatever
-// Tamil font the device happens to have.
-const notoTamil = Noto_Sans_Tamil({
+// glyphs, so two Noto Tamil faces are loaded alongside and listed as the
+// fallback on every variable below; without them the `ta` locale silently
+// drops to whatever Tamil font the device happens to have.
+//
+// Two faces, not one: the Latin side splits serif headlines against sans body,
+// and pointing every Tamil role at a single sans would have thrown that away —
+// a Tamil page would read as structurally flatter than the same page in
+// English. Serif Tamil carries the headings, sans Tamil the body.
+const notoTamilSerif = Noto_Serif_Tamil({
+  subsets: ["tamil"],
+  weight: ["400", "600", "700", "800"],
+  variable: "--font-noto-tamil-serif",
+  display: "swap",
+});
+
+const notoTamilSans = Noto_Sans_Tamil({
   subsets: ["tamil"],
   weight: ["400", "500", "600", "700"],
-  variable: "--font-noto-tamil",
+  variable: "--font-noto-tamil-sans",
   display: "swap",
 });
 
@@ -46,14 +64,22 @@ const cinzel = Cinzel({
 
 // next/font emits one variable per family; marketing.css consumes the composed
 // stacks below, so a Tamil string in any of the three roles falls through to
-// Noto rather than to a system serif.
+// the matching Noto face rather than to a system font. Each Tamil face is
+// paired with the Latin role it belongs to: serif behind the two heading
+// roles, sans behind body.
 const FONT_STACKS = {
-  "--font-playfair": "var(--font-playfair-latin), var(--font-noto-tamil)",
-  "--font-jakarta": "var(--font-jakarta-latin), var(--font-noto-tamil)",
-  "--font-cinzel": "var(--font-cinzel-latin), var(--font-noto-tamil)",
+  "--font-playfair": "var(--font-playfair-latin), var(--font-noto-tamil-serif)",
+  "--font-cinzel": "var(--font-cinzel-latin), var(--font-noto-tamil-serif)",
+  "--font-jakarta": "var(--font-jakarta-latin), var(--font-noto-tamil-sans)",
 } as React.CSSProperties;
 
-const fontVariables = `${playfair.variable} ${jakarta.variable} ${cinzel.variable} ${notoTamil.variable}`;
+const fontVariables = [
+  playfair.variable,
+  jakarta.variable,
+  cinzel.variable,
+  notoTamilSerif.variable,
+  notoTamilSans.variable,
+].join(" ");
 
 const OG_IMAGE = { ...DEFAULT_OG_IMAGE, alt: siteConfig.name };
 
