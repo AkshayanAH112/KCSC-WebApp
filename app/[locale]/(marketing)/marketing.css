@@ -148,6 +148,19 @@
     font-family: var(--font-crest);
   }
 
+  /* Tamil stacks vowel signs above the base line and hangs marks below it, so
+     it needs materially more leading than Latin display type. The headings
+     carry leading-tight / leading-[1.12], tuned for Playfair; at those values
+     Tamil lines collide and the below-baseline marks clip.
+
+     Deliberately at (0,1,1) specificity — an attribute selector plus an
+     element — so it outranks the leading-* utility classes on the headings
+     themselves. Doing this here rather than per-component keeps one statement
+     of "Tamil needs more leading" instead of six that can drift apart. */
+  html[lang="ta"] :is(h1, h2, h3) {
+    line-height: 1.45;
+  }
+
   .text-balance {
     text-wrap: balance;
   }
@@ -223,11 +236,18 @@
     background-size: 24px 24px;
   }
 
+  /* background-clip:text paints the gradient only where it overlaps the
+     element's own background box. At the tight display line-heights used here
+     that box stops above the descenders, so the tails of p/y/g — and Tamil's
+     below-baseline marks — fall outside it and render as cut off. The padding
+     extends the box far enough to cover them; on an inline span it costs no
+     layout, since inline padding does not affect line height. */
   .text-gradient-gold {
     background: linear-gradient(135deg, #fcd34d 0%, #fef3c7 55%, #fbbf24 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+    padding-bottom: 0.14em;
   }
 
   .glow-orb {

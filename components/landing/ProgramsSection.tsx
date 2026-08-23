@@ -43,7 +43,7 @@ export default function ProgramsSection() {
                     {index + 1}
                   </span>
                 </div>
-                <h3 className="font-display text-xl sm:text-2xl font-bold text-on-primary transition-colors group-hover:text-on-primary-container">
+                <h3 className="font-display text-lg sm:text-xl lg:text-2xl font-bold text-on-primary wrap-break-word transition-colors group-hover:text-on-primary-container">
                   {key ? t(`${key}_title`) : program.title}
                 </h3>
                 <p className="text-sm text-on-surface-variant leading-relaxed">{key ? t(`${key}_desc`) : program.description}</p>

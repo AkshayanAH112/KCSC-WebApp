@@ -91,7 +91,7 @@ function FlipCard({ post, index, locale }: { post: Post; index: number; locale: 
             <span className="px-3 py-1 bg-primary-container/80 border border-tertiary-container/30 text-tertiary-container text-[10px] font-bold uppercase tracking-wider rounded-full mb-4 inline-block backdrop-blur-md">
               {post.category}
             </span>
-            <h3 className="text-on-primary text-xl md:text-2xl font-display font-bold leading-tight">
+            <h3 className="text-on-primary text-lg lg:text-2xl font-display font-bold leading-tight wrap-break-word">
               {post.title}
             </h3>
           </div>
@@ -111,7 +111,7 @@ function FlipCard({ post, index, locale }: { post: Post; index: number; locale: 
             </span>
           </div>
           
-          <h3 className="text-xl md:text-2xl font-display font-bold text-on-primary-container mb-4 leading-tight line-clamp-3 h-18.75 md:h-22.5">
+          <h3 className="text-lg lg:text-2xl font-display font-bold text-on-primary-container mb-4 leading-tight line-clamp-3 wrap-break-word h-18.75 md:h-22.5">
             {post.title}
           </h3>
           

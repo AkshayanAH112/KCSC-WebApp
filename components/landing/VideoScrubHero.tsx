@@ -285,12 +285,25 @@ export default function VideoScrubHero() {
 
                 {/* Playfair runs considerably wider than the Inter it replaced,
                     so the old 7xl step pushed "Builds Champions." onto a third
-                    line inside this half-width column. */}
+                    line inside this half-width column.
+
+                    Tamil gets fluid sizing rather than the Latin step ramp.
+                    "வெற்றியாளர்களை" is one unbreakable word that has to fit the
+                    column outright, and at the Latin sizes it overflowed at
+                    every width — worst at lg, where the column halves to w-1/2
+                    while the type is still at its largest step. The two clamps
+                    are measured against that word: the upper bounds are where
+                    it exactly fills the column at 768px and at 1280px, where
+                    the container stops growing. */}
                 <motion.h1
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.2, ease: [0.2, 0.8, 0.2, 1] }}
-                  className="font-display text-4xl sm:text-5xl md:text-6xl leading-[1.12] font-extrabold text-on-primary tracking-tight text-center md:text-left"
+                  className={`font-display font-extrabold text-on-primary tracking-tight text-center md:text-left ${
+                    locale === "ta"
+                      ? "text-[clamp(1.35rem,7vw,2.9rem)] lg:text-[clamp(2rem,3.6vw,3rem)]"
+                      : "text-4xl sm:text-5xl md:text-6xl leading-[1.12]"
+                  }`}
                   style={{ textShadow: "0 1px 2px rgba(10,3,4,.95), 0 3px 12px rgba(10,3,4,.78), 0 10px 44px rgba(10,3,4,.8)" }}
                 >
                   {t("headline_1")}
