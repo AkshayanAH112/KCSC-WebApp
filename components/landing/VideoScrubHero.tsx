@@ -268,7 +268,12 @@ export default function VideoScrubHero() {
           className="relative z-10 h-full w-full flex flex-col pt-20 md:pt-24 pb-16"
           style={{ willChange: "transform, opacity" }}
         >
-          <div className="w-full flex items-start mt-4 md:mt-6">
+          {/* flex-1 hands this block all the space between the top padding and
+              the stat rail. On phones the copy then centres in it instead of
+              stacking under the navbar with a tall empty gap above the stats;
+              from md up it stays pinned to the top, where the hero art needs
+              the lower half free. */}
+          <div className="w-full flex-1 min-h-0 flex items-center md:items-start md:mt-6">
             <div className="w-full max-w-[1280px] mx-auto px-5 md:px-16">
               <div className="w-full lg:w-1/2 flex flex-col gap-4 md:gap-5">
                 <motion.div
@@ -345,9 +350,10 @@ export default function VideoScrubHero() {
 
           {/* The stat strip spans the container rather than sitting inside the
               half-width text column — at 1/2 width the three labels wrap and
-              the bar stops reading as one horizontal rail. mt-auto pins it to
-              the bottom of the hero, clear of the scroll chevron below. */}
-          <div className="mt-auto w-full max-w-[1280px] mx-auto px-5 md:px-16">
+              the bar stops reading as one horizontal rail. shrink-0 keeps it
+              at its natural height at the bottom of the hero, clear of the
+              scroll chevron below, while the block above absorbs the slack. */}
+          <div className="shrink-0 w-full max-w-[1280px] mx-auto px-5 md:px-16">
             <HeroStats />
           </div>
 

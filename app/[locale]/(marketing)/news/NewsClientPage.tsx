@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Search, ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
+import FadeInSection from "@/components/landing/ui/FadeInSection";
 
 export default function NewsClientPage({ posts }: { posts: any[] }) {
   const t = useTranslations("NewsPage");
@@ -112,7 +113,7 @@ export default function NewsClientPage({ posts }: { posts: any[] }) {
         <main className="max-w-[1280px] mx-auto px-5 md:px-16 flex flex-col gap-16">
           
           {/* Split Section (Featured + Aside) */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+          <FadeInSection className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
             
             {/* Featured Post (Left, 7 columns) */}
             {featuredPost && (
@@ -190,11 +191,11 @@ export default function NewsClientPage({ posts }: { posts: any[] }) {
                 </div>
               </aside>
             )}
-          </div>
+          </FadeInSection>
 
           {/* Trending Block */}
           {trendingPosts.length > 0 && (
-            <section className="pt-16 border-t border-tertiary-container/15">
+            <FadeInSection className="pt-16 border-t border-tertiary-container/15">
               <div className="flex items-center gap-4 mb-2">
                 <h2 className="text-2xl md:text-3xl font-display font-bold text-on-surface uppercase tracking-wide">
                   {t("trending")}
@@ -223,12 +224,12 @@ export default function NewsClientPage({ posts }: { posts: any[] }) {
                   </Link>
                 ))}
               </div>
-            </section>
+            </FadeInSection>
           )}
 
           {/* Recent News Grid */}
           {recentPosts.length > 0 && (
-            <section className="pt-16 border-t border-tertiary-container/15">
+            <FadeInSection className="pt-16 border-t border-tertiary-container/15">
               <h2 className="text-2xl md:text-3xl font-display font-bold text-on-surface uppercase tracking-wide mb-2">
                 {t("recent")}
               </h2>
@@ -275,7 +276,7 @@ export default function NewsClientPage({ posts }: { posts: any[] }) {
                   </button>
                 </div>
               )}
-            </section>
+            </FadeInSection>
           )}
 
         </main>

@@ -1,5 +1,6 @@
 import { ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import FadeInSection from "@/components/landing/ui/FadeInSection";
 
 function AboutImagePlaceholder({ label }: { label: string }) {
   return (
@@ -28,7 +29,7 @@ export function AboutSection({
   const paragraphs = body.split("\n\n");
 
   return (
-    <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-16">
+    <FadeInSection className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-16">
       <div className={cn(reverse ? "lg:order-2" : "lg:order-1")}>
         <AboutImagePlaceholder label={imagePlaceholderLabel} />
       </div>
@@ -41,6 +42,6 @@ export function AboutSection({
           </p>
         ))}
       </div>
-    </div>
+    </FadeInSection>
   );
 }

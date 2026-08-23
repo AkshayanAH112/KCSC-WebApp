@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Folder as FolderIcon, ChevronDown, ChevronUp, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
+import FadeInSection from "@/components/landing/ui/FadeInSection";
 
 interface ImageProps {
   _id?: string;
@@ -48,7 +49,7 @@ export default function FolderSection({ folder }: { folder: FolderProps }) {
   }
 
   return (
-    <section className="mb-20">
+    <FadeInSection className="mb-20">
       <div className="flex items-center gap-4 mb-2">
         <h2 className="text-2xl md:text-3xl font-display font-bold text-on-surface uppercase tracking-wide">
           {folder.name}
@@ -160,6 +161,6 @@ export default function FolderSection({ folder }: { folder: FolderProps }) {
           </button>
         </div>
       )}
-    </section>
+    </FadeInSection>
   );
 }
