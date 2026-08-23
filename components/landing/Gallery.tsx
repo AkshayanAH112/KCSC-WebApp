@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Folder as FolderIcon, ArrowRight } from "lucide-react";
+import { Folder as FolderIcon, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
@@ -68,13 +68,27 @@ export default function Gallery() {
     };
   }, [folders.length, isHovered]);
 
-  const handleNext = () => {
-    setActiveIndex((prev) => Math.min(prev + 1, folders.length - 1));
-  };
+  // Card geometry is derived from the measured container rather than from
+  // window.innerWidth read during render — that read produced a different
+  // value on the server and the client, and never updated on resize.
+  const stageRef = useRef<HTMLDivElement>(null);
+  const [stageW, setStageW] = useState(0);
 
-  const handlePrev = () => {
-    setActiveIndex((prev) => Math.max(prev - 1, 0));
-  };
+  useEffect(() => {
+    const el = stageRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => setStageW(entry.contentRect.width));
+    ro.observe(el);
+    setStageW(el.getBoundingClientRect().width);
+    return () => ro.disconnect();
+  }, [loading, folders.length]);
+
+  // Landscape 4:3, matching the design. The flanking cards sit at ~2/3 of a
+  // card width so they overlap into a continuous curved wall rather than
+  // floating as separate thumbnails.
+  const cardW = stageW < 640 ? Math.max(180, stageW * 0.62) : Math.min(420, stageW * 0.4);
+  const cardH = cardW * 0.75;
+  const step = cardW * 0.66;
 
   return (
     <FadeInSection id="gallery" className="relative py-16 md:py-20 overflow-hidden pointer-events-none">
@@ -111,8 +125,10 @@ export default function Gallery() {
             <p>{t("no_albums")}</p>
           </div>
         ) : (
-          <div 
-            className="relative w-full h-75 md:h-100 flex items-center justify-center perspective-distant"
+          <div
+            ref={stageRef}
+            className="relative w-full flex items-center justify-center perspective-distant"
+            style={{ height: cardH + 56 }}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >
@@ -129,11 +145,15 @@ export default function Gallery() {
                   diff += folders.length;
                 }
 
-                // Calculate transforms
-                const xOffset = diff * (typeof window !== 'undefined' && window.innerWidth < 768 ? 60 : 180); // wider offset for desktop
-                const scale = isActive ? 1 : Math.max(0.7, 1 - Math.abs(diff) * 0.15);
-                const zIndex = 50 - Math.abs(diff);
-                const opacity = Math.max(0, 1 - Math.abs(diff) * 0.4);
+                // Transforms. The opacity falloff is gentle on purpose: at the
+                // old 0.4/step the third card out was fully invisible, which
+                // left two lonely thumbnails instead of the receding wall the
+                // design shows.
+                const dist = Math.abs(diff);
+                const xOffset = diff * step;
+                const scale = isActive ? 1 : Math.max(0.55, 1 - dist * 0.14);
+                const zIndex = 50 - dist;
+                const opacity = isActive ? 1 : Math.max(0.22, 1 - dist * 0.2);
                 
                 return (
                   <motion.div
@@ -142,19 +162,18 @@ export default function Gallery() {
                     className={cn(
                       "absolute origin-center cursor-pointer overflow-hidden rounded-3xl transition-shadow bg-black",
                       isActive
-                        ? "ring-1 ring-tertiary-container/50 shadow-[0_0_60px_-10px_rgba(251,191,36,0.45)]"
-                        : "shadow-lg"
+                        ? "ring-1 ring-tertiary-container/40 shadow-[0_0_90px_-8px_rgba(251,191,36,0.55)]"
+                        : "shadow-xl shadow-black/60"
                     )}
-                    style={{
-                      width: typeof window !== 'undefined' && window.innerWidth < 768 ? 220 : 300,
-                      aspectRatio: "3/4",
-                    }}
+                    style={{ width: cardW, height: cardH }}
                     animate={{
                       x: xOffset,
                       scale,
                       zIndex,
                       opacity,
-                      rotateY: diff * -15
+                      // Steeper than the old 15deg so the flanking cards turn
+                      // away into the wall instead of reading as flat tiles.
+                      rotateY: Math.max(-58, Math.min(58, diff * -34)),
                     }}
                     transition={{
                       type: "spring",
@@ -171,9 +190,9 @@ export default function Gallery() {
                             fill
                             className={cn(
                               "object-cover transition-opacity duration-300",
-                              !isActive && "opacity-40 grayscale-30" // dim background items
+                              !isActive && "brightness-[0.45]"
                             )}
-                            sizes="(max-width: 768px) 260px, 380px"
+                            sizes="(max-width: 768px) 62vw, 420px"
                             priority={Math.abs(diff) <= 1}
                           />
                         ) : (
@@ -189,9 +208,9 @@ export default function Gallery() {
                               initial={{ opacity: 0, y: 20 }}
                               animate={{ opacity: 1, y: 0 }}
                               exit={{ opacity: 0, transition: { duration: 0.1 } }}
-                              className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black via-black/60 to-transparent p-6 md:p-8 flex flex-col justify-end pt-24 pointer-events-none"
+                              className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black via-black/55 to-transparent p-5 md:p-6 flex flex-col justify-end pt-20 pointer-events-none"
                             >
-                              <h3 className="text-on-primary text-2xl md:text-3xl font-display font-bold mb-2 tracking-tight leading-tight">{folder.name}</h3>
+                              <h3 className="text-on-primary text-xl md:text-2xl font-display font-bold mb-1 tracking-tight leading-tight wrap-break-word">{folder.name}</h3>
                               <p className="text-on-surface-variant font-medium text-sm flex items-center gap-2">
                                 <span className="w-1.5 h-1.5 rounded-full bg-tertiary-container inline-block"></span>
                                 {folder.imageCount} {folder.imageCount === 1 ? t("photo") : t("photos")}
@@ -207,25 +226,25 @@ export default function Gallery() {
           </div>
         )}
 
-        {/* Carousel Navigation Controls */}
+        {/* Dot indicators, per the design — the active one stretches into a
+            pill. These replace the prev/next arrows, which the design does not
+            have and which could not wrap past the ends anyway. */}
         {!loading && folders.length > 1 && (
-          <div className="flex items-center gap-4 mt-12">
-            <button 
-              onClick={handlePrev}
-              disabled={activeIndex === 0}
-              className="p-4 rounded-full bg-surface-container border border-tertiary-container/25 hover:bg-surface-container-high hover:border-tertiary-container/50 transition-all text-tertiary-container disabled:opacity-30 disabled:cursor-not-allowed shadow-soft active:scale-95"
-              aria-label="Previous album"
-            >
-              <ChevronLeft size={24} />
-            </button>
-            <button 
-              onClick={handleNext}
-              disabled={activeIndex === folders.length - 1}
-              className="p-4 rounded-full bg-surface-container border border-tertiary-container/25 hover:bg-surface-container-high hover:border-tertiary-container/50 transition-all text-tertiary-container disabled:opacity-30 disabled:cursor-not-allowed shadow-soft active:scale-95"
-              aria-label="Next album"
-            >
-              <ChevronRight size={24} />
-            </button>
+          <div className="mt-10 flex items-center justify-center gap-2">
+            {folders.map((folder, idx) => (
+              <button
+                key={folder._id}
+                onClick={() => setActiveIndex(idx)}
+                aria-label={`Show album ${idx + 1} of ${folders.length}`}
+                aria-current={idx === activeIndex}
+                className={cn(
+                  "h-1.5 cursor-pointer rounded-full transition-all duration-300",
+                  idx === activeIndex
+                    ? "w-7 bg-tertiary-container"
+                    : "w-1.5 bg-on-surface-variant/40 hover:bg-tertiary-container/60"
+                )}
+              />
+            ))}
           </div>
         )}
 

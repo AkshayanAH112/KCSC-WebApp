@@ -25,50 +25,49 @@ export default function FinalCTA() {
       id="join"
       className="relative flex flex-col justify-center py-16 md:py-24 overflow-hidden"
     >
-      <div className="relative z-10 max-w-[1280px] mx-auto px-5 md:px-16 w-full">
-        {/* Inset banner rather than a full-bleed band: the section's own ground
-            is already near-black, so a full-bleed treatment would have nothing
-            to contrast against and the CTA would stop reading as a distinct
-            invitation. */}
-        <div className="relative overflow-hidden rounded-3xl border border-tertiary-container/35 shadow-elevated">
-          <div className="absolute inset-0 overflow-hidden">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <motion.img
-              src="/sections/finalcta-bg.jpg"
-              alt=""
-              aria-hidden="true"
-              style={{ y }}
-              className="absolute -top-[15%] left-0 h-[130%] w-full object-cover"
-            />
-            {/* Maroon gradient over the photo — it carries the design's banner
-                color while the photo underneath supplies texture and the
-                parallax shift. */}
-            <div className="absolute inset-0 bg-linear-to-r from-[#2f0c11]/95 via-[#481219]/90 to-[#25090d]/95" />
-            <div className="absolute top-0 right-0 h-full w-96 bg-radial from-tertiary-container/15 via-primary/10 to-transparent pointer-events-none" />
-            <div className="absolute -left-10 -bottom-10 h-48 w-48 rounded-full bg-tertiary-container/10 blur-2xl pointer-events-none" />
-          </div>
+      {/* Full-bleed band, per the design: the maroon runs edge to edge and the
+          content is what stays inside the container. Previously this was an
+          inset rounded card with a gold outline, which read as one more panel
+          in a page already full of them instead of as a break in the page. */}
+      <div className="absolute inset-0 overflow-hidden">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <motion.img
+          src="/sections/finalcta-bg.jpg"
+          alt=""
+          aria-hidden="true"
+          style={{ y }}
+          className="absolute -top-[15%] left-0 h-[130%] w-full object-cover"
+        />
+        {/* Maroon gradient over the photo — it carries the design's banner
+            colour while the photo underneath supplies texture and the
+            parallax shift. */}
+        <div className="absolute inset-0 bg-linear-to-r from-[#2f0c11]/95 via-[#481219]/90 to-[#25090d]/95" />
+        <div className="absolute top-0 right-0 h-full w-96 bg-radial from-tertiary-container/15 via-primary/10 to-transparent pointer-events-none" />
+        {/* Hairlines top and bottom are all that separate the band from the
+            page now that it has no border of its own. */}
+        <div className="absolute inset-x-0 top-0 h-px bg-tertiary-container/20" />
+        <div className="absolute inset-x-0 bottom-0 h-px bg-tertiary-container/20" />
+      </div>
 
-          <div className="relative z-10 flex flex-col items-center gap-8 p-8 text-center sm:p-12 md:flex-row md:justify-between md:text-left">
-            {/* The existing copy already splits the way this design wants it:
-                `title` is the short prompt ("Ready to take the field?") and
-                `description` is the substantive line, so they map onto the
-                eyebrow and the headline without inventing new strings. */}
-            <div className="max-w-2xl space-y-2">
-              <div className="flex items-center justify-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-tertiary-container md:justify-start">
-                <Sparkles size={16} />
-                <span>{t("title")}</span>
-              </div>
-              <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight text-on-primary">
-                {t("description")}
-              </h2>
-            </div>
-
-            <div className="shrink-0">
-              <Button size="lg" onClick={handleJoinClick}>
-                {t("join")}
-              </Button>
-            </div>
+      <div className="relative z-10 mx-auto flex w-full max-w-[1280px] flex-col items-center gap-8 px-5 text-center md:flex-row md:justify-between md:px-16 md:text-left">
+        {/* The existing copy already splits the way this design wants it:
+            `title` is the short prompt ("Ready to take the field?") and
+            `description` is the substantive line, so they map onto the
+            eyebrow and the headline without inventing new strings. */}
+        <div className="max-w-2xl space-y-2">
+          <div className="flex items-center justify-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-tertiary-container md:justify-start">
+            <Sparkles size={16} />
+            <span>{t("title")}</span>
           </div>
+          <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight text-on-primary">
+            {t("description")}
+          </h2>
+        </div>
+
+        <div className="shrink-0">
+          <Button size="lg" onClick={handleJoinClick}>
+            {t("join")}
+          </Button>
         </div>
       </div>
     </FadeInSection>
