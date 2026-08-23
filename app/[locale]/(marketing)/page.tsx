@@ -14,12 +14,35 @@ export async function generateMetadata() {
   return { alternates: localeAlternates("", locale) };
 }
 
+// Two linked entities in one graph.
+//
+// WebSite is what Google's "site names" feature reads to decide what to print
+// above the title in a result — without it, it falls back to the bare domain
+// ("kallarcentralsc.com" rather than "Kallar Central Sports Club"). It has to
+// be on the homepage, and its `name` is the string Google shows.
+//
 // SportsOrganization is schema.org's actual type for a club like this (there
-// is no "SportsClub" type) — helps Google understand the entity itself,
-// separate from any one page's content.
-const ORG_JSON_LD = {
+// is no "SportsClub" type) — it describes the entity itself, separate from any
+// one page's content. The @id references tie the two together so Google reads
+// them as one site published by one organisation, rather than as two
+// unrelated blobs.
+const SITE_ID = `${siteConfig.url}/#website`;
+const ORG_ID = `${siteConfig.url}/#organization`;
+
+const SITE_JSON_LD = {
   "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": SITE_ID,
+      name: siteConfig.name,
+      alternateName: [siteConfig.shortName, "பெரியகல்லாறு மத்திய விளையாட்டுக் கழகம்"],
+      url: siteConfig.url,
+      publisher: { "@id": ORG_ID },
+    },
+    {
   "@type": "SportsOrganization",
+  "@id": ORG_ID,
   name: siteConfig.name,
   alternateName: siteConfig.shortName,
   url: siteConfig.url,
@@ -35,6 +58,8 @@ const ORG_JSON_LD = {
   telephone: "+94777770023",
   email: "kallarcentralsportsclub@gmail.com",
   sameAs: ["https://www.facebook.com/kallarcentral.sportsclub/"],
+    },
+  ],
 };
 
 export default function Home() {
@@ -42,7 +67,7 @@ export default function Home() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(ORG_JSON_LD) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(SITE_JSON_LD) }}
       />
       <VideoScrubHero />
       <ClubIntro />
