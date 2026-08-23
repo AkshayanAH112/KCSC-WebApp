@@ -14,8 +14,14 @@ import { useTranslations, useLocale } from "next-intl";
 function KcscMark() {
   return (
     <div className="group flex items-center gap-3 pl-1">
-      <div className="relative w-11 h-11 shrink-0 overflow-hidden rounded-xl border border-tertiary-container/40 bg-surface-container shadow-soft transition-colors group-hover:border-tertiary-container">
-        <Image src="/Logo.jpeg" alt="KCSC Logo" fill className="object-contain" />
+      {/* The crest is maroon line art and needs a light plate — on the dark
+          navbar it would be maroon on near-black. logo-mark.png is the crest
+          with its outer white made transparent and cropped to the artwork, so
+          the plate matches its 543:640 proportions and no dead margin shows
+          inside the box. Logo.jpeg keeps its original white canvas and is
+          still the news-card fallback image. */}
+      <div className="relative h-11 aspect-[543/640] shrink-0 overflow-hidden rounded-lg border border-tertiary-container/40 bg-inverse-surface shadow-soft transition-colors group-hover:border-tertiary-container">
+        <Image src="/logo-mark.png" alt="KCSC Logo" fill className="object-contain" />
       </div>
       {/* Cinzel is reserved for the wordmark — it is the one place the design
           wants an inscriptional serif, and using it anywhere else would flatten

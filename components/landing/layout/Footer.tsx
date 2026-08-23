@@ -13,8 +13,8 @@ export default function Footer() {
         {/* Brand Section */}
         <div className="flex flex-col gap-2 max-w-sm">
           <div className="flex items-center gap-4">
-            <div className="relative w-14 h-14 shrink-0 overflow-hidden rounded-xl shadow-soft bg-surface-container border border-tertiary-container/40">
-              <Image src="/Logo.jpeg" alt="KCSC Logo" fill className="object-contain" />
+            <div className="relative h-14 aspect-[543/640] shrink-0 overflow-hidden rounded-lg shadow-soft bg-inverse-surface border border-tertiary-container/40">
+              <Image src="/logo-mark.png" alt="KCSC Logo" fill className="object-contain" />
             </div>
             <div className="leading-tight">
               <span className="block font-crest text-[15px] font-bold text-on-primary-container tracking-wider uppercase">
