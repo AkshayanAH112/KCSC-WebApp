@@ -173,6 +173,11 @@
       rgba(26, 8, 11, 0.85) 100%
     );
     border: 1px solid rgba(251, 191, 36, 0.15);
+    /* Prefixed first: Safari and iOS Safari still need -webkit- here, and this
+       is the one hand-written backdrop-filter in the project — Tailwind's own
+       backdrop-blur-* utilities emit both prefixes themselves. Without it every
+       card on the site loses its glass on iPhone. */
+    -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
   }
 
