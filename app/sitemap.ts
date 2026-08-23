@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import connectToDatabase from "@/lib/mongodb";
 import { Post, GalleryFolder } from "@/models";
 import { siteConfig } from "@/lib/constants";
-import { LOCALES } from "@/lib/seo";
+import { LOCALES, DEFAULT_LOCALE } from "@/lib/seo";
 
 // Queries the DB for posts/albums, so this can't be statically generated at
 // build time (same reason gallery/news pages use this) — it also means the
@@ -31,7 +31,10 @@ function localizedEntries(
   priority: number,
   lastModified?: Date
 ): MetadataRoute.Sitemap {
-  const languages = Object.fromEntries(LOCALES.map((l) => [l, `${siteConfig.url}/${l}${path}`]));
+  const languages = {
+    ...Object.fromEntries(LOCALES.map((l) => [l, `${siteConfig.url}/${l}${path}`])),
+    "x-default": `${siteConfig.url}/${DEFAULT_LOCALE}${path}`,
+  };
   return LOCALES.map((locale) => ({
     url: `${siteConfig.url}/${locale}${path}`,
     lastModified,

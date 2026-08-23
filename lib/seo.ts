@@ -4,6 +4,9 @@ import { siteConfig } from "@/lib/constants";
 export const LOCALES = ["en", "ta"] as const;
 export type Locale = (typeof LOCALES)[number];
 
+// Mirrors `defaultLocale` in proxy.ts — the locale "/" falls back to.
+export const DEFAULT_LOCALE: Locale = "en";
+
 /**
  * hreflang alternates + a self-referencing canonical for a given
  * locale-agnostic marketing path (e.g. "" for the homepage, "/about",
@@ -15,7 +18,15 @@ export type Locale = (typeof LOCALES)[number];
 export function localeAlternates(path: string, locale: string) {
   return {
     canonical: `/${locale}${path}`,
-    languages: Object.fromEntries(LOCALES.map((l) => [l, `/${l}${path}`])),
+    languages: {
+      ...Object.fromEntries(LOCALES.map((l) => [l, `/${l}${path}`])),
+      // Which version Google serves someone whose language matches neither
+      // en nor ta. Without it that choice is Google's guess. It points at the
+      // English page rather than at "/" because "/" 307s on Accept-Language —
+      // hreflang targets should be the 200 they resolve to, and `en` is the
+      // defaultLocale that redirect falls back to anyway (see proxy.ts).
+      "x-default": `/${DEFAULT_LOCALE}${path}`,
+    },
   };
 }
 
