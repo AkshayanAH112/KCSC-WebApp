@@ -62,11 +62,3 @@ export const teams = [
     description: "The pathway program for players progressing toward senior selection.",
   },
 ];
-
-// Real club history (see about.txt).
-export const achievements = [
-  { value: 8, suffix: "+", label: "Trophies Won" },
-  { value: 11, suffix: "+", label: "Years of Rivalry" },
-  { value: 17, suffix: "+", label: "Years in A Division" },
-  { value: 12, suffix: "", label: "Founding Members" },
-];

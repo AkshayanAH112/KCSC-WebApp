@@ -1,7 +1,6 @@
 import VideoScrubHero from "@/components/landing/VideoScrubHero";
 import ClubIntro from "@/components/landing/ClubIntro";
 import ProgramsSection from "@/components/landing/ProgramsSection";
-import AchievementsSection from "@/components/landing/AchievementsSection";
 import Gallery from "@/components/landing/Gallery";
 import News from "@/components/landing/News";
 import FinalCTA from "@/components/landing/FinalCTA";
@@ -48,7 +47,6 @@ export default function Home() {
       <VideoScrubHero />
       <ClubIntro />
       <ProgramsSection />
-      <AchievementsSection />
       <Gallery />
       <News />
       <FinalCTA />

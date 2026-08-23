@@ -9,7 +9,6 @@
     "Programs": "Programs",
     "Gallery": "Gallery",
     "News": "News",
-    "Legacy": "Legacy",
     "join": "Join The Club"
   },
   "VideoScrubHero": {
@@ -47,14 +46,6 @@
     "league_desc": "Competing in the Batticaloa District Cricket Association's A Division since 2009, alongside T20, ODI, and league tournaments.",
     "education_title": "Free Educational Support",
     "education_desc": "Free tuition classes for Grade 05 Scholarship Examination students, regardless of financial background."
-  },
-  "AchievementsSection": {
-    "eyebrow": "Club Legacy",
-    "title": "Built on Achievement.",
-    "trophies": "Trophies Won",
-    "rivalry": "Years of Rivalry",
-    "division": "Years in A Division",
-    "founding": "Founding Members"
   },
   "FinalCTA": {
     "title": "Ready to take the field?",
