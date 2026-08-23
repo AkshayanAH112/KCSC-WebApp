@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 
 function AboutImagePlaceholder({ label }: { label: string }) {
   return (
-    <div className="relative flex aspect-4/3 w-full flex-col items-center justify-center gap-3 rounded-3xl border-2 border-dashed border-outline-variant/60 bg-surface-container-low text-on-surface-variant/50">
+    <div className="relative flex aspect-4/3 w-full flex-col items-center justify-center gap-3 rounded-3xl border-2 border-dashed border-tertiary-container/30 bg-surface-container-low text-on-surface-variant/50">
       <ImageIcon size={40} strokeWidth={1.5} className="opacity-60" />
       <span className="px-6 text-center text-sm font-semibold tracking-wide uppercase">{label}</span>
     </div>

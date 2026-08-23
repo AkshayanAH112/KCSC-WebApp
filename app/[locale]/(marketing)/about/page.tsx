@@ -45,20 +45,20 @@ export default async function AboutPage() {
       <div className="min-h-screen bg-surface-container-lowest pt-24 pb-24">
         <header className="mx-auto mb-16 max-w-[1280px] px-5 md:px-16">
           <div className="mb-6 flex items-center gap-2 text-xs font-bold tracking-widest text-on-surface-variant uppercase md:text-sm">
-            <Link href="/" className="transition-colors hover:text-primary">
+            <Link href="/" className="transition-colors hover:text-tertiary-container">
               {t("home")}
             </Link>
             <ChevronRight size={14} />
-            <span className="text-primary">{t("about")}</span>
+            <span className="text-tertiary-container">{t("about")}</span>
           </div>
           <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <div>
-              <div className="mb-2 inline-flex items-center gap-2 text-xs font-bold tracking-[0.2em] text-primary uppercase">
-                <span className="h-0.5 w-6 bg-primary"></span>
+              <div className="mb-2 inline-flex items-center gap-2 text-xs font-bold tracking-[0.2em] text-tertiary-container uppercase">
+                <span className="h-0.5 w-6 bg-tertiary-container"></span>
                 {t("eyebrow")}
               </div>
               <h1 className="font-display text-4xl leading-tight font-bold tracking-tight text-on-surface md:text-6xl">
-                {t("title")} <span className="text-primary">{t("accent")}</span>
+                {t("title")} <span className="text-tertiary-container">{t("accent")}</span>
               </h1>
             </div>
             <p className="max-w-md pb-2 text-base text-on-surface-variant md:text-right">

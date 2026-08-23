@@ -78,17 +78,17 @@ export default function RenewModal() {
         className="absolute inset-0 bg-background/80 backdrop-blur-md transition-opacity"
         onClick={handleClose}
       />
-      <div className="relative w-full max-w-lg bg-surface border border-outline-variant rounded-2xl shadow-elevated overflow-hidden animate-in fade-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto">
+      <div className="relative w-full max-w-lg bg-surface-container-low border border-tertiary-container/25 rounded-2xl shadow-elevated overflow-hidden animate-in fade-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto">
         <button
           onClick={handleClose}
-          className="absolute top-4 right-4 p-2 text-on-surface-variant hover:text-on-surface bg-surface-container rounded-full transition-colors z-10"
+          className="absolute top-4 right-4 p-2 text-on-surface-variant hover:text-tertiary-container bg-surface-container border border-tertiary-container/20 rounded-full transition-colors z-10"
         >
           <X size={20} />
         </button>
 
         {isSubmitted ? (
           <div className="p-12 flex flex-col items-center text-center space-y-4">
-            <CheckCircle2 size={64} className="text-primary" />
+            <CheckCircle2 size={64} className="text-tertiary-container" />
             <h3 className="text-2xl font-display font-bold text-on-surface">Renewal Submitted!</h3>
             <p className="text-on-surface-variant">
               The club will verify your payment and confirm your renewed membership shortly.
@@ -106,12 +106,12 @@ export default function RenewModal() {
             <fieldset className="space-y-4">
               <div className="space-y-1">
                 <label className="text-sm font-medium text-on-surface">Phone Number</label>
-                <input name="phone" required type="tel" pattern="^\+?[0-9]{7,15}$" title="Digits only, with an optional leading +" className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface" placeholder="e.g. +94771234567" />
+                <input name="phone" required type="tel" pattern="^\+?[0-9]{7,15}$" title="Digits only, with an optional leading +" className="w-full bg-surface-container-low border border-tertiary-container/25 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-tertiary-container/50 text-on-surface" placeholder="e.g. +94771234567" />
                 <p className="text-xs text-on-surface-variant">The phone number on your existing membership.</p>
               </div>
               <div className="space-y-1">
                 <label className="text-sm font-medium text-on-surface">NIC Number (if you have one on file)</label>
-                <input name="nic" type="text" className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface" placeholder="e.g. 123456789V" />
+                <input name="nic" type="text" className="w-full bg-surface-container-low border border-tertiary-container/25 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-tertiary-container/50 text-on-surface" placeholder="e.g. 123456789V" />
               </div>
 
               <div className="space-y-1">
@@ -119,7 +119,7 @@ export default function RenewModal() {
                 <select
                   value={jobCategory}
                   onChange={(e) => setJobCategory(e.target.value)}
-                  className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface appearance-none"
+                  className="w-full bg-surface-container-low border border-tertiary-container/25 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-tertiary-container/50 text-on-surface appearance-none"
                 >
                   {JOB_CATEGORIES.map((c) => (
                     <option key={c.value} value={c.value}>{c.label}</option>
@@ -134,7 +134,7 @@ export default function RenewModal() {
                     required
                     value={jobOther}
                     onChange={(e) => setJobOther(e.target.value)}
-                    className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface"
+                    className="w-full bg-surface-container-low border border-tertiary-container/25 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-tertiary-container/50 text-on-surface"
                     placeholder="e.g. Teacher, Engineer, Business Owner"
                   />
                 </div>
@@ -142,10 +142,10 @@ export default function RenewModal() {
             </fieldset>
 
             <fieldset className="space-y-4">
-              <div className="rounded-lg border border-outline-variant bg-surface-container-low p-4 space-y-2">
+              <div className="rounded-lg border border-tertiary-container/25 bg-surface-container p-4 space-y-2">
                 <p className="text-sm text-on-surface">
                   Annual renewal fee for <strong>{JOB_CATEGORIES.find((c) => c.value === jobCategory)?.label}</strong>:{" "}
-                  <span className="font-bold text-primary">{FEE_CURRENCY} {fee}</span>
+                  <span className="font-bold text-tertiary-container">{FEE_CURRENCY} {fee}</span>
                 </p>
                 <p className="text-xs text-on-surface-variant">Pay by bank transfer to:</p>
                 <dl className="text-xs text-on-surface grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5">
@@ -167,7 +167,7 @@ export default function RenewModal() {
                   required
                   type="file"
                   accept="image/jpeg,image/png,image/webp,image/avif,application/pdf"
-                  className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface text-sm file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-on-primary"
+                  className="w-full bg-surface-container-low border border-tertiary-container/25 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-tertiary-container/50 text-on-surface text-sm file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-on-primary"
                 />
               </div>
             </fieldset>

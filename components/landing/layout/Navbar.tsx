@@ -13,15 +13,18 @@ import { useTranslations, useLocale } from "next-intl";
 
 function KcscMark() {
   return (
-    <div className="flex items-center gap-3 pl-1">
-      <div className="relative w-11 h-11 shrink-0 overflow-hidden rounded-full shadow-soft bg-surface border border-outline-variant/30">
+    <div className="group flex items-center gap-3 pl-1">
+      <div className="relative w-11 h-11 shrink-0 overflow-hidden rounded-xl border border-tertiary-container/40 bg-surface-container shadow-soft transition-colors group-hover:border-tertiary-container">
         <Image src="/Logo.jpeg" alt="KCSC Logo" fill className="object-contain" />
       </div>
-      <div className="leading-tight hidden sm:block">
-        <span className="block text-[11px] font-bold text-primary tracking-[0.15em] uppercase">
+      {/* Cinzel is reserved for the wordmark — it is the one place the design
+          wants an inscriptional serif, and using it anywhere else would flatten
+          the distinction between the mark and ordinary headings. */}
+      <div className="leading-none hidden sm:block">
+        <span className="block font-crest text-sm font-bold text-on-primary-container tracking-wider uppercase transition-colors group-hover:text-on-primary">
           Kallar Central
         </span>
-        <span className="block text-[11px] font-bold text-primary tracking-[0.15em] uppercase">
+        <span className="mt-0.5 block text-[10px] font-semibold text-tertiary-container/80 tracking-widest uppercase">
           Sports Club
         </span>
       </div>
@@ -143,8 +146,8 @@ export default function Navbar() {
           className={cn(
             "pointer-events-auto w-full transition-all duration-500 flex items-center px-5 md:px-12 border-b",
             isScrolled || !isHomePage
-              ? "bg-surface/90 backdrop-blur-xl border-outline-variant/50 shadow-sm py-3"
-              : "bg-transparent border-transparent py-5 md:py-6"
+              ? "bg-background/90 backdrop-blur-xl border-tertiary-container/20 shadow-elevated py-3"
+              : "bg-linear-to-b from-background/90 via-background/50 to-transparent border-transparent py-5 md:py-6"
           )}
         >
           {/* Left: Logo */}
@@ -158,21 +161,26 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* Center: Desktop Nav Links */}
-          <div className={cn("hidden md:flex items-center justify-center", isTamil ? "gap-4" : "gap-8")}>
+          {/* Center: Desktop Nav Links. These stay real page routes
+              (/about, /gallery, /news) plus the /#home anchor — the pill
+              styling is cosmetic and does not change where anything goes. */}
+          <div
+            className={cn(
+              "hidden md:flex items-center justify-center rounded-full border border-tertiary-container/15 bg-surface-container/60 backdrop-blur-md shadow-inner",
+              isTamil ? "gap-1 px-3 py-1.5" : "gap-1 px-4 py-1.5"
+            )}
+          >
             {navLinks.map((link) => (
               <Link
                 key={link.label}
                 href={`/${locale}${link.href}`}
                 onClick={(e) => handleNavClick(e, link.href)}
                 className={cn(
-                  "relative font-semibold transition-colors duration-300 focus-visible:outline-none whitespace-nowrap",
-                  isTamil ? "text-[13px]" : "text-[15px]",
+                  "relative rounded-full px-3.5 py-1.5 font-medium tracking-wide transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary whitespace-nowrap",
+                  isTamil ? "text-[12px]" : "text-[13px]",
                   activeSection === link.label
-                    ? "text-primary"
-                    : (isScrolled || !isHomePage)
-                      ? "text-on-surface-variant hover:text-primary"
-                      : "text-white/80 hover:text-white"
+                    ? "bg-linear-to-r from-primary-container/90 to-surface-container-lowest text-tertiary-container border border-tertiary-container/30"
+                    : "text-on-surface-variant hover:text-on-primary-container hover:bg-primary-container/40"
                 )}
               >
                 {t(link.label)}
@@ -182,7 +190,7 @@ export default function Navbar() {
 
           {/* Right: CTA & Mobile Menu Toggle */}
           <div className="flex-1 flex items-center justify-end gap-2 md:gap-4">
-            <LanguageSwitcher isScrolled={isScrolled || !isHomePage} />
+            <LanguageSwitcher />
             
             <Button 
               className={cn(
@@ -195,7 +203,7 @@ export default function Navbar() {
             </Button>
 
             <button
-              className="cursor-pointer md:hidden text-on-surface p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-full bg-surface shadow-sm border border-outline-variant/50"
+              className="cursor-pointer md:hidden text-tertiary-container p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary rounded-lg bg-primary-container/50 border border-tertiary-container/30 hover:text-on-primary transition-colors"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               aria-label="Toggle Menu"
             >
@@ -207,7 +215,7 @@ export default function Navbar() {
 
       {/* Mobile Menu Drawer */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-40 bg-surface/98 backdrop-blur-md pt-28 px-5 md:hidden flex flex-col gap-6 overflow-y-auto pb-8">
+        <div className="fixed inset-0 z-40 bg-background/98 backdrop-blur-md pt-28 px-5 md:hidden flex flex-col gap-6 overflow-y-auto pb-8">
           {navLinks.map((link) => (
             <Link
               key={link.label}
@@ -215,14 +223,14 @@ export default function Navbar() {
               className={cn(
                   "font-display font-bold transition-colors",
                   isTamil ? "text-xl" : "text-2xl",
-                  activeSection === link.label ? "text-primary" : "text-on-surface-variant"
+                  activeSection === link.label ? "text-tertiary-container" : "text-on-surface-variant hover:text-on-primary-container"
                 )}
               onClick={(e) => handleNavClick(e, link.href)}
             >
               {t(link.label)}
             </Link>
           ))}
-          <div className="h-px w-full bg-outline-variant/50 my-2" />
+          <div className="h-px w-full bg-tertiary-container/20 my-2" />
           <Button size="lg" className="w-full justify-center rounded-full" onClick={handleJoinClick}>
             {t("join")}
           </Button>

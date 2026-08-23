@@ -38,7 +38,7 @@ export default function LightboxGallery({ images }: LightboxGalleryProps) {
 
   if (images.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 bg-surface-container-low rounded-2xl border border-outline-variant/30 text-on-surface-variant">
+      <div className="flex flex-col items-center justify-center p-12 bg-surface-container-low rounded-2xl border border-tertiary-container/15 text-on-surface-variant">
         <ImageIcon className="w-12 h-12 mb-4 opacity-50" />
         <p>{t("no_photos")}</p>
       </div>
@@ -52,7 +52,7 @@ export default function LightboxGallery({ images }: LightboxGalleryProps) {
           <div 
             key={img._id} 
             onClick={() => openLightbox(idx)}
-            className="relative rounded-2xl overflow-hidden bg-surface-container border border-outline-variant/30 shadow-soft hover:shadow-elevated transition-all duration-300 group aspect-[4/3] cursor-pointer"
+            className="relative rounded-2xl overflow-hidden bg-surface-container border border-tertiary-container/15 shadow-soft hover:shadow-elevated transition-all duration-300 group aspect-[4/3] cursor-pointer"
           >
             <Image 
               src={img.url} 

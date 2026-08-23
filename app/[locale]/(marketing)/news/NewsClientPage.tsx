@@ -49,18 +49,18 @@ export default function NewsClientPage({ posts }: { posts: any[] }) {
       {/* Header */}
       <header className="max-w-[1280px] mx-auto px-5 md:px-16 pt-4 mb-8">
         <div className="flex items-center gap-2 text-xs md:text-sm font-bold uppercase tracking-widest text-on-surface-variant mb-6">
-          <Link href="/" className="hover:text-primary transition-colors">{t("home")}</Link>
+          <Link href="/" className="hover:text-tertiary-container transition-colors">{t("home")}</Link>
           <ChevronRight size={14} />
-          <span className="text-primary">{t("news")}</span>
+          <span className="text-tertiary-container">{t("news")}</span>
         </div>
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <div className="inline-flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-[0.2em] mb-2">
+            <div className="inline-flex items-center gap-2 text-tertiary-container font-bold text-xs uppercase tracking-[0.2em] mb-2">
               <span className="w-6 h-0.5 bg-primary"></span>
               {t("eyebrow")}
             </div>
             <h1 className="text-4xl md:text-6xl font-display font-bold text-on-surface leading-tight tracking-tight">
-              {t("title")} <span className="text-primary">{t("accent")}</span>
+              {t("title")} <span className="text-tertiary-container">{t("accent")}</span>
             </h1>
           </div>
           <p className="text-base text-on-surface-variant max-w-md md:text-right pb-2">
@@ -71,7 +71,7 @@ export default function NewsClientPage({ posts }: { posts: any[] }) {
 
       {/* Toolbar */}
       <div className="max-w-[1280px] mx-auto px-5 md:px-16 mb-12">
-        <div className="flex flex-col md:flex-row items-center gap-6 p-4 md:p-5 bg-surface rounded-2xl border border-outline-variant/30 shadow-soft">
+        <div className="flex flex-col md:flex-row items-center gap-6 p-4 md:p-5 bg-surface rounded-2xl border border-tertiary-container/15 shadow-soft">
           <div className="relative w-full md:w-64 shrink-0">
             <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant" />
             <input 
@@ -79,7 +79,7 @@ export default function NewsClientPage({ posts }: { posts: any[] }) {
               placeholder={t("search_placeholder")} 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-surface-container-low border border-outline-variant/30 rounded-xl py-3 pl-12 pr-4 text-sm text-on-surface focus:outline-none focus:border-primary transition-colors"
+              className="w-full bg-surface-container-low border border-tertiary-container/15 rounded-xl py-3 pl-12 pr-4 text-sm text-on-surface focus:outline-none focus:border-primary transition-colors"
             />
           </div>
           
@@ -92,7 +92,7 @@ export default function NewsClientPage({ posts }: { posts: any[] }) {
                 className={`text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-lg border transition-colors ${
                   activeCategory === cat.value 
                   ? "bg-primary border-primary text-on-primary" 
-                  : "bg-surface-container-low border-outline-variant/30 text-on-surface-variant hover:border-primary/50"
+                  : "bg-surface-container-low border-tertiary-container/15 text-on-surface-variant hover:border-primary/50"
                 }`}
               >
                 {cat.label}
@@ -104,7 +104,7 @@ export default function NewsClientPage({ posts }: { posts: any[] }) {
 
       {filteredPosts.length === 0 ? (
         <div className="max-w-[1280px] mx-auto px-5 md:px-16">
-          <div className="p-12 text-center text-on-surface-variant bg-surface-container-low border border-outline-variant/30 rounded-2xl">
+          <div className="p-12 text-center text-on-surface-variant bg-surface-container-low border border-tertiary-container/15 rounded-2xl">
             {t("no_results")}
           </div>
         </div>
@@ -116,7 +116,7 @@ export default function NewsClientPage({ posts }: { posts: any[] }) {
             
             {/* Featured Post (Left, 7 columns) */}
             {featuredPost && (
-              <Link href={`/news/${featuredPost.slug}`} className="lg:col-span-7 group flex flex-col relative rounded-3xl overflow-hidden border border-outline-variant/30 shadow-sm transition-transform hover:-translate-y-1 min-h-100">
+              <Link href={`/news/${featuredPost.slug}`} className="lg:col-span-7 group flex flex-col relative rounded-3xl overflow-hidden border border-tertiary-container/15 shadow-sm transition-transform hover:-translate-y-1 min-h-100">
                 <div className="absolute top-4 left-4 z-10 bg-primary text-on-primary text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg shadow-sm">
                   {featuredPost.category}
                 </div>
@@ -133,14 +133,14 @@ export default function NewsClientPage({ posts }: { posts: any[] }) {
                 </div>
 
                 <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 z-10">
-                  <h2 className="text-3xl md:text-4xl font-display font-bold text-white leading-tight mb-3 group-hover:text-primary transition-colors line-clamp-2">
+                  <h2 className="text-3xl md:text-4xl font-display font-bold text-white leading-tight mb-3 group-hover:text-tertiary-container transition-colors line-clamp-2">
                     {featuredPost.title}
                   </h2>
                   <div className="flex items-center justify-between">
                     <span className="text-xs md:text-sm font-semibold text-white/80">
                       {formatDate(featuredPost.publishedAt || featuredPost.createdAt)}
                     </span>
-                    <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary">
+                    <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-tertiary-container">
                       {t("read_story")} <ChevronRight size={14} />
                     </span>
                   </div>
@@ -150,8 +150,8 @@ export default function NewsClientPage({ posts }: { posts: any[] }) {
 
             {/* Aside Posts (Right, 5 columns) */}
             {asidePosts.length > 0 && (
-              <aside className="lg:col-span-5 flex flex-col h-full bg-surface-container-low rounded-3xl border border-outline-variant/30 p-1">
-                <div className="p-4 flex items-center justify-between border-b border-outline-variant/30 mx-3">
+              <aside className="lg:col-span-5 flex flex-col h-full bg-surface-container-low rounded-3xl border border-tertiary-container/15 p-1">
+                <div className="p-4 flex items-center justify-between border-b border-tertiary-container/15 mx-3">
                   <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant flex items-center gap-2">
                     <span className="w-4 h-0.5 bg-primary"></span>
                     {t("more_headlines")}
@@ -160,7 +160,7 @@ export default function NewsClientPage({ posts }: { posts: any[] }) {
                 
                 <div className="flex flex-col flex-1">
                   {asidePosts.map((post, index) => (
-                    <Link key={post._id} href={`/news/${post.slug}`} className={`flex gap-4 p-5 transition-all group relative flex-1 items-center ${index !== asidePosts.length - 1 ? 'border-b border-outline-variant/20' : ''} hover:bg-surface-container-high/50 first:rounded-t-none last:rounded-b-3xl`}>
+                    <Link key={post._id} href={`/news/${post.slug}`} className={`flex gap-4 p-5 transition-all group relative flex-1 items-center ${index !== asidePosts.length - 1 ? 'border-b border-tertiary-container/10' : ''} hover:bg-surface-container-high/50 first:rounded-t-none last:rounded-b-3xl`}>
                       <div className="relative w-20 h-20 md:w-24 md:h-24 shrink-0 rounded-xl overflow-hidden bg-surface-container-high shadow-sm">
                         <Image 
                           src={post.coverImageUrl || "/Logo.jpeg"} 
@@ -170,10 +170,10 @@ export default function NewsClientPage({ posts }: { posts: any[] }) {
                         />
                       </div>
                       <div className="flex flex-col flex-1 min-w-0 h-full justify-center pr-6">
-                        <span className="text-[9px] font-bold uppercase tracking-widest text-primary mb-1.5 truncate">
+                        <span className="text-[9px] font-bold uppercase tracking-widest text-tertiary-container mb-1.5 truncate">
                           {post.category}
                         </span>
-                        <h3 className="text-sm md:text-base font-display font-bold text-on-surface leading-snug line-clamp-2 mb-2 group-hover:text-primary transition-colors">
+                        <h3 className="text-sm md:text-base font-display font-bold text-on-surface leading-snug line-clamp-2 mb-2 group-hover:text-tertiary-container transition-colors">
                           {post.title}
                         </h3>
                         <div className="mt-auto">
@@ -182,7 +182,7 @@ export default function NewsClientPage({ posts }: { posts: any[] }) {
                           </span>
                         </div>
                       </div>
-                      <div className="absolute right-5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-surface border border-outline-variant/30 flex items-center justify-center text-on-surface-variant group-hover:bg-primary group-hover:text-on-primary group-hover:border-primary transition-colors shadow-sm">
+                      <div className="absolute right-5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-surface border border-tertiary-container/15 flex items-center justify-center text-on-surface-variant group-hover:bg-primary group-hover:text-on-primary group-hover:border-primary transition-colors shadow-sm">
                         <ChevronRight size={14} />
                       </div>
                     </Link>
@@ -194,7 +194,7 @@ export default function NewsClientPage({ posts }: { posts: any[] }) {
 
           {/* Trending Block */}
           {trendingPosts.length > 0 && (
-            <section className="pt-16 border-t border-outline-variant/30">
+            <section className="pt-16 border-t border-tertiary-container/15">
               <div className="flex items-center gap-4 mb-2">
                 <h2 className="text-2xl md:text-3xl font-display font-bold text-on-surface uppercase tracking-wide">
                   {t("trending")}
@@ -205,15 +205,15 @@ export default function NewsClientPage({ posts }: { posts: any[] }) {
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {trendingPosts.map((post, i) => (
-                  <Link key={post._id} href={`/news/${post.slug}`} className="flex gap-4 p-5 rounded-2xl bg-surface border border-outline-variant/30 shadow-sm hover:border-primary/40 hover:shadow-md transition-all group">
-                    <span className="text-4xl font-display font-bold text-primary opacity-50 group-hover:opacity-100 transition-opacity">
+                  <Link key={post._id} href={`/news/${post.slug}`} className="flex gap-4 p-5 rounded-2xl bg-surface border border-tertiary-container/15 shadow-sm hover:border-primary/40 hover:shadow-md transition-all group">
+                    <span className="text-4xl font-display font-bold text-tertiary-container opacity-50 group-hover:opacity-100 transition-opacity">
                       0{i + 1}
                     </span>
                     <div className="flex flex-col min-w-0 pt-1">
                       <span className="text-[9px] font-bold uppercase tracking-widest text-on-surface-variant mb-1">
                         {post.category.replace("-", " ")}
                       </span>
-                      <h3 className="text-xl font-display font-bold text-on-surface leading-tight line-clamp-2 mb-3 group-hover:text-primary transition-colors">
+                      <h3 className="text-xl font-display font-bold text-on-surface leading-tight line-clamp-2 mb-3 group-hover:text-tertiary-container transition-colors">
                         {post.title}
                       </h3>
                       <span className="text-[10px] font-semibold text-on-surface-variant mt-auto">
@@ -228,7 +228,7 @@ export default function NewsClientPage({ posts }: { posts: any[] }) {
 
           {/* Recent News Grid */}
           {recentPosts.length > 0 && (
-            <section className="pt-16 border-t border-outline-variant/30">
+            <section className="pt-16 border-t border-tertiary-container/15">
               <h2 className="text-2xl md:text-3xl font-display font-bold text-on-surface uppercase tracking-wide mb-2">
                 {t("recent")}
               </h2>
@@ -236,7 +236,7 @@ export default function NewsClientPage({ posts }: { posts: any[] }) {
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {recentPosts.map(post => (
-                  <Link key={post._id} href={`/news/${post.slug}`} className="flex flex-col rounded-2xl bg-surface border border-outline-variant/30 shadow-sm hover:border-primary/40 hover:shadow-md transition-all overflow-hidden group">
+                  <Link key={post._id} href={`/news/${post.slug}`} className="flex flex-col rounded-2xl bg-surface border border-tertiary-container/15 shadow-sm hover:border-primary/40 hover:shadow-md transition-all overflow-hidden group">
                     <div className="relative aspect-16/10 w-full overflow-hidden bg-surface-container-high">
                       <Image 
                         src={post.coverImageUrl || "/Logo.jpeg"} 
@@ -246,10 +246,10 @@ export default function NewsClientPage({ posts }: { posts: any[] }) {
                       />
                     </div>
                     <div className="flex flex-col p-5 flex-1">
-                      <span className="text-[9px] font-bold uppercase tracking-widest text-primary mb-2">
+                      <span className="text-[9px] font-bold uppercase tracking-widest text-tertiary-container mb-2">
                         {post.category.replace("-", " ")}
                       </span>
-                      <h3 className="text-xl font-display font-bold text-on-surface leading-tight line-clamp-2 mb-4 group-hover:text-primary transition-colors">
+                      <h3 className="text-xl font-display font-bold text-on-surface leading-tight line-clamp-2 mb-4 group-hover:text-tertiary-container transition-colors">
                         {post.title}
                       </h3>
                       <div className="flex items-center justify-between mt-auto">
@@ -269,7 +269,7 @@ export default function NewsClientPage({ posts }: { posts: any[] }) {
                 <div className="mt-12 text-center">
                   <button 
                     onClick={() => setVisibleRecentCount(Math.max(100, allRecentPosts.length))}
-                    className="inline-flex items-center justify-center px-8 py-3 bg-surface border-2 border-outline-variant/50 text-on-surface font-bold uppercase tracking-widest text-xs rounded-xl hover:bg-primary hover:text-on-primary hover:border-primary transition-colors"
+                    className="inline-flex items-center justify-center px-8 py-3 bg-surface border-2 border-tertiary-container/25 text-on-surface font-bold uppercase tracking-widest text-xs rounded-xl hover:bg-primary hover:text-on-primary hover:border-primary transition-colors"
                   >
                     {t("load_more")}
                   </button>

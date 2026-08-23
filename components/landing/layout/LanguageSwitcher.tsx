@@ -6,11 +6,10 @@ import { useLocale } from "next-intl";
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
-interface LanguageSwitcherProps {
-  isScrolled?: boolean;
-}
-
-export default function LanguageSwitcher({ isScrolled = false }: LanguageSwitcherProps) {
+// The navbar used to pass `isScrolled` so this could swap between light
+// chrome and white-on-video; with a single dark theme both branches resolve to
+// the same treatment, so the prop is gone rather than left inert.
+export default function LanguageSwitcher() {
   const router = useRouter();
   const pathname = usePathname();
   const locale = useLocale();
@@ -47,12 +46,8 @@ export default function LanguageSwitcher({ isScrolled = false }: LanguageSwitche
       <button
         onClick={() => setOpen((prev) => !prev)}
         className={cn(
-          "relative flex items-center gap-1.5 font-semibold transition-colors duration-200 focus-visible:outline-none whitespace-nowrap",
-          open
-            ? "text-primary"
-            : isScrolled
-              ? "text-on-surface-variant hover:text-primary"
-              : "text-white/80 hover:text-white"
+          "relative flex items-center gap-1.5 font-semibold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary rounded-full whitespace-nowrap",
+          open ? "text-tertiary-container" : "text-on-surface-variant hover:text-tertiary-container"
         )}
       >
         <Globe size={18} />
@@ -65,22 +60,17 @@ export default function LanguageSwitcher({ isScrolled = false }: LanguageSwitche
       {open && (
         <div 
           className={cn(
-            "absolute top-[calc(100%+12px)] right-0 z-50 w-32 rounded-xl overflow-hidden py-1.5 transition-all duration-300 shadow-soft backdrop-blur-xl animate-in fade-in slide-in-from-top-2",
-            // Liquid Glass adapting to the Navbar's current state
-            isScrolled 
-              ? "bg-surface/80 border border-outline-variant/40" 
-              : "bg-black/10 border border-white/20"
+            "absolute top-[calc(100%+12px)] right-0 z-50 w-32 rounded-xl overflow-hidden py-1.5 transition-all duration-300 shadow-elevated backdrop-blur-xl animate-in fade-in slide-in-from-top-2",
+            "bg-surface-container/90 border border-tertiary-container/25"
           )}
         >
           <button
             onClick={() => switchLanguage("en")}
             className={cn(
               "w-full text-left px-4 py-2 text-[14px] font-semibold transition-colors duration-200",
-              locale === "en" 
-                ? "text-primary" 
-                : isScrolled
-                  ? "text-on-surface-variant hover:text-primary hover:bg-surface-container/50"
-                  : "text-white/80 hover:text-white hover:bg-white/10"
+              locale === "en"
+                ? "text-tertiary-container"
+                : "text-on-surface-variant hover:text-on-primary-container hover:bg-primary-container/40"
             )}
           >
             English
@@ -90,11 +80,9 @@ export default function LanguageSwitcher({ isScrolled = false }: LanguageSwitche
             onClick={() => switchLanguage("ta")}
             className={cn(
               "w-full text-left px-4 py-2 text-[14px] font-semibold transition-colors duration-200",
-              locale === "ta" 
-                ? "text-primary" 
-                : isScrolled
-                  ? "text-on-surface-variant hover:text-primary hover:bg-surface-container/50"
-                  : "text-white/80 hover:text-white hover:bg-white/10"
+              locale === "ta"
+                ? "text-tertiary-container"
+                : "text-on-surface-variant hover:text-on-primary-container hover:bg-primary-container/40"
             )}
           >
             தமிழ்

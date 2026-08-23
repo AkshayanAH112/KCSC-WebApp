@@ -72,7 +72,7 @@ function FlipCard({ post, index, locale }: { post: Post; index: number; locale: 
       >
         {/* Front Side: Cover Image */}
         <div 
-          className="absolute inset-0 bg-black rounded-4xl overflow-hidden shadow-lg group-hover:shadow-xl transition-shadow border border-outline-variant/20"
+          className="absolute inset-0 bg-surface-container-lowest rounded-4xl overflow-hidden shadow-elevated transition-shadow border border-tertiary-container/20 group-hover:border-tertiary-container/40"
           style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
         >
           {post.coverImageUrl ? (
@@ -86,12 +86,12 @@ function FlipCard({ post, index, locale }: { post: Post; index: number; locale: 
           ) : (
             <div className="absolute inset-0 bg-surface-variant flex items-center justify-center" />
           )}
-          <div className="absolute inset-0 bg-linear-to-t from-black via-black/40 to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-linear-to-t from-[#0d0405] via-[#0d0405]/55 to-transparent pointer-events-none" />
           <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
-            <span className="px-3 py-1 bg-primary text-on-primary text-[10px] font-bold uppercase tracking-wider rounded-full mb-4 inline-block shadow-sm">
+            <span className="px-3 py-1 bg-primary-container/80 border border-tertiary-container/30 text-tertiary-container text-[10px] font-bold uppercase tracking-wider rounded-full mb-4 inline-block backdrop-blur-md">
               {post.category}
             </span>
-            <h3 className="text-white text-xl md:text-2xl font-display font-bold leading-tight">
+            <h3 className="text-on-primary text-xl md:text-2xl font-display font-bold leading-tight">
               {post.title}
             </h3>
           </div>
@@ -99,11 +99,11 @@ function FlipCard({ post, index, locale }: { post: Post; index: number; locale: 
 
         {/* Back Side: Text Content */}
         <div 
-          className="absolute inset-0 bg-surface-container-lowest border border-outline-variant/30 rounded-4xl shadow-lg p-6 md:p-8 flex flex-col"
+          className="card-luxury absolute inset-0 rounded-4xl shadow-elevated p-6 md:p-8 flex flex-col"
           style={{ transform: "rotateY(180deg)", backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
         >
           <div className="flex items-center justify-between gap-3 mb-6">
-            <span className="text-primary text-[10px] font-bold uppercase tracking-wider">
+            <span className="text-tertiary-container text-[10px] font-bold uppercase tracking-wider">
               {post.category}
             </span>
             <span className="text-xs font-medium text-on-surface-variant">
@@ -111,18 +111,18 @@ function FlipCard({ post, index, locale }: { post: Post; index: number; locale: 
             </span>
           </div>
           
-          <h3 className="text-xl md:text-2xl font-display font-bold text-on-surface mb-4 leading-tight line-clamp-3 h-18.75 md:h-22.5">
+          <h3 className="text-xl md:text-2xl font-display font-bold text-on-primary-container mb-4 leading-tight line-clamp-3 h-18.75 md:h-22.5">
             {post.title}
           </h3>
           
           <div className="relative flex-1 overflow-hidden mb-4">
-            <div className="absolute inset-x-0 bottom-0 h-16 bg-linear-to-t from-surface-container-lowest to-transparent pointer-events-none z-10" />
+            <div className="absolute inset-x-0 bottom-0 h-16 bg-linear-to-t from-[#1a080b] to-transparent pointer-events-none z-10" />
             <p className="text-on-surface-variant text-sm md:text-base whitespace-pre-line absolute inset-0">
               {post.excerpt ? `${post.excerpt}\n\n${post.content.replace(/<[^>]*>?/gm, '')}` : post.content.replace(/<[^>]*>?/gm, '')}
             </p>
           </div>
           
-          <div className="mt-auto pt-4 border-t border-outline-variant/30 flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/50">
+          <div className="mt-auto pt-4 border-t border-tertiary-container/20 flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-tertiary-container/50">
             <span>KCSC</span>
           </div>
         </div>
@@ -157,7 +157,7 @@ export default function News() {
       className="relative py-16 md:py-20 overflow-hidden"
     >
       <ParallaxDecor variant="maroon" />
-      <div className="absolute inset-0 bg-surface/50 backdrop-blur-sm pointer-events-none" />
+      <div className="absolute inset-0 bg-surface/40 pointer-events-none" />
       <div className="relative max-w-[1280px] mx-auto px-5 md:px-16">
 
         {/* Sleek Header matching Gallery/About */}
@@ -171,7 +171,7 @@ export default function News() {
           />
           <Link 
             href={`/${locale}/news`}
-            className="group flex items-center gap-2 text-primary font-semibold hover:text-on-surface transition-colors mb-2 md:mb-6"
+            className="group flex items-center gap-2 text-tertiary-container font-bold hover:text-on-primary transition-colors mb-2 md:mb-6"
           >
             {t("view_all")} 
             <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
@@ -180,10 +180,10 @@ export default function News() {
 
         {posts === null ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-            {[1, 2, 3].map(i => <div key={i} className="h-100 md:h-112.5 bg-surface-container rounded-4xl animate-pulse" />)}
+            {[1, 2, 3].map(i => <div key={i} className="h-100 md:h-112.5 bg-surface-container rounded-4xl animate-pulse border border-tertiary-container/10" />)}
           </div>
         ) : posts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center p-12 bg-surface-container-low rounded-3xl border border-outline-variant/30 text-on-surface-variant max-w-6xl mx-auto h-100">
+          <div className="card-luxury flex flex-col items-center justify-center p-12 rounded-3xl text-on-surface-variant max-w-6xl mx-auto h-100">
             <p>{t("no_news")}</p>
           </div>
         ) : (

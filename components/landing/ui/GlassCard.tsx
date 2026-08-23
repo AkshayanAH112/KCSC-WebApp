@@ -10,7 +10,7 @@ export default function GlassCard({
   return (
     <div
       className={cn(
-        "card-surface shadow-soft rounded-2xl transition-all duration-300 hover:-translate-y-1",
+        "card-luxury shadow-soft rounded-2xl transition-all duration-300 hover:-translate-y-1",
         className
       )}
     >

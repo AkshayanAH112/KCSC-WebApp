@@ -70,7 +70,7 @@ export default async function FolderPage({ params }: { params: Promise<{ id: str
         <div className="mb-8 mt-6">
           <Link 
             href="/gallery"
-            className="inline-flex items-center gap-2 text-primary font-semibold text-sm hover:underline"
+            className="inline-flex items-center gap-2 text-tertiary-container font-semibold text-sm hover:underline"
           >
             <ChevronLeft size={16} /> {t("back")}
           </Link>

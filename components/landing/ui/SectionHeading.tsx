@@ -22,17 +22,20 @@ export default function SectionHeading({
       {eyebrow && (
         <span
           className={cn(
-            "text-xs font-semibold tracking-[0.2em] uppercase",
-            light ? "text-tertiary-container" : "text-secondary-fixed"
+            "text-xs font-bold tracking-[0.2em] uppercase",
+            light ? "text-tertiary-fixed" : "text-tertiary-container"
           )}
         >
           {eyebrow}
         </span>
       )}
+      {/* Headings sit at the pale end of the gold ramp rather than pure white —
+          the whole page is warm, and a neutral white headline reads as a
+          different design system dropped on top of it. */}
       <h2
         className={cn(
-          "font-display text-4xl md:text-5xl font-bold tracking-tight leading-tight",
-          light ? "text-on-tertiary" : "text-on-background"
+          "font-display text-4xl md:text-5xl font-extrabold tracking-tight leading-tight",
+          light ? "text-on-primary" : "text-on-primary-container"
         )}
       >
         {title}
@@ -41,8 +44,7 @@ export default function SectionHeading({
       {description && (
         <p
           className={cn(
-            "max-w-xl text-base leading-relaxed",
-            light ? "text-tertiary-fixed" : "text-on-surface-variant",
+            "max-w-xl text-base leading-relaxed text-on-surface-variant",
             align === "center" && "mx-auto"
           )}
         >

@@ -19,15 +19,18 @@ export default function ParallaxDecor({ variant = "gold" }: { variant?: "gold" |
 
   const color = variant === "gold" ? "bg-tertiary-container" : "bg-primary";
 
+  // Held brighter than the old light theme's 0.06-0.08: an 8%-opacity wash is
+  // invisible against #120608, and these glows are the only thing keeping the
+  // large dark sections from reading as flat black.
   return (
     <div ref={ref} className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
       <motion.div
         style={{ y: yA }}
-        className={`absolute -right-24 -top-24 h-72 w-72 md:h-96 md:w-96 rounded-full ${color} opacity-[0.08] blur-3xl`}
+        className={`absolute -right-24 -top-24 h-72 w-72 md:h-96 md:w-96 rounded-full ${color} opacity-[0.14] blur-3xl`}
       />
       <motion.div
         style={{ y: yB }}
-        className={`absolute -left-16 bottom-0 h-64 w-64 md:h-80 md:w-80 rounded-full ${color} opacity-[0.06] blur-3xl`}
+        className={`absolute -left-16 bottom-0 h-64 w-64 md:h-80 md:w-80 rounded-full ${color} opacity-[0.10] blur-3xl`}
       />
     </div>
   );

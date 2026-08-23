@@ -228,12 +228,15 @@ export default function VideoScrubHero() {
             />
           )}
 
+          {/* Scrims are maroon-black (#120608-family), not the neutral blue-black
+              they used to be — against the warm page below, a cool scrim made
+              the hero footage read as a different site. */}
           {/* Base scrim: keeps the footage from ever sitting raw behind the page. */}
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
               background:
-                "radial-gradient(ellipse 120% 90% at 50% 45%, rgba(10,10,18,0) 35%, rgba(10,10,18,.55) 100%)",
+                "radial-gradient(ellipse 120% 90% at 50% 45%, rgba(18,6,8,0) 30%, rgba(18,6,8,.72) 100%)",
             }}
           />
           {/* Left-side scrim: the headline and buttons live here. */}
@@ -241,9 +244,21 @@ export default function VideoScrubHero() {
             className="absolute inset-0 pointer-events-none"
             style={{
               background:
-                "linear-gradient(105deg, rgba(8,8,15,.72) 0%, rgba(8,8,15,.42) 32%, rgba(8,8,15,0) 62%)",
+                "linear-gradient(105deg, rgba(18,6,8,.85) 0%, rgba(18,6,8,.55) 34%, rgba(18,6,8,0) 64%)",
             }}
           />
+          {/* Bottom fade into the page ground, so the hero and the section
+              under it never meet at a visible seam. */}
+          <div
+            className="absolute inset-x-0 bottom-0 h-48 pointer-events-none"
+            style={{
+              background: "linear-gradient(to bottom, rgba(18,6,8,0), #120608)",
+            }}
+          />
+          {/* Ambient brand glows + dot matrix, matching the rest of the page. */}
+          <div className="absolute top-1/4 right-6 lg:right-24 h-96 w-96 rounded-full bg-primary/15 blur-3xl pointer-events-none" />
+          <div className="absolute top-10 left-10 h-72 w-72 rounded-full bg-tertiary-container/10 blur-3xl pointer-events-none" />
+          <div className="absolute inset-0 bg-dot-grid opacity-40 pointer-events-none" />
         </div>
 
         {/* Content — drifts and fades at its own rate as the hero scrolls,
@@ -256,22 +271,34 @@ export default function VideoScrubHero() {
           <div className="w-full flex items-start mt-4 md:mt-6">
             <div className="w-full max-w-[1280px] mx-auto px-5 md:px-16">
               <div className="w-full lg:w-1/2 flex flex-col gap-4 md:gap-5">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.1, ease: [0.2, 0.8, 0.2, 1] }}
+                  className="inline-flex w-fit mx-auto md:mx-0 items-center gap-2 rounded-full border border-tertiary-container/30 bg-surface-container/70 px-3.5 py-1.5 backdrop-blur-md"
+                >
+                  <span className="h-2 w-2 shrink-0 rounded-full bg-tertiary-container motion-safe:animate-ping" />
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-tertiary-fixed">
+                    {t("heritage")}
+                  </span>
+                </motion.div>
+
+                {/* Playfair runs considerably wider than the Inter it replaced,
+                    so the old 7xl step pushed "Builds Champions." onto a third
+                    line inside this half-width column. */}
                 <motion.h1
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.2, ease: [0.2, 0.8, 0.2, 1] }}
-                  className="font-display text-5xl md:text-7xl leading-tight font-bold text-white tracking-tight text-center md:text-left"
-                  style={{ textShadow: "0 1px 2px rgba(5,5,10,.95), 0 3px 12px rgba(5,5,10,.78), 0 10px 44px rgba(5,5,10,.8)" }}
+                  className="font-display text-4xl sm:text-5xl md:text-6xl leading-[1.12] font-extrabold text-on-primary tracking-tight text-center md:text-left"
+                  style={{ textShadow: "0 1px 2px rgba(10,3,4,.95), 0 3px 12px rgba(10,3,4,.78), 0 10px 44px rgba(10,3,4,.8)" }}
                 >
                   {t("headline_1")}
-                  {/* text-gradient-gold's dark-bronze end reads fine on the rest of
-                      the (light) marketing page, but disappears against this dark
-                      video — a brighter, hero-only gold gradient instead. */}
                   <span
                     className="block bg-clip-text text-transparent"
                     style={{
-                      backgroundImage: "linear-gradient(135deg, #d4af6a 0%, #f3e4c7 100%)",
-                      textShadow: "0 2px 16px rgba(5,5,10,.7)",
+                      backgroundImage: "linear-gradient(90deg, #fde68a 0%, #fbbf24 50%, #fef3c7 100%)",
+                      textShadow: "0 2px 16px rgba(10,3,4,.7)",
                     }}
                   >
                     {t("headline_2")}
@@ -282,8 +309,8 @@ export default function VideoScrubHero() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.3, ease: [0.2, 0.8, 0.2, 1] }}
-                  className={`${locale === "ta" ? "text-sm" : "text-base md:text-lg"} text-white/80 max-w-lg mx-auto md:mx-0 leading-relaxed text-center md:text-left`}
-                  style={{ textShadow: "0 1px 2px rgba(5,5,10,.95), 0 3px 12px rgba(5,5,10,.78)" }}
+                  className={`${locale === "ta" ? "text-sm" : "text-base md:text-lg"} text-on-surface-variant max-w-lg mx-auto md:mx-0 leading-relaxed text-center md:text-left`}
+                  style={{ textShadow: "0 1px 2px rgba(10,3,4,.95), 0 3px 12px rgba(10,3,4,.78)" }}
                 >
                   {t("description")}
                 </motion.p>
@@ -295,21 +322,27 @@ export default function VideoScrubHero() {
                   className={`flex flex-wrap justify-center md:justify-start gap-3 mt-2 ${locale === "ta" ? "text-sm" : ""}`}
                 >
                   <Button href="#join">{t("join")}</Button>
-                  <Button href="#about" variant="secondary" className="border-white/70 text-white hover:bg-white hover:text-on-primary">
+                  <Button href="#about" variant="secondary">
                     {t("explore")}
                   </Button>
                 </motion.div>
-
-                <HeroStats />
               </div>
             </div>
+          </div>
+
+          {/* The stat strip spans the container rather than sitting inside the
+              half-width text column — at 1/2 width the three labels wrap and
+              the bar stops reading as one horizontal rail. mt-auto pins it to
+              the bottom of the hero, clear of the scroll chevron below. */}
+          <div className="mt-auto w-full max-w-[1280px] mx-auto px-5 md:px-16">
+            <HeroStats />
           </div>
 
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1, y: [0, 8, 0] }}
             transition={{ opacity: { duration: 0.8, delay: 1 }, y: { duration: 1.8, repeat: Infinity, ease: "easeInOut" } }}
-            className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/70"
+            className="absolute bottom-8 left-1/2 -translate-x-1/2 text-tertiary-container/70"
             aria-hidden="true"
           >
             <ChevronDown size={28} />

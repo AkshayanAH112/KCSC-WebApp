@@ -114,9 +114,9 @@ export default async function SingleNewsPage({ params }: Props) {
         <div className="max-w-[1280px] mx-auto px-5 md:px-16 relative z-10">
           <div className="flex flex-col lg:w-3/4">
             <div className="flex items-center gap-2 text-[10px] md:text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-4">
-              <Link href="/" className="hover:text-primary transition-colors">{t("home")}</Link>
+              <Link href="/" className="hover:text-tertiary-container transition-colors">{t("home")}</Link>
               <span className="text-on-surface-variant/40">/</span>
-              <Link href="/news" className="hover:text-primary transition-colors">{t("news")}</Link>
+              <Link href="/news" className="hover:text-tertiary-container transition-colors">{t("news")}</Link>
             </div>
             
             <h1 className="text-3xl md:text-5xl lg:text-6xl font-display font-bold text-on-surface leading-[1.1] uppercase tracking-wide mb-6">
@@ -144,7 +144,7 @@ export default async function SingleNewsPage({ params }: Props) {
             
             {/* Featured Image Box */}
             {post.coverImageUrl && (
-              <figure className="m-0 border border-outline-variant/30 shadow-md bg-surface-container-high relative w-full aspect-[16/9] mb-8 rounded-2xl overflow-hidden z-20">
+              <figure className="m-0 border border-tertiary-container/15 shadow-md bg-surface-container-high relative w-full aspect-[16/9] mb-8 rounded-2xl overflow-hidden z-20">
                 <Image 
                   src={post.coverImageUrl} 
                   alt={post.title} 
@@ -156,32 +156,35 @@ export default async function SingleNewsPage({ params }: Props) {
             )}
 
             {/* Article Content Container */}
-            <div className="bg-surface-container-low p-6 md:p-12 shadow-soft border border-outline-variant/20 rounded-3xl min-w-0 -mt-16 pt-20">
+            <div className="bg-surface-container-low p-6 md:p-12 shadow-soft border border-tertiary-container/10 rounded-3xl min-w-0 -mt-16 pt-20">
               {post.excerpt && (
-                <div className="text-base md:text-lg font-semibold text-on-surface mb-8 pb-8 border-b border-outline-variant/30 leading-relaxed border-l-4 border-l-primary pl-6 bg-surface/50 p-6 rounded-r-xl">
+                <div className="text-base md:text-lg font-semibold text-on-surface mb-8 pb-8 border-b border-tertiary-container/15 leading-relaxed border-l-4 border-l-primary pl-6 bg-surface/50 p-6 rounded-r-xl">
                   {post.excerpt}
                 </div>
               )}
 
-              {/* Prose Content */}
-              <div 
-                className="prose prose-lg md:prose-xl prose-headings:font-display prose-headings:text-on-surface prose-headings:tracking-wide prose-p:text-on-surface-variant prose-strong:text-on-surface prose-a:text-primary prose-blockquote:text-on-surface-variant prose-blockquote:border-primary max-w-none text-on-surface-variant wrap-break-word whitespace-pre-line"
+              {/* Prose Content. prose-invert flips the typography plugin's own
+                  palette — list markers, code, hr, captions and table borders
+                  are not covered by the explicit prose-* overrides and would
+                  otherwise stay near-black on a near-black page. */}
+              <div
+                className="prose prose-invert prose-lg md:prose-xl prose-headings:font-display prose-headings:text-on-primary-container prose-headings:tracking-wide prose-p:text-on-surface-variant prose-strong:text-on-surface prose-a:text-tertiary-container prose-blockquote:text-on-surface-variant prose-blockquote:border-tertiary-container/40 max-w-none text-on-surface-variant wrap-break-word whitespace-pre-line"
                 dangerouslySetInnerHTML={{ __html: post.content }}
               />
 
               {/* Tags Section */}
               {post.tags && post.tags.length > 0 && (
-                <div className="mt-12 pt-8 border-t border-outline-variant/20 flex flex-wrap gap-2">
+                <div className="mt-12 pt-8 border-t border-tertiary-container/10 flex flex-wrap gap-2">
                   {post.tags.map((tag: string) => (
-                    <span key={tag} className="px-3 py-1.5 bg-surface text-on-surface-variant text-[10px] font-bold uppercase tracking-widest rounded-md border border-outline-variant/30 hover:border-primary/50 hover:text-primary transition-colors cursor-pointer shadow-sm">
+                    <span key={tag} className="px-3 py-1.5 bg-surface text-on-surface-variant text-[10px] font-bold uppercase tracking-widest rounded-md border border-tertiary-container/15 hover:border-primary/50 hover:text-tertiary-container transition-colors cursor-pointer shadow-sm">
                       #{tag}
                     </span>
                   ))}
                 </div>
               )}
 
-              <div className="mt-12 pt-8 border-t border-outline-variant/30 text-left">
-                <Link href="/news" className="inline-flex items-center gap-2 px-8 py-3 bg-surface border-2 border-outline-variant/50 text-on-surface font-bold uppercase tracking-widest text-xs rounded-xl hover:bg-primary hover:text-on-primary hover:border-primary transition-all hover:-translate-y-1">
+              <div className="mt-12 pt-8 border-t border-tertiary-container/15 text-left">
+                <Link href="/news" className="inline-flex items-center gap-2 px-8 py-3 bg-surface border-2 border-tertiary-container/25 text-on-surface font-bold uppercase tracking-widest text-xs rounded-xl hover:bg-primary hover:text-on-primary hover:border-primary transition-all hover:-translate-y-1">
                   {t("back")}
                 </Link>
               </div>
@@ -190,8 +193,8 @@ export default async function SingleNewsPage({ params }: Props) {
 
           {/* Right Column: Sidebar */}
           <div className="lg:col-span-4 lg:mt-[4.5rem] w-full min-w-0 sticky top-32 h-max">
-            <aside className="w-full bg-surface-container-low border border-outline-variant/30 rounded-3xl p-1 shadow-sm">
-              <div className="p-4 flex items-center justify-between border-b border-outline-variant/30 mx-3">
+            <aside className="w-full bg-surface-container-low border border-tertiary-container/15 rounded-3xl p-1 shadow-sm">
+              <div className="p-4 flex items-center justify-between border-b border-tertiary-container/15 mx-3">
                 <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant flex items-center gap-2">
                   <span className="w-4 h-0.5 bg-primary"></span>
                   {t("recent")}
@@ -206,7 +209,7 @@ export default async function SingleNewsPage({ params }: Props) {
                   <Link 
                     key={recentPost._id.toString()} 
                     href={`/news/${recentPost.slug}`}
-                    className={`flex gap-4 p-5 transition-all group relative flex-1 items-center ${index !== recentPosts.length - 1 ? 'border-b border-outline-variant/20' : ''} hover:bg-surface-container-high/50 first:rounded-t-none last:rounded-b-3xl`}
+                    className={`flex gap-4 p-5 transition-all group relative flex-1 items-center ${index !== recentPosts.length - 1 ? 'border-b border-tertiary-container/10' : ''} hover:bg-surface-container-high/50 first:rounded-t-none last:rounded-b-3xl`}
                   >
                     <div className="relative w-20 h-20 md:w-24 md:h-24 shrink-0 rounded-xl overflow-hidden bg-surface-container-high shadow-sm">
                       {recentPost.coverImageUrl ? (
@@ -217,17 +220,17 @@ export default async function SingleNewsPage({ params }: Props) {
                           className="object-cover transition-transform duration-500 group-hover:scale-110" 
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center p-2 bg-primary/20 text-primary text-[10px] font-display uppercase tracking-wider text-center">
+                        <div className="w-full h-full flex items-center justify-center p-2 bg-primary/20 text-tertiary-container text-[10px] font-display uppercase tracking-wider text-center">
                           {recentPost.category || 'News'}
                         </div>
                       )}
                     </div>
                     
                     <div className="flex flex-col flex-1 min-w-0 h-full justify-center pr-6">
-                      <span className="text-[9px] font-bold uppercase tracking-widest text-primary mb-1.5 truncate">
+                      <span className="text-[9px] font-bold uppercase tracking-widest text-tertiary-container mb-1.5 truncate">
                         {recentPost.category || 'News'}
                       </span>
-                      <h3 className="text-sm md:text-base font-display font-bold text-on-surface leading-snug line-clamp-2 mb-2 group-hover:text-primary transition-colors">
+                      <h3 className="text-sm md:text-base font-display font-bold text-on-surface leading-snug line-clamp-2 mb-2 group-hover:text-tertiary-container transition-colors">
                         {recentPost.title}
                       </h3>
                       <div className="mt-auto">
@@ -236,7 +239,7 @@ export default async function SingleNewsPage({ params }: Props) {
                         </span>
                       </div>
                     </div>
-                    <div className="absolute right-5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-surface border border-outline-variant/30 flex items-center justify-center text-on-surface-variant group-hover:bg-primary group-hover:text-on-primary group-hover:border-primary transition-colors shadow-sm">
+                    <div className="absolute right-5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-surface border border-tertiary-container/15 flex items-center justify-center text-on-surface-variant group-hover:bg-primary group-hover:text-on-primary group-hover:border-primary transition-colors shadow-sm">
                       <ChevronRight size={14} />
                     </div>
                   </Link>

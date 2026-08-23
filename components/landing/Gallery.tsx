@@ -79,7 +79,7 @@ export default function Gallery() {
   return (
     <FadeInSection id="gallery" className="relative py-16 md:py-20 overflow-hidden pointer-events-none">
       <ParallaxDecor variant="gold" />
-      <div className="absolute inset-0 bg-surface-container-low/30 backdrop-blur-3xl" />
+      <div className="absolute inset-0 bg-surface-container-low/40" />
       
       <div className="relative w-full max-w-[1280px] mx-auto px-5 md:px-16 pointer-events-auto flex flex-col items-center">
         
@@ -94,7 +94,7 @@ export default function Gallery() {
           />
           <Link 
             href={`/${locale}/gallery`}
-            className="group flex items-center gap-2 text-primary font-semibold hover:text-on-surface transition-colors mb-2 md:mb-6"
+            className="group flex items-center gap-2 text-tertiary-container font-bold hover:text-on-primary transition-colors mb-2 md:mb-6"
           >
             {t("view_full")} 
             <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
@@ -103,10 +103,10 @@ export default function Gallery() {
 
         {loading ? (
           <div className="h-75 md:h-100 w-full flex items-center justify-center">
-            <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+            <div className="w-12 h-12 border-4 border-tertiary-container/20 border-t-tertiary-container rounded-full animate-spin" />
           </div>
         ) : folders.length === 0 ? (
-          <div className="flex flex-col items-center justify-center p-12 bg-surface-container-low rounded-3xl border border-outline-variant/30 text-on-surface-variant w-full max-w-xl mx-auto h-75">
+          <div className="card-luxury flex flex-col items-center justify-center p-12 rounded-3xl text-on-surface-variant w-full max-w-xl mx-auto h-75">
             <FolderIcon className="w-12 h-12 mb-4 opacity-50" />
             <p>{t("no_albums")}</p>
           </div>
@@ -141,7 +141,9 @@ export default function Gallery() {
                     onClick={() => setActiveIndex(idx)}
                     className={cn(
                       "absolute origin-center cursor-pointer overflow-hidden rounded-3xl transition-shadow bg-black",
-                      isActive ? "shadow-2xl ring-1 ring-white/10" : "shadow-lg"
+                      isActive
+                        ? "ring-1 ring-tertiary-container/50 shadow-[0_0_60px_-10px_rgba(251,191,36,0.45)]"
+                        : "shadow-lg"
                     )}
                     style={{
                       width: typeof window !== 'undefined' && window.innerWidth < 768 ? 220 : 300,
@@ -175,8 +177,8 @@ export default function Gallery() {
                             priority={Math.abs(diff) <= 1}
                           />
                         ) : (
-                          <div className="absolute inset-0 flex items-center justify-center bg-surface-variant/20">
-                            <FolderIcon className="w-16 h-16 text-on-surface-variant/30" />
+                          <div className="absolute inset-0 flex items-center justify-center bg-surface-variant">
+                            <FolderIcon className="w-16 h-16 text-tertiary-container/30" />
                           </div>
                         )}
                         
@@ -189,9 +191,9 @@ export default function Gallery() {
                               exit={{ opacity: 0, transition: { duration: 0.1 } }}
                               className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black via-black/60 to-transparent p-6 md:p-8 flex flex-col justify-end pt-24 pointer-events-none"
                             >
-                              <h3 className="text-white text-2xl md:text-3xl font-display font-bold mb-2 tracking-tight leading-tight">{folder.name}</h3>
-                              <p className="text-white/80 font-medium text-sm flex items-center gap-2">
-                                <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span>
+                              <h3 className="text-on-primary text-2xl md:text-3xl font-display font-bold mb-2 tracking-tight leading-tight">{folder.name}</h3>
+                              <p className="text-on-surface-variant font-medium text-sm flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 rounded-full bg-tertiary-container inline-block"></span>
                                 {folder.imageCount} {folder.imageCount === 1 ? t("photo") : t("photos")}
                               </p>
                             </motion.div>
@@ -211,7 +213,7 @@ export default function Gallery() {
             <button 
               onClick={handlePrev}
               disabled={activeIndex === 0}
-              className="p-4 rounded-full bg-surface border border-outline-variant hover:bg-surface-container transition-all text-on-surface disabled:opacity-30 disabled:cursor-not-allowed shadow-sm hover:shadow-md active:scale-95"
+              className="p-4 rounded-full bg-surface-container border border-tertiary-container/25 hover:bg-surface-container-high hover:border-tertiary-container/50 transition-all text-tertiary-container disabled:opacity-30 disabled:cursor-not-allowed shadow-soft active:scale-95"
               aria-label="Previous album"
             >
               <ChevronLeft size={24} />
@@ -219,7 +221,7 @@ export default function Gallery() {
             <button 
               onClick={handleNext}
               disabled={activeIndex === folders.length - 1}
-              className="p-4 rounded-full bg-surface border border-outline-variant hover:bg-surface-container transition-all text-on-surface disabled:opacity-30 disabled:cursor-not-allowed shadow-sm hover:shadow-md active:scale-95"
+              className="p-4 rounded-full bg-surface-container border border-tertiary-container/25 hover:bg-surface-container-high hover:border-tertiary-container/50 transition-all text-tertiary-container disabled:opacity-30 disabled:cursor-not-allowed shadow-soft active:scale-95"
               aria-label="Next album"
             >
               <ChevronRight size={24} />

@@ -99,17 +99,17 @@ export default function JoinModal() {
         className="absolute inset-0 bg-background/80 backdrop-blur-md transition-opacity"
         onClick={handleClose}
       />
-      <div className="relative w-full max-w-xl bg-surface border border-outline-variant rounded-2xl shadow-elevated overflow-hidden animate-in fade-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto">
+      <div className="relative w-full max-w-xl bg-surface-container-low border border-tertiary-container/25 rounded-2xl shadow-elevated overflow-hidden animate-in fade-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto">
         <button
           onClick={handleClose}
-          className="absolute top-4 right-4 p-2 text-on-surface-variant hover:text-on-surface bg-surface-container rounded-full transition-colors z-10"
+          className="absolute top-4 right-4 p-2 text-on-surface-variant hover:text-tertiary-container bg-surface-container border border-tertiary-container/20 rounded-full transition-colors z-10"
         >
           <X size={20} />
         </button>
 
         {isSubmitted ? (
           <div className="p-12 flex flex-col items-center text-center space-y-4">
-            <CheckCircle2 size={64} className="text-primary" />
+            <CheckCircle2 size={64} className="text-tertiary-container" />
             <h3 className="text-2xl font-display font-bold text-on-surface">{t("success_title")}</h3>
             <p className="text-on-surface-variant">
               {t("success_message")}
@@ -124,22 +124,22 @@ export default function JoinModal() {
 
             {/* SECTION: Personal Details */}
             <fieldset className="space-y-4">
-              <legend className="text-lg font-display font-semibold text-primary mb-2 border-b border-outline-variant pb-2 w-full">{t("section_personal")}</legend>
+              <legend className="text-lg font-display font-semibold text-tertiary-container mb-2 border-b border-tertiary-container/25 pb-2 w-full">{t("section_personal")}</legend>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-sm font-medium text-on-surface">{t("first_name")}</label>
-                  <input name="firstName" required type="text" className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface" placeholder="John" />
+                  <input name="firstName" required type="text" className="w-full bg-surface-container-low border border-tertiary-container/25 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-tertiary-container/50 text-on-surface" placeholder="John" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-sm font-medium text-on-surface">{t("last_name")}</label>
-                  <input name="lastName" required type="text" className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface" placeholder="Doe" />
+                  <input name="lastName" required type="text" className="w-full bg-surface-container-low border border-tertiary-container/25 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-tertiary-container/50 text-on-surface" placeholder="Doe" />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-sm font-medium text-on-surface">{t("dob")}</label>
-                  <input name="dateOfBirth" type="date" required max={new Date().toISOString().slice(0, 10)} className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface" />
+                  <input name="dateOfBirth" type="date" required max={new Date().toISOString().slice(0, 10)} className="w-full bg-surface-container-low border border-tertiary-container/25 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-tertiary-container/50 text-on-surface" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-sm font-medium text-on-surface">{t("age")}</label>
@@ -149,7 +149,7 @@ export default function JoinModal() {
                     required
                     value={age}
                     onChange={(e) => setAge(e.target.value)}
-                    className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface"
+                    className="w-full bg-surface-container-low border border-tertiary-container/25 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-tertiary-container/50 text-on-surface"
                     placeholder="25"
                   />
                 </div>
@@ -160,11 +160,11 @@ export default function JoinModal() {
                   <label className="text-sm font-medium text-on-surface">
                     {t("nic")} {!nicRequired && <span className="text-on-surface-variant font-normal">{t("nic_optional")}</span>}
                   </label>
-                  <input name="nic" type="text" required={nicRequired} className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface" placeholder="e.g. 123456789V" />
+                  <input name="nic" type="text" required={nicRequired} className="w-full bg-surface-container-low border border-tertiary-container/25 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-tertiary-container/50 text-on-surface" placeholder="e.g. 123456789V" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-sm font-medium text-on-surface">{t("gender")}</label>
-                  <select name="gender" required defaultValue="" className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface appearance-none">
+                  <select name="gender" required defaultValue="" className="w-full bg-surface-container-low border border-tertiary-container/25 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-tertiary-container/50 text-on-surface appearance-none">
                     <option value="" disabled>{t("gender_select")}</option>
                     <option value="Male">{t("gender_male")}</option>
                     <option value="Female">{t("gender_female")}</option>
@@ -178,7 +178,7 @@ export default function JoinModal() {
                 <select
                   value={jobCategory}
                   onChange={(e) => setJobCategory(e.target.value)}
-                  className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface appearance-none"
+                  className="w-full bg-surface-container-low border border-tertiary-container/25 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-tertiary-container/50 text-on-surface appearance-none"
                 >
                   {JOB_CATEGORIES.map((c) => (
                     <option key={c.value} value={c.value}>{t(`job_${c.value}` as any)}</option>
@@ -193,7 +193,7 @@ export default function JoinModal() {
                     required
                     value={jobOther}
                     onChange={(e) => setJobOther(e.target.value)}
-                    className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface"
+                    className="w-full bg-surface-container-low border border-tertiary-container/25 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-tertiary-container/50 text-on-surface"
                     placeholder={t("job_specify_placeholder")}
                   />
                 </div>
@@ -202,15 +202,15 @@ export default function JoinModal() {
 
             {/* SECTION: Contact Information */}
             <fieldset className="space-y-4">
-              <legend className="text-lg font-display font-semibold text-primary mb-2 border-b border-outline-variant pb-2 w-full">{t("section_contact")}</legend>
+              <legend className="text-lg font-display font-semibold text-tertiary-container mb-2 border-b border-tertiary-container/25 pb-2 w-full">{t("section_contact")}</legend>
               <div className="space-y-1">
                 <label className="text-sm font-medium text-on-surface">{t("email")}</label>
-                <input name="email" required type="email" className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface" placeholder="john@example.com" />
+                <input name="email" required type="email" className="w-full bg-surface-container-low border border-tertiary-container/25 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-tertiary-container/50 text-on-surface" placeholder="john@example.com" />
               </div>
 
               <div className="space-y-1">
                 <label className="text-sm font-medium text-on-surface">{t("address")}</label>
-                <input name="address" required type="text" className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface" placeholder="123 Cricket Lane, City" />
+                <input name="address" required type="text" className="w-full bg-surface-container-low border border-tertiary-container/25 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-tertiary-container/50 text-on-surface" placeholder="123 Cricket Lane, City" />
               </div>
 
               <div className="space-y-1">
@@ -220,7 +220,7 @@ export default function JoinModal() {
                   required
                   type="file"
                   accept="image/jpeg,image/png,image/webp,image/avif"
-                  className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface text-sm file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-on-primary"
+                  className="w-full bg-surface-container-low border border-tertiary-container/25 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-tertiary-container/50 text-on-surface text-sm file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-on-primary"
                 />
                 <p className="text-xs text-on-surface-variant">{t("photo_desc")}</p>
               </div>
@@ -228,22 +228,22 @@ export default function JoinModal() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-sm font-medium text-on-surface">{t("phone")}</label>
-                  <input name="phone" required type="tel" pattern="^\+?[0-9]{7,15}$" title="Digits only, with an optional leading +" className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface" placeholder="e.g. +94771234567" />
+                  <input name="phone" required type="tel" pattern="^\+?[0-9]{7,15}$" title="Digits only, with an optional leading +" className="w-full bg-surface-container-low border border-tertiary-container/25 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-tertiary-container/50 text-on-surface" placeholder="e.g. +94771234567" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-sm font-medium text-on-surface">{t("whatsapp")}</label>
-                  <input name="whatsapp" required type="tel" pattern="^\+?[0-9]{7,15}$" title="Digits only, with an optional leading +" className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface" placeholder="e.g. +94771234567" />
+                  <input name="whatsapp" required type="tel" pattern="^\+?[0-9]{7,15}$" title="Digits only, with an optional leading +" className="w-full bg-surface-container-low border border-tertiary-container/25 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-tertiary-container/50 text-on-surface" placeholder="e.g. +94771234567" />
                 </div>
               </div>
             </fieldset>
 
             {/* SECTION: Membership Details */}
             <fieldset className="space-y-4">
-              <legend className="text-lg font-display font-semibold text-primary mb-2 border-b border-outline-variant pb-2 w-full">{t("section_membership")}</legend>
+              <legend className="text-lg font-display font-semibold text-tertiary-container mb-2 border-b border-tertiary-container/25 pb-2 w-full">{t("section_membership")}</legend>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-sm font-medium text-on-surface">{t("membership_type")}</label>
-                  <select name="membershipType" className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface appearance-none">
+                  <select name="membershipType" className="w-full bg-surface-container-low border border-tertiary-container/25 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-tertiary-container/50 text-on-surface appearance-none">
                     <option value="Playing Member">{t("type_playing")}</option>
                     <option value="Non-Playing Member">{t("type_non_playing")}</option>
                     <option value="Junior Member">{t("type_junior")}</option>
@@ -252,7 +252,7 @@ export default function JoinModal() {
                 </div>
                 <div className="space-y-1">
                   <label className="text-sm font-medium text-on-surface">{t("role")}</label>
-                  <select name="role" className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface appearance-none">
+                  <select name="role" className="w-full bg-surface-container-low border border-tertiary-container/25 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-tertiary-container/50 text-on-surface appearance-none">
                     <option value="Batsman">{t("role_batsman")}</option>
                     <option value="Bowler">{t("role_bowler")}</option>
                     <option value="All-Rounder">{t("role_allrounder")}</option>
@@ -265,28 +265,28 @@ export default function JoinModal() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-sm font-medium text-on-surface">{t("prev_club")}</label>
-                  <input name="previousClub" type="text" className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface" placeholder="e.g. Apex Cricket Club" />
+                  <input name="previousClub" type="text" className="w-full bg-surface-container-low border border-tertiary-container/25 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-tertiary-container/50 text-on-surface" placeholder="e.g. Apex Cricket Club" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-sm font-medium text-on-surface">{t("date_join")}</label>
-                  <input name="dateOfJoining" type="date" required className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface" />
+                  <input name="dateOfJoining" type="date" required className="w-full bg-surface-container-low border border-tertiary-container/25 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-tertiary-container/50 text-on-surface" />
                 </div>
               </div>
 
               <div className="space-y-1">
                 <label className="text-sm font-medium text-on-surface">{t("achievements")}</label>
-                <textarea name="achievements" className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface min-h-25" placeholder={t("achievements_placeholder")}></textarea>
+                <textarea name="achievements" className="w-full bg-surface-container-low border border-tertiary-container/25 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-tertiary-container/50 text-on-surface min-h-25" placeholder={t("achievements_placeholder")}></textarea>
               </div>
             </fieldset>
 
             {/* SECTION: Membership Fee & Payment */}
             <fieldset className="space-y-4">
-              <legend className="text-lg font-display font-semibold text-primary mb-2 border-b border-outline-variant pb-2 w-full">{t("section_payment")}</legend>
+              <legend className="text-lg font-display font-semibold text-tertiary-container mb-2 border-b border-tertiary-container/25 pb-2 w-full">{t("section_payment")}</legend>
 
-              <div className="rounded-lg border border-outline-variant bg-surface-container-low p-4 space-y-2">
+              <div className="rounded-lg border border-tertiary-container/25 bg-surface-container p-4 space-y-2">
                 <p className="text-sm text-on-surface">
                   {t("fee_annual")} <strong>{t(`job_${jobCategory}` as any)}</strong>:{" "}
-                  <span className="font-bold text-primary">{FEE_CURRENCY} {fee}</span>
+                  <span className="font-bold text-tertiary-container">{FEE_CURRENCY} {fee}</span>
                 </p>
                 <p className="text-xs text-on-surface-variant">{t("pay_transfer")}</p>
                 <dl className="text-xs text-on-surface grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5">
@@ -308,7 +308,7 @@ export default function JoinModal() {
                   required
                   type="file"
                   accept="image/jpeg,image/png,image/webp,image/avif,application/pdf"
-                  className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary text-on-surface text-sm file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-on-primary"
+                  className="w-full bg-surface-container-low border border-tertiary-container/25 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-tertiary-container/50 text-on-surface text-sm file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-on-primary"
                 />
                 <p className="text-xs text-on-surface-variant">{t("payment_slip_desc")}</p>
               </div>

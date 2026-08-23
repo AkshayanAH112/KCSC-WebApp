@@ -54,7 +54,7 @@ export default function FolderSection({ folder }: { folder: FolderProps }) {
           {folder.name}
         </h2>
         <div className="h-0.5 flex-1 bg-gradient-to-r from-primary to-transparent max-w-[120px]"></div>
-        <span className="ml-auto bg-surface-container-low text-on-surface-variant text-[10px] font-bold px-3 py-1.5 rounded-full border border-outline-variant/30 uppercase tracking-widest hidden md:block">
+        <span className="ml-auto bg-surface-container-low text-on-surface-variant text-[10px] font-bold px-3 py-1.5 rounded-full border border-tertiary-container/15 uppercase tracking-widest hidden md:block">
           {folder.images.length} {folder.images.length === 1 ? t("photo") : t("photos")}
         </span>
       </div>
@@ -70,7 +70,7 @@ export default function FolderSection({ folder }: { folder: FolderProps }) {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3, delay: idx * 0.05 }}
               onClick={() => openLightbox(idx)}
-              className="relative aspect-square md:aspect-[4/3] rounded-3xl overflow-hidden bg-surface-container border border-outline-variant/30 shadow-md group cursor-pointer"
+              className="relative aspect-square md:aspect-[4/3] rounded-3xl overflow-hidden bg-surface-container border border-tertiary-container/15 shadow-md group cursor-pointer"
             >
               <Image
                 src={img.url}
@@ -93,7 +93,7 @@ export default function FolderSection({ folder }: { folder: FolderProps }) {
         <div className="mt-8 flex justify-center">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="flex items-center gap-2 px-8 py-3 bg-surface-container-high hover:bg-primary hover:text-on-primary text-on-surface transition-colors rounded-xl font-bold uppercase tracking-widest text-xs border border-outline-variant/30 group"
+            className="flex items-center gap-2 px-8 py-3 bg-surface-container-high hover:bg-primary hover:text-on-primary text-on-surface transition-colors rounded-xl font-bold uppercase tracking-widest text-xs border border-tertiary-container/15 group"
           >
             {isExpanded ? (
               <>
