@@ -191,6 +191,7 @@ export default function VideoScrubHero() {
   }, [scrubEnabled, videoReady]);
 
   const showStatic = !scrubEnabled || videoFailed;
+  const taButton = locale === "ta" ? "text-xs px-5" : "";
 
   return (
     <div
@@ -272,8 +273,10 @@ export default function VideoScrubHero() {
               the stat rail. On phones the copy then centres in it instead of
               stacking under the navbar with a tall empty gap above the stats;
               from md up it stays pinned to the top, where the hero art needs
-              the lower half free. */}
-          <div className="w-full flex-1 min-h-0 flex items-center md:items-start md:mt-6">
+              the lower half free. shrink-0 (in place of the min-h-0 that was
+              here) stops it collapsing under its own content on a short
+              viewport, which is what let the copy overlap the stat rail. */}
+          <div className="w-full flex-1 shrink-0 flex items-center md:items-start md:mt-6">
             <div className="w-full max-w-[1280px] mx-auto px-5 md:px-16">
               <div className="w-full lg:w-1/2 flex flex-col gap-4 md:gap-5">
                 <motion.div
@@ -337,10 +340,16 @@ export default function VideoScrubHero() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
-                  className={`flex flex-wrap justify-center md:justify-start gap-3 mt-2 ${locale === "ta" ? "text-sm" : ""}`}
+                  className="flex flex-wrap justify-center md:justify-start gap-3 mt-2"
                 >
-                  <Button href="#join">{t("join")}</Button>
-                  <Button href="#about" variant="secondary">
+                  {/* The Tamil labels are long enough that at the default size
+                      the pair measures ~633px against a 576px column, so they
+                      wrapped onto a second row — which pushed the hero copy
+                      down into the stat rail on any viewport under ~810px tall.
+                      Tightening type and padding brings the pair to ~514px and
+                      back onto one row, without shortening the copy. */}
+                  <Button href="#join" className={taButton}>{t("join")}</Button>
+                  <Button href="#about" variant="secondary" className={taButton}>
                     {t("explore")}
                   </Button>
                 </motion.div>
