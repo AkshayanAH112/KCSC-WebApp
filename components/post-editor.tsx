@@ -1,5 +1,7 @@
 "use client";
 
+import { POST_CATEGORIES, POST_CATEGORY_LABELS } from "@/lib/post-categories";
+
 import { useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -43,12 +45,10 @@ export const emptyPost: PostDraft = {
   images: [],
 };
 
-const CATEGORIES = [
-  { value: "news", label: "News" },
-  { value: "blog", label: "Blog" },
-  { value: "event", label: "Event" },
-  { value: "achievement", label: "Achievement" },
-];
+const CATEGORIES = POST_CATEGORIES.map((value) => ({
+  value,
+  label: POST_CATEGORY_LABELS[value],
+}));
 
 export function PostEditor({ initial }: { initial: PostDraft }) {
   const router = useRouter();

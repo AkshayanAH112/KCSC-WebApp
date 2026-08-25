@@ -1,5 +1,7 @@
 "use client";
 
+import { POST_CATEGORIES } from "@/lib/post-categories";
+
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -18,12 +20,11 @@ export default function NewsClientPage({ posts }: { posts: any[] }) {
     setVisibleRecentCount(3);
   }, [search, activeCategory]);
 
+  // Derived from POST_CATEGORIES so a new category cannot end up saveable in
+  // the admin but unfilterable here. Each needs a `topic_<value>` message.
   const categories = [
     { label: t("topic_all"), value: "all" },
-    { label: t("topic_news"), value: "news" },
-    { label: t("topic_event"), value: "event" },
-    { label: t("topic_blog"), value: "blog" },
-    { label: t("topic_achievement"), value: "achievement" }
+    ...POST_CATEGORIES.map((value) => ({ label: t(`topic_${value}`), value })),
   ];
 
   // Filtering

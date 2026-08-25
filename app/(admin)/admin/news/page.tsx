@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Loader2, Plus, Newspaper, ImageIcon, Pencil } from "lucide-react";
+import { postCategoryLabel } from "@/lib/post-categories";
 
 type Post = {
   _id: string;
@@ -136,7 +137,7 @@ export default function NewsListPage() {
 
               <div className="flex flex-1 flex-col p-4">
                 <span className="mb-1 text-xs font-semibold uppercase tracking-wide text-gold-foreground">
-                  {post.category}
+                  {postCategoryLabel(post.category)}
                 </span>
                 <h3 className="text-lg leading-tight text-foreground">{post.title}</h3>
                 {post.excerpt && (

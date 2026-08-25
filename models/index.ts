@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { POST_CATEGORIES } from "@/lib/post-categories";
 
 /**
  * Kallar Central Sports Club — free tuition programme.
@@ -252,7 +253,10 @@ export const Member = mongoose.models.Member || mongoose.model("Member", MemberS
  * Images live in Cloudinary; only the secure URL and the public_id are stored here —
  * the public_id is what lets a delete actually remove the asset from Cloudinary too.
  */
-export const POST_CATEGORIES = ['news', 'blog', 'event', 'achievement'] as const;
+// Defined in lib/post-categories.ts so client components can import the list
+// without pulling mongoose into the browser bundle; re-exported here so
+// `import { POST_CATEGORIES } from '@/models'` keeps working in the API routes.
+export { POST_CATEGORIES } from '@/lib/post-categories';
 
 const PostImageSchema = new mongoose.Schema({
   url: { type: String, required: true },
