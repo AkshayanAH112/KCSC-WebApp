@@ -101,7 +101,6 @@ export default function LightboxGallery({ images }: LightboxGalleryProps) {
                 fill
                 className="object-contain"
                 sizes="100vw"
-                quality={100}
                 priority
               />
               {images[lightboxIndex].caption && (

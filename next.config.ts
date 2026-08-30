@@ -21,6 +21,13 @@ const nextConfig: NextConfig = {
   // res.cloudinary.com stays for posts/members/gallery entries created before
   // the migration — their stored URLs still point there.
   images: {
+    // Capped at 1600 to match MAX_DIMENSION in lib/spaces.ts: every stored image
+    // is resized to fit a 1600px box at upload, so Next's default ladder (which
+    // runs to 3840) can only ever request variants larger than the source. Next
+    // won't upscale, but each of those widths is still billed as its own
+    // transformation on Vercel — and the Hobby plan includes 5,000/month.
+    // Keep this in sync if MAX_DIMENSION ever changes.
+    deviceSizes: [640, 750, 828, 1080, 1200, 1600],
     remotePatterns: [
       { protocol: "https", hostname: "res.cloudinary.com" },
       { protocol: "https", hostname: "*.digitaloceanspaces.com" },

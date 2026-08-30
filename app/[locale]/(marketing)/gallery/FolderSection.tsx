@@ -141,7 +141,6 @@ export default function FolderSection({ folder }: { folder: FolderProps }) {
                 fill
                 className="object-contain"
                 sizes="100vw"
-                quality={100}
                 priority
               />
               {imagesToDisplay[lightboxIndex].caption && (
