@@ -21,12 +21,31 @@ const nextConfig: NextConfig = {
   // res.cloudinary.com stays for posts/members/gallery entries created before
   // the migration — their stored URLs still point there.
   images: {
-    // Capped at 1600 to match MAX_DIMENSION in lib/spaces.ts: every stored image
-    // is resized to fit a 1600px box at upload, so Next's default ladder (which
-    // runs to 3840) can only ever request variants larger than the source. Next
-    // won't upscale, but each of those widths is still billed as its own
-    // transformation on Vercel — and the Hobby plan includes 5,000/month.
-    // Keep this in sync if MAX_DIMENSION ever changes.
+    // Next's image optimizer is turned OFF on purpose — do not flip this back
+    // without reading the rest of this comment.
+    //
+    // Every image this app serves is already optimized before it is ever
+    // stored: uploadImage() in lib/spaces.ts resizes to fit a 1600px box, bakes
+    // in EXIF rotation, and re-encodes to WebP/JPEG at quality 82. Routing that
+    // through /_next/image afterwards re-compresses an already-compressed file
+    // — no meaningful size win, and on Vercel every (image, width, quality)
+    // combination is billed as a separate "transformation".
+    //
+    // The Hobby plan includes 5,000 transformations/month. A single gallery
+    // upload batch (100+ photos, each rendered at several widths, then again at
+    // a different quality in the lightbox) exhausted that, and /_next/image
+    // started returning 402 Payment Required — every image on the public site
+    // broke at once. Serving straight from Spaces has no such cliff.
+    //
+    // Trade-off accepted: no automatic WebP conversion for formats that arrive
+    // as something else, and no responsive srcset, so phones download the same
+    // file as desktops. That is bounded because the stored file is already
+    // capped at 1600px/q82. Set DO_SPACES_CDN_ENDPOINT so these are served from
+    // the Spaces edge CDN rather than the bucket origin.
+    unoptimized: true,
+    // Inert while unoptimized is true; kept so re-enabling the optimizer does
+    // not silently restore Next's default ladder (which runs to 3840 and can
+    // only ever request widths larger than lib/spaces.ts's 1600px source).
     deviceSizes: [640, 750, 828, 1080, 1200, 1600],
     remotePatterns: [
       { protocol: "https", hostname: "res.cloudinary.com" },

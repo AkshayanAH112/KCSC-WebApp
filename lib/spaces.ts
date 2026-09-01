@@ -62,18 +62,37 @@ export async function uploadImage(
   folder: string = SPACES_NEWS_FOLDER,
   contentType?: string
 ): Promise<UploadedImage> {
-  const isImage = !contentType || contentType.startsWith('image/');
+  // SVG is intentionally excluded: sharp would rasterize it, throwing away the
+  // one property that makes it worth storing. It is passed through untouched.
+  const isImage =
+    (!contentType || contentType.startsWith('image/')) && contentType !== 'image/svg+xml';
 
   let outBuffer = buffer;
+  let outContentType = contentType || 'application/octet-stream';
   if (isImage) {
     let pipeline = sharp(buffer)
       .rotate() // bake in EXIF orientation — phone photos are often stored sideways
       .resize(MAX_DIMENSION, MAX_DIMENSION, { fit: 'inside', withoutEnlargement: true });
     if (contentType === 'image/jpeg') pipeline = pipeline.jpeg({ quality: 82 });
     else if (contentType === 'image/webp') pipeline = pipeline.webp({ quality: 82 });
+    else {
+      // Everything else (PNG being the one that matters — phone screenshots and
+      // anything saved from a desktop) is converted to WebP rather than left
+      // alone. A 1600px PNG photo is 2-4MB because PNG is lossless; the same
+      // image as WebP is a few hundred KB. This used to be masked by
+      // /_next/image re-encoding on the way out, but that optimizer is now off
+      // (see next.config.ts), so whatever is stored here is exactly what the
+      // browser downloads. WebP keeps the alpha channel, so transparent PNGs
+      // survive the conversion.
+      pipeline = pipeline.webp({ quality: 82 });
+      outContentType = 'image/webp';
+    }
     outBuffer = await pipeline.toBuffer();
   }
 
+  // No extension is appended: sanitizeFilename() strips the original one and
+  // the object's Content-Type is what browsers actually dispatch on. That is
+  // why re-encoding to WebP above does not need to rewrite the key.
   const key = `${folder}/${randomUUID()}-${sanitizeFilename(filename)}`;
   const dimensions = isImage ? imageSize(outBuffer) : { width: 0, height: 0 };
 
@@ -82,7 +101,7 @@ export async function uploadImage(
       Bucket: BUCKET,
       Key: key,
       Body: outBuffer,
-      ContentType: contentType || 'application/octet-stream',
+      ContentType: outContentType,
       ACL: 'public-read',
     })
   );
