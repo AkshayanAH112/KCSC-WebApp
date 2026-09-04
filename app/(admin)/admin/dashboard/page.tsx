@@ -47,7 +47,9 @@ const statConfig = [
   {
     key: "todayAttendance" as const,
     title: "Today's Attendance",
-    href: "/admin/scanner",
+    // Today's class list, each linking through to its roster — not straight to
+    // the scanner, which can only check in one student at a time.
+    href: "/admin/attendance/today",
     icon: CalendarCheck,
     tone: "text-success",
     bg: "bg-success/10",
@@ -75,11 +77,17 @@ const statConfig = [
   {
     key: "studentsOnLeaveToday" as const,
     title: "On Leave Today",
-    href: "/admin/attendance",
+    // Deep-links to the not-present table, not /admin/attendance — that page is
+    // the date-range Excel export, which is not what this number is about.
+    href: "/admin/attendance/today#absent",
     icon: CalendarCheck,
     tone: "text-warning",
     bg: "bg-warning/10",
-    hint: () => "absent from today's classes",
+    // This counts students *explicitly* marked absent, which is what a leave
+    // is. Students nobody scanned are missing from the percentage above but
+    // are not leaves, so the two numbers legitimately differ — the linked page
+    // breaks the difference out.
+    hint: () => "marked absent — counts as a leave",
   },
   {
     key: "studentsAtCycle2" as const,

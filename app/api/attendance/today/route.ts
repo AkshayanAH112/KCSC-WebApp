@@ -28,7 +28,15 @@ export async function GET(request: Request) {
 
     const result = sessions.map((session) => {
       const roster = rosterStudents.filter(
-        (s) => s.batchId?.toString() === session.batchId._id.toString() && s.grade === session.grade
+        (s) =>
+          s.batchId?.toString() === session.batchId._id.toString() &&
+          s.grade === session.grade &&
+          // Mid-batch registrations are only on the roster for classes dated on
+          // or after they joined. /api/dashboard/stats applies the same rule, and
+          // the two must agree or the dashboard card and this page disagree about
+          // how many students were expected. Legacy students (no registrationDate)
+          // are grandfathered in.
+          (!s.registrationDate || s.registrationDate <= session.date)
       );
       return {
         classSession: session,
@@ -39,6 +47,11 @@ export async function GET(request: Request) {
           return {
             student,
             isPresent: record ? record.present : false,
+            // Distinguishes "explicitly marked absent" from "never scanned at
+            // all". Both read as not-present, but only the former is a leave:
+            // countedAsLeave is written by POST /api/attendance, so a student
+            // nobody scanned has no Attendance row and never affects
+            // totalLeaves or the 2/3-leave warnings.
             isRecorded: Boolean(record),
           };
         }),
