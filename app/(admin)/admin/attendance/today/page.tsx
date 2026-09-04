@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   ChevronRight,
   Loader2,
+  Lock,
   ScanLine,
   UserX,
 } from "lucide-react";
@@ -32,6 +33,8 @@ type SessionEntry = {
     date: string;
     time?: string;
     subject?: string;
+    /** Set once the register is closed via POST /api/classes/[id]/end. */
+    endedAt?: string | null;
     batchId: { _id: string; name: string } | string;
   };
   roster: RosterEntry[];
@@ -184,9 +187,16 @@ export default function TodayAttendancePage() {
                         Grade {classSession.grade}
                       </span>
                     </p>
-                    <p className="mt-0.5 text-sm text-muted-foreground">
-                      {classSession.time || "No time set"}
-                      {classSession.subject ? ` — ${classSession.subject}` : ""}
+                    <p className="mt-0.5 flex items-center gap-2 text-sm text-muted-foreground">
+                      <span>
+                        {classSession.time || "No time set"}
+                        {classSession.subject ? ` — ${classSession.subject}` : ""}
+                      </span>
+                      {classSession.endedAt && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground">
+                          <Lock size={10} /> Register closed
+                        </span>
+                      )}
                     </p>
                   </div>
                   <div className="flex shrink-0 items-center gap-4 text-sm">

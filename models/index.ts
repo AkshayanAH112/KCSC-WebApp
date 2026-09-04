@@ -85,6 +85,14 @@ const ClassSessionSchema = new mongoose.Schema({
   date: { type: Date, required: true },
   time: { type: String },
   subject: { type: String },
+  // Set by POST /api/classes/[id]/end, which closes the register: every roster
+  // student still without an Attendance row is marked absent, so no-shows
+  // become real leaves instead of silently dragging down the attendance
+  // percentage. A marker only — the roster stays editable afterwards, and
+  // toggling a student back to present correctly reverses their leave.
+  // Absent on every session predating this field; treat that as "not ended".
+  endedAt: { type: Date },
+  endedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 }, { timestamps: true });
 export const ClassSession = mongoose.models.ClassSession || mongoose.model("ClassSession", ClassSessionSchema);
 

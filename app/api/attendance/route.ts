@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
-import { Attendance, Student, ClassSession, Notification } from '@/models';
+import { Attendance, Student, ClassSession } from '@/models';
 import { isStaffRequest } from '@/lib/auth-guard';
+import { recordAttendance } from '@/lib/attendance-recorder';
 
 export async function POST(request: Request) {
   try {
@@ -36,67 +37,14 @@ export async function POST(request: Request) {
       );
     }
 
-    // countedAsLeave is the source of truth for "has this row already
-    // contributed to the counters" — the increment/decrement below is a pure
-    // function of the transition, so re-toggling the same class back and
-    // forth (correcting a mistake) never double- or under-counts.
-    const prior = await Attendance.findOne({ studentId, classId });
-    const wasCounted = prior?.countedAsLeave ?? false;
-    const nextPresent = present !== false;
-    const nowCounted = !nextPresent;
-
-    const att = await Attendance.findOneAndUpdate(
-      { studentId: student._id, classId },
-      { present: nextPresent, date: new Date(), countedAsLeave: nowCounted, ...(remarks !== undefined ? { remarks } : {}) },
-      { upsert: true, new: true }
-    );
-
-    const delta = (nowCounted ? 1 : 0) - (wasCounted ? 1 : 0);
-    let updatedStudent = student;
-
-    if (delta !== 0) {
-      updatedStudent = await Student.findByIdAndUpdate(
-        studentId,
-        { $inc: { totalLeaves: delta, currentLeaveCycle: delta } },
-        { new: true }
-      );
-      // Defensive clamp — the transition math above shouldn't be able to push
-      // this negative, but guards against any out-of-band manual DB edit.
-      if (updatedStudent.currentLeaveCycle < 0) {
-        updatedStudent = await Student.findByIdAndUpdate(studentId, { currentLeaveCycle: 0 }, { new: true });
-      }
-
-      if (delta === 1) {
-        // A genuinely new leave (not a repeat toggle) — stamp the cycle value
-        // it landed on, permanently, for the leave-history ledger.
-        await Attendance.findByIdAndUpdate(att._id, { leaveCycleAtRecord: updatedStudent.currentLeaveCycle });
-
-        if (updatedStudent.currentLeaveCycle === 2 || updatedStudent.currentLeaveCycle === 3) {
-          const priorLeaves = await Attendance.find({
-            studentId,
-            countedAsLeave: true,
-            leaveCycleAtRecord: { $gte: 1, $lte: updatedStudent.currentLeaveCycle },
-          }).sort({ date: 1 });
-
-          await Notification.findOneAndUpdate(
-            {
-              studentId,
-              type: updatedStudent.currentLeaveCycle === 2 ? 'parent_warning' : 'admin_critical',
-              cycleGeneration: updatedStudent.cycleGeneration,
-            },
-            {
-              $setOnInsert: {
-                registrationNumber: updatedStudent.registrationNumber,
-                studentName: updatedStudent.name,
-                leaveCount: updatedStudent.currentLeaveCycle,
-                leaveDates: priorLeaves.map((l) => l.date),
-              },
-            },
-            { upsert: true, new: true }
-          );
-        }
-      }
-    }
+    // Shared with the bulk "end class" action — see lib/attendance-recorder.ts
+    // for why the leave/notification logic lives there rather than inline here.
+    const { attendance: att, student: updatedStudent } = await recordAttendance({
+      studentId,
+      classId,
+      present,
+      remarks,
+    });
 
     // Running attendance tally for this student, so the scanner can flag
     // a pattern of absence right at check-in.

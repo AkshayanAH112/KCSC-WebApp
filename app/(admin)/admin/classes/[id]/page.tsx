@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Loader2, ArrowLeft, CheckCircle2, XCircle, Search, Pencil, Trash2, X } from "lucide-react";
-import { ConfirmDialog, AlertModal } from "@/components/confirm-dialog";
+import { Loader2, ArrowLeft, CheckCircle2, XCircle, Search, Pencil, Trash2, X, AlertTriangle, Lock, LockOpen } from "lucide-react";
+import { ConfirmDialog, AlertModal, Modal } from "@/components/confirm-dialog";
 
 export default function ClassAttendancePage() {
   const params = useParams();
@@ -15,6 +15,13 @@ export default function ClassAttendancePage() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // End-of-class register close. The preview is fetched before the dialog opens
+  // so the admin sees exactly who is about to be marked absent, and who that
+  // pushes to a 2nd/3rd leave, before anything is written.
+  const [endPreview, setEndPreview] = useState<any>(null);
+  const [endOpen, setEndOpen] = useState(false);
+  const [ending, setEnding] = useState(false);
+  const [endResult, setEndResult] = useState<string | null>(null);
 
   const fetchClassData = useCallback(async () => {
     try {
@@ -55,6 +62,42 @@ export default function ClassAttendancePage() {
     }
   };
 
+  const openEndDialog = async () => {
+    setEndPreview(null);
+    setEndOpen(true);
+    const res = await fetch(`/api/classes/${classId}/end`);
+    setEndPreview(await res.json());
+  };
+
+  const handleEndClass = async () => {
+    setEnding(true);
+    try {
+      const res = await fetch(`/api/classes/${classId}/end`, { method: "POST" });
+      const d = await res.json();
+      if (!res.ok) {
+        setError(d.error);
+      } else {
+        setEndResult(
+          d.markedAbsentCount === 0
+            ? "Class ended. Everyone was already marked, so no leaves were added."
+            : `Class ended. ${d.markedAbsentCount} student${d.markedAbsentCount === 1 ? "" : "s"} marked absent` +
+              (d.warningsRaised > 0
+                ? `, raising ${d.warningsRaised} leave warning${d.warningsRaised === 1 ? "" : "s"}.`
+                : ".")
+        );
+        await fetchClassData();
+      }
+    } finally {
+      setEnding(false);
+      setEndOpen(false);
+    }
+  };
+
+  const handleReopen = async () => {
+    await fetch(`/api/classes/${classId}/end`, { method: "DELETE" });
+    fetchClassData();
+  };
+
   const handleDelete = async () => {
     setConfirmDeleteOpen(false);
     const res = await fetch(`/api/classes/${classId}`, { method: "DELETE" });
@@ -82,7 +125,10 @@ export default function ClassAttendancePage() {
   );
 
   const presentCount = roster.filter((r: any) => r.isPresent).length;
-  const absentCount = roster.length - presentCount;
+  // Explicitly marked absent, which is what actually becomes a leave — as
+  // opposed to never scanned at all, which is counted separately below.
+  const absentCount = roster.filter((r: any) => r.isRecorded && !r.isPresent).length;
+  const unmarkedCount = roster.filter((r: any) => !r.isRecorded).length;
 
   return (
     <div className="space-y-6">
@@ -117,7 +163,22 @@ export default function ClassAttendancePage() {
             <span className="tabular text-2xl font-bold text-muted-foreground">{absentCount}</span>
             <span className="mt-1 text-xs font-bold uppercase text-muted-foreground">Absent</span>
           </div>
+          {unmarkedCount > 0 && (
+            <div className="flex min-w-25 flex-col items-center justify-center rounded-lg bg-warning/10 p-4">
+              <span className="tabular text-2xl font-bold text-warning">{unmarkedCount}</span>
+              <span className="mt-1 text-xs font-bold uppercase text-warning">Not marked</span>
+            </div>
+          )}
           <div className="flex items-center gap-2">
+            {classSession.endedAt ? (
+              <button onClick={handleReopen} className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 font-medium text-sm text-muted-foreground hover:bg-muted transition-colors">
+                <LockOpen size={15} /> Reopen
+              </button>
+            ) : (
+              <button onClick={openEndDialog} className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 font-semibold text-sm text-primary-foreground hover:bg-primary/90 transition-colors">
+                <Lock size={15} /> End class
+              </button>
+            )}
             <button onClick={() => setIsEditOpen(true)} className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 font-medium text-sm text-foreground hover:bg-muted transition-colors">
               <Pencil size={15} /> Edit
             </button>
@@ -214,6 +275,79 @@ export default function ClassAttendancePage() {
         tone="danger"
       />
       <AlertModal open={error !== null} onClose={() => setError(null)} title="Failed to delete" description={error ?? undefined} tone="danger" />
+
+      <Modal
+        open={endOpen}
+        onClose={() => setEndOpen(false)}
+        title="End class and close the register?"
+        description="Every student still without a mark will be recorded absent. That counts as a leave, exactly as marking them absent by hand would."
+        footer={
+          <>
+            <button
+              onClick={() => setEndOpen(false)}
+              className="rounded-lg border border-border px-4 py-2 font-medium text-foreground transition-colors hover:bg-muted"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleEndClass}
+              disabled={ending || !endPreview}
+              className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
+            >
+              {ending && <Loader2 className="animate-spin" size={16} />}
+              {endPreview?.unmarkedCount > 0
+                ? `Mark ${endPreview.unmarkedCount} absent & end`
+                : "End class"}
+            </button>
+          </>
+        }
+      >
+        {!endPreview ? (
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Loader2 className="animate-spin" size={16} /> Checking who is unmarked...
+          </div>
+        ) : endPreview.unmarkedCount === 0 ? (
+          <p className="text-muted-foreground">
+            Everyone on this roster is already marked. Ending the class will not add any leaves.
+          </p>
+        ) : (
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              These {endPreview.unmarkedCount} student
+              {endPreview.unmarkedCount === 1 ? "" : "s"} will be marked absent:
+            </p>
+            <ul className="max-h-56 space-y-1 overflow-y-auto rounded-lg border border-border bg-muted/40 p-3 text-sm">
+              {endPreview.unmarked.map((s: any) => {
+                const next = (s.currentLeaveCycle ?? 0) + 1;
+                return (
+                  <li key={s._id} className="flex items-center justify-between gap-3 py-0.5">
+                    <span className="text-foreground">
+                      {s.name}
+                      <span className="ml-2 text-xs text-muted-foreground">{s.registrationNumber || ""}</span>
+                    </span>
+                    {(next === 2 || next === 3) && (
+                      <span className="flex shrink-0 items-center gap-1 rounded-full bg-warning/15 px-2 py-0.5 text-xs font-semibold text-warning">
+                        <AlertTriangle size={11} /> reaches {next} leaves
+                      </span>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+            <p className="text-xs text-muted-foreground">
+              Students reaching 2 leaves raise a parent warning; 3 raises an admin-critical alert. You can still
+              correct any student afterwards by toggling them back to present.
+            </p>
+          </div>
+        )}
+      </Modal>
+
+      <AlertModal
+        open={endResult !== null}
+        onClose={() => setEndResult(null)}
+        title="Register closed"
+        description={endResult ?? undefined}
+      />
     </div>
   );
 }

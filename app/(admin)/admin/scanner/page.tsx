@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Html5QrcodeScanner } from "html5-qrcode";
-import { Loader2, AlertTriangle, Search, Save, CheckCircle2 } from "lucide-react";
+import { Loader2, AlertTriangle, Search, CheckCircle2, XCircle, X } from "lucide-react";
 
 /** Attendance rate under this flags the student at check-in. Mirrors lib/attendanceStats.ts. */
 const LOW_ATTENDANCE_PERCENT = 75;
@@ -16,7 +16,6 @@ export default function ScannerPage() {
   const [recordedCount, setRecordedCount] = useState(0);
   const [message, setMessage] = useState<{ text: string; kind: "error" | "success" } | null>(null);
 
-  const [isPresent, setIsPresent] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
   // Manual fallback via ID
@@ -67,7 +66,6 @@ export default function ScannerPage() {
         setAttendanceRate(data.attendanceRate);
         setAttendedCount(data.attendedCount ?? 0);
         setRecordedCount(data.recordedCount ?? 0);
-        setIsPresent(true); // Default to present on scan
       } catch (e: any) {
         setMessage({ text: e.message, kind: "error" });
       }
@@ -98,8 +96,12 @@ export default function ScannerPage() {
     };
   }, [selectedClass, handleQrScan]);
 
-  const submitAttendance = async () => {
+  // `present` is passed in from whichever button was pressed rather than read
+  // from state: the modal offers Present and Absent as two explicit actions, so
+  // there is no default left sitting around to be submitted by accident.
+  const submitAttendance = async (present: boolean) => {
     if (!scannedStudent || !selectedClass) return;
+    const studentName = scannedStudent.name;
     setSubmitting(true);
     try {
       const res = await fetch("/api/attendance", {
@@ -108,14 +110,20 @@ export default function ScannerPage() {
         body: JSON.stringify({
           studentId: scannedStudent._id,
           classId: selectedClass,
-          present: isPresent,
+          present,
         }),
       });
+      const d = await res.json().catch(() => ({}));
       if (res.ok) {
         setScannedStudent(null);
         lastScannedCode.current = null;
-        setMessage({ text: "Attendance saved successfully.", kind: "success" });
+        setMessage({
+          text: `${studentName} marked ${present ? "present" : "absent"}.`,
+          kind: "success",
+        });
         setTimeout(() => setMessage(null), 3000);
+      } else {
+        setMessage({ text: d.error || "Could not save attendance.", kind: "error" });
       }
     } finally {
       setSubmitting(false);
@@ -207,7 +215,11 @@ export default function ScannerPage() {
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      {/* Single column: the scan result is a modal, not a side panel. On a phone
+          a side panel renders *below* the camera, so the person scanning has to
+          scroll away from the viewfinder to confirm each student — with a queue
+          of students that is the slowest part of the flow. */}
+      <div className="mx-auto grid w-full max-w-2xl gap-6">
         {/* Camera scanner view */}
         <div className="rounded-lg border border-border bg-card p-6 shadow-xs">
           <h3 className="mb-4 font-bold text-foreground">Live Camera Feed</h3>
@@ -256,93 +268,101 @@ export default function ScannerPage() {
           )}
         </div>
 
-        {/* Student result card */}
-        <div className="flex flex-col rounded-lg border border-border bg-card p-6 shadow-xs">
-          <h3 className="mb-4 font-bold text-foreground">Scanner Result</h3>
+        {/* Status line under the viewfinder: the last save's outcome stays
+            visible here after its modal closes, so a run of scans reads as a
+            continuous log rather than a modal flashing in and out. */}
+        {message && (
+          <div
+            role="status"
+            className={`flex items-center gap-2 rounded-lg p-4 ${
+              message.kind === "success"
+                ? "bg-success/10 text-success"
+                : "bg-destructive/10 text-destructive"
+            }`}
+          >
+            {message.kind === "success" ? (
+              <CheckCircle2 size={18} aria-hidden />
+            ) : (
+              <AlertTriangle size={18} aria-hidden />
+            )}
+            {message.text}
+          </div>
+        )}
 
-          {message && (
-            <div
-              role="status"
-              className={`mb-4 flex items-center gap-2 rounded-lg p-4 ${
-                message.kind === "success"
-                  ? "bg-success/10 text-success"
-                  : "bg-destructive/10 text-destructive"
-              }`}
-            >
-              {message.kind === "success" ? (
-                <CheckCircle2 size={18} aria-hidden />
-              ) : (
-                <AlertTriangle size={18} aria-hidden />
-              )}
-              {message.text}
-            </div>
-          )}
+        {!scannedStudent && !message && selectedClass && (
+          <div className="flex items-center justify-center gap-2 rounded-lg border border-dashed border-border p-4 text-muted-foreground">
+            <Search size={18} aria-hidden /> Scan a student card to begin
+          </div>
+        )}
+      </div>
 
-          {!scannedStudent ? (
-            <div className="flex flex-1 flex-col items-center justify-center text-muted-foreground">
-              <Search size={48} className="mb-4 opacity-50" aria-hidden />
-              <p>Scan a student card to begin</p>
-            </div>
-          ) : (
-            <div className="flex flex-1 flex-col">
-              <div className="mb-6 flex items-start justify-between gap-4">
-                <div>
-                  <h2 className="text-2xl text-foreground">{scannedStudent.name}</h2>
-                  <p className="font-medium text-primary">Grade {scannedStudent.grade}</p>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Guardian: {scannedStudent.guardianName} ({scannedStudent.guardianPhone})
-                  </p>
-                </div>
-                {isLowAttendance && (
-                  <div className="flex items-center gap-2 rounded-lg bg-warning/15 px-3 py-1.5 font-bold text-warning">
-                    <AlertTriangle size={18} aria-hidden /> {attendanceRate}% attendance
-                  </div>
-                )}
-              </div>
-
-              {recordedCount > 0 && (
-                <p className="mb-4 text-sm text-muted-foreground">
-                  Attended{" "}
-                  <span className="tabular font-semibold text-foreground">
-                    {attendedCount} of {recordedCount}
-                  </span>{" "}
-                  recorded sessions.
+      {/* Scan confirmation. Overlays the viewfinder so the details land in the
+          middle of the screen at the moment of the scan, with no scrolling. */}
+      {scannedStudent && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 sm:items-center"
+          onClick={() => setScannedStudent(null)}
+        >
+          <div
+            className="w-full max-w-sm rounded-3xl border border-border bg-card p-6 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <h2 className="truncate text-2xl text-foreground">{scannedStudent.name}</h2>
+                <p className="font-medium text-primary">Grade {scannedStudent.grade}</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Guardian: {scannedStudent.guardianName} ({scannedStudent.guardianPhone})
                 </p>
-              )}
-
-              <div className="flex-1 space-y-4">
-                <div className="flex items-center justify-between rounded-lg border border-border bg-muted p-4">
-                  <span className="font-medium text-foreground">Mark present?</span>
-                  <label className="relative inline-flex cursor-pointer items-center">
-                    <span className="sr-only">Mark present</span>
-                    <input
-                      type="checkbox"
-                      className="peer sr-only"
-                      checked={isPresent}
-                      onChange={() => setIsPresent(!isPresent)}
-                    />
-                    <div className="peer h-6 w-11 rounded-full bg-input after:absolute after:top-0.5 after:left-0.5 after:h-5 after:w-5 after:rounded-full after:border after:border-border after:bg-white after:transition-all after:content-[''] peer-checked:bg-success peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus-visible:ring-3 peer-focus-visible:ring-ring/50"></div>
-                  </label>
-                </div>
               </div>
-
               <button
-                onClick={submitAttendance}
-                disabled={submitting}
-                className="mt-6 flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary py-4 font-bold text-primary-foreground shadow-xs transition-all duration-200 hover:bg-primary/90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+                onClick={() => setScannedStudent(null)}
+                aria-label="Cancel"
+                className="shrink-0 rounded-lg p-1 text-muted-foreground transition-colors hover:bg-muted"
               >
-                {submitting ? (
-                  <Loader2 className="animate-spin" aria-hidden />
-                ) : (
-                  <>
-                    <Save size={24} aria-hidden /> Confirm &amp; Save
-                  </>
-                )}
+                <X size={20} />
               </button>
             </div>
-          )}
+
+            {isLowAttendance && (
+              <div className="mb-4 flex items-center gap-2 rounded-lg bg-warning/15 px-3 py-2 font-bold text-warning">
+                <AlertTriangle size={18} aria-hidden /> {attendanceRate}% attendance
+              </div>
+            )}
+
+            {recordedCount > 0 && (
+              <p className="mb-4 text-sm text-muted-foreground">
+                Attended{" "}
+                <span className="tabular font-semibold text-foreground">
+                  {attendedCount} of {recordedCount}
+                </span>{" "}
+                recorded sessions.
+              </p>
+            )}
+
+            {/* Two explicit buttons rather than a toggle plus a save: at the
+                moment of a scan the choice IS present-or-absent, and a toggle
+                left on its default is the easiest way to record the wrong one. */}
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => submitAttendance(false)}
+                disabled={submitting}
+                className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-destructive/40 py-4 font-bold text-destructive transition-all hover:bg-destructive/10 active:scale-95 disabled:opacity-60"
+              >
+                <XCircle size={20} aria-hidden /> Absent
+              </button>
+              <button
+                onClick={() => submitAttendance(true)}
+                disabled={submitting}
+                className="flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-success py-4 font-bold text-white transition-all hover:bg-success/90 active:scale-95 disabled:opacity-60"
+              >
+                {submitting ? <Loader2 className="animate-spin" size={20} aria-hidden /> : <CheckCircle2 size={20} aria-hidden />}
+                Present
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Inline "New Class" — reached from the class select above so marking
           attendance never has to be blocked on leaving to /admin/batches first. */}
