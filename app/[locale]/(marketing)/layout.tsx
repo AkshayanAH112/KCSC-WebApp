@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import {
   Playfair_Display,
   Plus_Jakarta_Sans,
@@ -83,6 +84,23 @@ const fontVariables = [
 
 const OG_IMAGE = { ...DEFAULT_OG_IMAGE, alt: siteConfig.name };
 
+// Google AdSense. This lives in the marketing root layout and nowhere else —
+// the admin console has its own separate root layout (app/(admin)/layout.tsx),
+// so staff pages never load an ad script and never report a pageview. That
+// separation is free here; do not hoist this into a shared layout.
+//
+// The same tag covers three jobs: site verification during review, Auto Ads
+// once enabled in the AdSense dashboard, and the loader for any manual
+// <ins class="adsbygoogle"> unit added later. Placement, formats and page
+// exclusions are all dashboard settings, not code.
+//
+// afterInteractive, not beforeInteractive: this must not block hydration of a
+// page whose first impression is an animated hero.
+//
+// ads.txt (public/ads.txt) has to stay in sync with this publisher ID, or
+// AdSense reports "Earnings at risk".
+const ADSENSE_CLIENT = "ca-pub-5905899581811953";
+
 // Every marketing page inherits this (metadataBase resolves relative URLs in
 // their own metadata, e.g. alternates.languages); pages that set their own
 // title/description/openGraph override these defaults rather than merge
@@ -134,6 +152,12 @@ export default async function MarketingRootLayout({
             <RenewModal />
           </MotionConfig>
         </NextIntlClientProvider>
+        <Script
+          id="adsbygoogle"
+          strategy="afterInteractive"
+          crossOrigin="anonymous"
+          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
+        />
       </body>
     </html>
   );

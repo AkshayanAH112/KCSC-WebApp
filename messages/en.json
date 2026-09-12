@@ -9,6 +9,7 @@
     "Programs": "Programs",
     "Gallery": "Gallery",
     "News": "News",
+    "Results": "Results",
     "join": "Join The Club"
   },
   "VideoScrubHero": {
@@ -124,6 +125,212 @@
     "recent_desc": "All older published stories.",
     "read": "Read",
     "load_more": "Load more stories"
+  },
+  "ResultsPage": {
+    "home": "Home",
+    "results": "Results",
+    "eyebrow": "Free Tuition Programme",
+    "title": "Exam ",
+    "accent": "results.",
+    "description": "Enter the registration number printed on the student card to see published exam results and progress for that student.",
+    "label": "Registration Number",
+    "placeholder": "KCSC/2026/0001",
+    "hint": "Exactly as printed on the student card, including the KCSC prefix.",
+    "submit": "View Results",
+    "searching": "Searching…",
+    "another": "Search another student",
+    "empty_title": "No results published yet",
+    "empty_body": "This student has no published exam results at the moment. Results appear here once the club publishes them, usually a few days after the exam.",
+    "grade": "Grade {grade}",
+    "overall": "Overall performance",
+    "average": "Average",
+    "rank": "Class rank",
+    "rank_value": "{rank} of {total}",
+    "exams_counted": "{count} exams counted",
+    "strongest": "Strongest subject",
+    "weakest": "Needs most work",
+    "filter_label": "Show",
+    "filter_all": "All exams",
+    "col_exam": "Exam",
+    "col_date": "Date",
+    "col_marks": "Marks",
+    "col_percent": "Percentage",
+    "col_class_avg": "Class average",
+    "col_rank": "Rank",
+    "absent": "Absent",
+    "absent_note": "Not counted towards the average",
+    "of_students": "of {total}",
+    "note_title": "About these results",
+    "note_body": "Only exams the club has published are shown. Averages and ranks exclude papers the student was absent for, and are calculated among the students who sat the same papers.",
+    "error_generic": "Something went wrong. Please try again in a moment."
+  },
+  "PrivacyPage": {
+    "home": "Home",
+    "privacy": "Privacy Policy",
+    "eyebrow": "Legal",
+    "title": "Privacy ",
+    "accent": "policy.",
+    "updated": "Last updated {date}",
+    "lead": "Kallar Central Sports Club runs this website. This policy explains what personal information we collect, why we collect it, and what we do with it. We do not buy personal information, and we do not sell it.",
+    "sections": [
+      {
+        "title": "Information we collect",
+        "paragraphs": [
+          "We collect personal information in four situations."
+        ],
+        "items": [
+          {
+            "label": "Club membership applications.",
+            "text": "When you apply or renew through the Join The Club form, we collect your name, date of birth, gender, phone and WhatsApp numbers, email address, home address, occupation, National Identity Card number (required from age 16), a photograph, guardian details where the applicant is a minor, and the bank payment slip you upload as proof of the annual fee."
+          },
+          {
+            "label": "Free tuition programme.",
+            "text": "For children enrolled in our free Grade 3–5 scholarship classes, club staff record the student's name, school, address, grade, photograph, guardian's name and phone number, class attendance and exam marks. This is given to staff in person at enrolment — it is not collected through this website."
+          },
+          {
+            "label": "Exam results lookup.",
+            "text": "When you use the Results page, we receive the registration number you type in so we can return that student's published marks."
+          },
+          {
+            "label": "Staff accounts.",
+            "text": "Club staff who use the admin console have an account holding their email address and role."
+          }
+        ]
+      },
+      {
+        "title": "How we use it",
+        "items": [
+          {
+            "text": "Reviewing and approving membership applications, and issuing membership cards."
+          },
+          {
+            "text": "Verifying annual fee payments made by bank transfer."
+          },
+          {
+            "text": "Running the tuition programme — attendance registers, exam results, and alerting a guardian when a child has missed classes."
+          },
+          {
+            "text": "Showing exam results on the Results page, for exams the club has chosen to publish."
+          },
+          {
+            "text": "Emailing an approved member their membership card."
+          }
+        ],
+        "footnote": "We do not use any of this information for advertising, and we do not share it with advertisers."
+      },
+      {
+        "title": "Cookies and advertising",
+        "paragraphs": [
+          "A cookie is a small file stored by your browser. This site uses them in two unrelated ways.",
+          "Google, as a third-party vendor, uses cookies to serve advertising on this site. Google's use of advertising cookies enables it and its partners to serve ads based on your visit to this and other websites. Other third-party advertisers may also place cookies through this site; we do not control those cookies. You can opt out of personalised advertising using the links below.",
+          "Separately, when a member of club staff signs in to the admin console, we set a single sign-in cookie so their session stays active. That cookie is not used for advertising or tracking, and it is never set for ordinary visitors."
+        ],
+        "links": [
+          {
+            "label": "Opt out of personalised Google ads",
+            "href": "https://www.google.com/settings/ads"
+          },
+          {
+            "label": "How Google uses advertising cookies",
+            "href": "https://policies.google.com/technologies/ads"
+          },
+          {
+            "label": "Opt out of other vendors at aboutads.info",
+            "href": "https://www.aboutads.info/choices/"
+          }
+        ],
+        "footnote": "Most browsers also let you block or delete cookies. Blocking them will not stop you using this site."
+      },
+      {
+        "title": "Who we share it with",
+        "paragraphs": [
+          "We use the following service providers to run this site. They handle information on our behalf:"
+        ],
+        "items": [
+          {
+            "label": "MongoDB Atlas",
+            "text": "— database hosting."
+          },
+          {
+            "label": "DigitalOcean Spaces",
+            "text": "— storage for photographs, payment slips and gallery images."
+          },
+          {
+            "label": "Vercel",
+            "text": "— website hosting."
+          },
+          {
+            "label": "Google AdSense",
+            "text": "— advertising."
+          },
+          {
+            "label": "Google (Gmail)",
+            "text": "— sending membership card emails."
+          }
+        ],
+        "footnote": "We do not sell personal information. We disclose it otherwise only where the law requires us to."
+      },
+      {
+        "title": "Children's privacy",
+        "paragraphs": [
+          "The free tuition programme is for children in Grades 3 to 5. We collect their information from a parent or guardian at enrolment, and use it only to run the programme.",
+          "Please note that the Results page shows a student's name, grade, marks and class position to anyone who enters that student's registration number, and no other detail is required to see them. Only exams the club has chosen to publish appear there. If you are a parent or guardian and you would prefer your child's results not to be shown that way, contact us and we will remove them.",
+          "We do not knowingly allow children to submit information to us directly through this website."
+        ]
+      },
+      {
+        "title": "How long we keep it",
+        "paragraphs": [
+          "Membership records are kept while a membership is active and afterwards as part of the club's own records. Student records are kept for the duration of the programme and the club's records. A payment slip is deleted once a renewal supersedes it."
+        ]
+      },
+      {
+        "title": "Your choices",
+        "items": [
+          {
+            "text": "You can ask to see, correct, or delete the information we hold about you or your child. We may need to confirm who you are before acting on a request."
+          },
+          {
+            "text": "You can opt out of personalised advertising using the links in the section above."
+          },
+          {
+            "text": "You can ask us to remove your child's results from the public Results page."
+          }
+        ]
+      },
+      {
+        "title": "Security",
+        "paragraphs": [
+          "Information is held on managed hosting services, reachable only through club staff accounts. Staff sign in with a password, and each role sees only what it needs — tuition-programme staff cannot see membership records at all. No system is completely secure, and we cannot guarantee absolute security."
+        ]
+      },
+      {
+        "title": "Changes to this policy",
+        "paragraphs": [
+          "We may update this policy. The date at the top of the page shows when it last changed."
+        ]
+      },
+      {
+        "title": "Contact us",
+        "paragraphs": [
+          "For any question about this policy, or to make a request about your information:"
+        ],
+        "items": [
+          {
+            "label": "Kallar Central Sports Club",
+            "text": "Periyakallar, Sri Lanka"
+          },
+          {
+            "label": "Email",
+            "text": "kallarcentralsportsclub@gmail.com"
+          },
+          {
+            "label": "Phone",
+            "text": "+94 777770023"
+          }
+        ]
+      }
+    ]
   },
   "SingleNewsPage": {
     "home": "Home",

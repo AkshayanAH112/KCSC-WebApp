@@ -151,6 +151,15 @@ const ExamSchema = new mongoose.Schema({
   examDate: { type: Date, required: true },
   maxMarks: { type: Number, required: true },
   name: { type: String }, // optional friendly label, e.g. "Mid-term"
+  // Gate for the public /results lookup. Marks are entered and corrected over
+  // days, so without this a half-typed exam would be world-readable mid-entry
+  // and a typo public before it was fixed. Default false — including for every
+  // exam predating this field, which is the safe direction to fail.
+  //
+  // Note this also permanently excludes legacy Marks rows that have no examId
+  // (see /api/exams/backfill): with no Exam to flip, they can never publish.
+  isPublished: { type: Boolean, default: false },
+  publishedAt: { type: Date },
 }, { timestamps: true });
 export const Exam = mongoose.models.Exam || mongoose.model("Exam", ExamSchema);
 

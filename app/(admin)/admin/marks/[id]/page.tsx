@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import * as XLSX from "xlsx";
-import { Loader2, ArrowLeft, Search, Download, Upload, Pencil, Trash2, X } from "lucide-react";
+import { Loader2, ArrowLeft, Search, Download, Upload, Pencil, Trash2, X, Globe, Lock } from "lucide-react";
 import { ConfirmDialog, AlertModal } from "@/components/confirm-dialog";
 
 export default function ExamDetailPage() {
@@ -18,6 +18,7 @@ export default function ExamDetailPage() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [publishing, setPublishing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchData = useCallback(async () => {
@@ -127,6 +128,28 @@ export default function ExamDetailPage() {
     reader.readAsBinaryString(file);
   };
 
+  // Flips Exam.isPublished, the gate on the public /results lookup. Nothing
+  // else about the exam changes — the roster stays fully editable after
+  // publishing, and a correction made later is live the moment it is saved.
+  const togglePublish = async () => {
+    setPublishing(true);
+    try {
+      const res = await fetch(`/api/exams/${examId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isPublished: !data.exam.isPublished }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        setError(err.error);
+        return;
+      }
+      fetchData();
+    } finally {
+      setPublishing(false);
+    }
+  };
+
   const handleDelete = async () => {
     setConfirmDeleteOpen(false);
     const res = await fetch(`/api/exams/${examId}`, { method: "DELETE" });
@@ -175,6 +198,56 @@ export default function ExamDetailPage() {
             <Trash2 size={16} /> Delete
           </button>
         </div>
+      </div>
+
+      {/* The gate on the public /results page. Unpublished is the default and
+          the safe state: marks are typed and corrected over several days, and
+          this is what keeps a half-entered exam off the public site meanwhile. */}
+      <div
+        className={`flex flex-col gap-4 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between ${
+          exam.isPublished ? "border-primary/30 bg-primary/5" : "border-border bg-muted/40"
+        }`}
+      >
+        <div className="flex items-start gap-3">
+          {exam.isPublished ? (
+            <Globe size={20} className="mt-0.5 shrink-0 text-primary" />
+          ) : (
+            <Lock size={20} className="mt-0.5 shrink-0 text-muted-foreground" />
+          )}
+          <div>
+            <p className="font-bold text-foreground">
+              {exam.isPublished ? "Results are public" : "Results are not public"}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {exam.isPublished
+                ? `Anyone with this student's registration number can see these marks on the public Results page${
+                    exam.publishedAt ? ` · published ${new Date(exam.publishedAt).toLocaleDateString()}` : ""
+                  }.`
+                : "Nothing here is visible on the public site yet. Publish once every mark is entered and checked."}
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={togglePublish}
+          disabled={publishing}
+          className={`flex shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-lg px-4 py-2 font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+            exam.isPublished
+              ? "border border-border text-foreground hover:bg-muted"
+              : "bg-primary text-primary-foreground hover:bg-primary/90"
+          }`}
+        >
+          {publishing ? (
+            <Loader2 className="animate-spin" size={16} />
+          ) : exam.isPublished ? (
+            <>
+              <Lock size={16} /> Unpublish
+            </>
+          ) : (
+            <>
+              <Globe size={16} /> Publish Results
+            </>
+          )}
+        </button>
       </div>
 
       <div className="flex flex-col gap-3 rounded-lg border border-dashed border-border p-4 sm:flex-row">

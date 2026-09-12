@@ -15,6 +15,10 @@ export const navLinks = [
   { label: "About", href: "/about" },
   { label: "Gallery", href: "/gallery" },
   { label: "News", href: "/news" },
+  // Public exam-results lookup. Sits last because it is a tool rather than a
+  // page to browse — and because a fifth item is what starts crowding the
+  // desktop pill at the md breakpoint in Tamil, where every label is longer.
+  { label: "Results", href: "/results" },
 ];
 
 // Real club facts (see about.txt): founded 2007, 170+ members, 8+ trophies

@@ -50,6 +50,13 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     if (data.examDate !== undefined) update.examDate = data.examDate;
     if (data.maxMarks !== undefined) update.maxMarks = data.maxMarks;
     if (data.name !== undefined) update.name = data.name;
+    // The gate for the public /results lookup. publishedAt records when this
+    // was last made visible to parents and is cleared on unpublish, so "when
+    // could parents first see this" is answerable without digging through logs.
+    if (data.isPublished !== undefined) {
+      update.isPublished = Boolean(data.isPublished);
+      update.publishedAt = data.isPublished ? new Date() : null;
+    }
 
     // Editing maxMarks does not rescale marks already entered — each Marks row
     // keeps the maxMarks value it was recorded with, same as before Exam existed.

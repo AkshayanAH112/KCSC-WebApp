@@ -2,10 +2,11 @@ import Link from "next/link";
 import { Phone, MapPin, Mail } from "lucide-react";
 import Image from "next/image";
 import RenewLink from "@/components/landing/ui/RenewLink";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 export default function Footer() {
   const t = useTranslations("Footer");
+  const locale = useLocale();
   return (
     <footer id="contact" className="relative py-8 md:py-10 overflow-hidden border-t border-tertiary-container/20 bg-surface-container-lowest pointer-events-auto">
       <div className="max-w-[1280px] mx-auto px-5 md:px-16 flex flex-col md:flex-row justify-between gap-6 md:gap-4">
@@ -142,7 +143,7 @@ export default function Footer() {
         <p>&copy; {new Date().getFullYear()} {t("copyright")}</p>
         <p>{t("developed_by")}</p>
         <div className="flex gap-4">
-          <Link href="#" className="hover:text-tertiary-container transition-colors">{t("privacy")}</Link>
+          <Link href={`/${locale}/privacy`} className="hover:text-tertiary-container transition-colors">{t("privacy")}</Link>
           <Link href="#" className="hover:text-tertiary-container transition-colors">{t("terms")}</Link>
         </div>
       </div>

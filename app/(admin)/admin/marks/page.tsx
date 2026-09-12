@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Loader2, GraduationCap, X } from "lucide-react";
+import { Plus, Loader2, GraduationCap, X, Globe } from "lucide-react";
 import { AlertModal } from "@/components/confirm-dialog";
 
 type ExamSummary = {
@@ -15,6 +15,9 @@ type ExamSummary = {
   name?: string;
   resultsCount: number;
   averagePercent: number | null;
+  // Optional: exams created before the public Results page existed have no
+  // value stored, which reads the same as false here — unpublished.
+  isPublished?: boolean;
 };
 
 type LegacyMark = {
@@ -106,7 +109,17 @@ export default function MarksPage() {
                     className="cursor-pointer transition-colors duration-200 hover:bg-muted"
                   >
                     <td className="px-6 py-2.5 font-semibold text-foreground">
-                      {exam.name ? `${exam.subject} — ${exam.name}` : exam.subject}
+                      <span className="flex items-center gap-2">
+                        {exam.name ? `${exam.subject} — ${exam.name}` : exam.subject}
+                        {exam.isPublished && (
+                          <span
+                            title="Parents can see these results on the public site"
+                            className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary"
+                          >
+                            <Globe size={10} /> Public
+                          </span>
+                        )}
+                      </span>
                     </td>
                     <td className="px-6 py-2.5 text-muted-foreground">Grade {exam.grade}</td>
                     <td className="px-6 py-2.5 text-muted-foreground">{exam.batchId?.name ?? "—"}</td>

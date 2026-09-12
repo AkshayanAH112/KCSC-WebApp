@@ -20,6 +20,10 @@ const STATIC_PATHS: StaticPath[] = [
   { path: "/about", changeFrequency: "monthly", priority: 0.8 },
   { path: "/gallery", changeFrequency: "weekly", priority: 0.7 },
   { path: "/news", changeFrequency: "daily", priority: 0.9 },
+  // The lookup form itself is worth indexing; the results it returns are not
+  // reachable by URL (the lookup is a POST), so nothing personal can be crawled.
+  { path: "/results", changeFrequency: "weekly", priority: 0.8 },
+  { path: "/privacy", changeFrequency: "yearly", priority: 0.3 },
 ];
 
 // One entry per locale for a given locale-agnostic path, each carrying
