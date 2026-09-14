@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import { ClassSession, Student, Attendance } from '@/models';
 import { isStaffRequest } from '@/lib/auth-guard';
+import { sortByIndexNumber } from '@/lib/studentOrder';
 
 export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
@@ -22,12 +23,14 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
         batchId: classSession.batchId._id,
         grade: classSession.grade,
         $or: [{ registrationDate: { $exists: false } }, { registrationDate: { $lte: classSession.date } }],
-    }).sort({ name: 1 });
+    }).then(sortByIndexNumber);
 
     // 3. Fetch existing attendance records for this class
     const attendanceRecords = await Attendance.find({ classId: id });
 
     // 4. Map them together
+    // Ordered by index number (registrationNumber), so the on-screen register
+    // reads down in the same order as the printed sheet and the Excel export.
     const roster = students.map(student => {
         const record = attendanceRecords.find(a => a.studentId.toString() === student._id.toString());
         return {

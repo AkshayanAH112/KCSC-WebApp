@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import * as XLSX from "xlsx";
-import { Loader2, ArrowLeft, Search, Download, Upload, Pencil, Trash2, X, Globe, Lock } from "lucide-react";
+import { Loader2, ArrowLeft, Search, Download, Upload, Pencil, Trash2, X, Globe, Lock, CalendarX, FileSpreadsheet } from "lucide-react";
 import { ConfirmDialog, AlertModal } from "@/components/confirm-dialog";
 
 export default function ExamDetailPage() {
@@ -19,6 +19,11 @@ export default function ExamDetailPage() {
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [publishing, setPublishing] = useState(false);
+  // Absence hints the user has waved off. A hint is not a Marks row, so there is
+  // nothing to delete when one is dismissed — it just stops being offered until
+  // the next reload.
+  const [dismissedHints, setDismissedHints] = useState<Set<string>>(new Set());
+  const [applyingHints, setApplyingHints] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchData = useCallback(async () => {
@@ -56,7 +61,14 @@ export default function ExamDetailPage() {
     }
   };
 
-  const toggleAbsent = async (studentId: string, isAbsent: boolean) => {
+  const toggleAbsent = async (studentId: string, isAbsent: boolean, isHint = false) => {
+    // Un-ticking a pre-ticked hint is not an edit — there is no Marks row behind
+    // it yet. Just stop showing it, rather than writing a "present" record for a
+    // student nobody has entered a mark for.
+    if (isHint && !isAbsent) {
+      setDismissedHints((prev) => new Set(prev).add(studentId));
+      return;
+    }
     setSaving(true);
     try {
       await fetch(`/api/exams/${examId}/marks`, {
@@ -75,18 +87,128 @@ export default function ExamDetailPage() {
     }
   };
 
+  /**
+   * Writes the outstanding absence hints as real Marks rows, in one request.
+   * This is the only thing that turns a hint into a record — opening the page
+   * never does, because missing the class and missing the paper are different
+   * facts and only staff can confirm the second one.
+   */
+  const applyAbsenceHints = async (studentIds: string[]) => {
+    if (studentIds.length === 0) return;
+    setApplyingHints(true);
+    try {
+      const res = await fetch(`/api/exams/${examId}/marks`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(studentIds.map((studentId) => ({ studentId, isAbsent: true }))),
+      });
+      if (res.ok) {
+        fetchData();
+      } else {
+        const err = await res.json();
+        setError("Failed to record absences: " + err.error);
+      }
+    } finally {
+      setApplyingHints(false);
+    }
+  };
+
   const handleDownloadTemplate = () => {
     if (!data?.roster) return;
+    // Index Number first: it is the only identifier on this sheet that staff can
+    // match against a student card or the attendance export. Student ID is the
+    // Mongo _id — kept because the upload joins on it, but moved to the end
+    // since it means nothing to the person filling the sheet in.
     const templateData = data.roster.map((r: any) => ({
-      "Student ID": r.student._id,
+      "Index Number": r.student.registrationNumber ?? "",
       Name: r.student.name,
       "Marks (Required)": r.mark?.marks ?? 0,
       Absent: r.mark?.isAbsent ? "Yes" : "No",
+      "Student ID": r.student._id,
     }));
     const ws = XLSX.utils.json_to_sheet(templateData);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Marks Template");
     XLSX.writeFile(wb, `KCSC_${data.exam.subject}_Template.xlsx`);
+  };
+
+  /**
+   * The finished, ranked result sheet — an output document, not the data-entry
+   * template above. Built from the full roster in rank order, never from the
+   * search-filtered view, so the sheet is always the whole class regardless of
+   * what is typed in the search box.
+   *
+   * Absent papers export as blank with an "Absent" remark rather than the 0 that
+   * Marks stores for them: a 0 in a printed results column reads as a score of
+   * nought, which is the same reason /api/public/results returns null there.
+   */
+  const handleDownloadResultSheet = () => {
+    if (!data?.roster) return;
+    // Read off `data` rather than the `exam` binding destructured further down,
+    // so this handler does not depend on where it sits in the component body.
+    const exam = data.exam;
+    const { rankedRoster: ranked, rankByStudentId: ranks, scored: sat } = buildRanking(data.roster);
+
+    // Percentages are computed against each row's own recorded maxMarks, not the
+    // exam's current value — editing Max Marks deliberately does not rescale
+    // marks already entered (see the PATCH handler), so a row keeps the total it
+    // was marked out of. The class average is the mean of exactly the
+    // percentages printed below it, matching the public Results page's rule.
+    const percentOf = (r: any) => {
+      const max = r.mark?.maxMarks || exam.maxMarks;
+      return max > 0 ? (r.mark.marks / max) * 100 : null;
+    };
+    const satPercents = sat.map(percentOf).filter((v: number | null): v is number => v !== null);
+    const classAverage = satPercents.length
+      ? Math.round((satPercents.reduce((a: number, b: number) => a + b, 0) / satPercents.length) * 10) / 10
+      : null;
+    const absentCount = ranked.filter((r: any) => r.isRecorded && r.mark.isAbsent).length;
+    const notRecordedCount = ranked.filter((r: any) => !r.isRecorded).length;
+
+    const examTitle = exam.name ? `${exam.subject} — ${exam.name}` : exam.subject;
+    const examDate = new Date(exam.examDate).toLocaleDateString();
+
+    const sheet: (string | number | null)[][] = [
+      ["Kallar Central Sports Club — Result Sheet"],
+      [],
+      ["Subject", examTitle],
+      ["Grade", `Grade ${exam.grade}`],
+      ["Batch", exam.batchId?.name ?? "—"],
+      ["Exam Date", examDate],
+      ["Out Of", exam.maxMarks],
+      [],
+      ["Students on roster", ranked.length],
+      ["Sat the exam", sat.length],
+      ["Absent", absentCount],
+      ["Not recorded", notRecordedCount],
+      ["Class average", classAverage === null ? "—" : `${classAverage}%`],
+      ["Highest mark", sat.length ? sat[0].mark.marks : "—"],
+      [],
+      ["Rank", "Index Number", "Student Name", "Marks", "Out Of", "Percentage", "Remarks"],
+    ];
+
+    for (const r of ranked) {
+      const rank = ranks.get(r.student._id);
+      const isAbsent = r.isRecorded && r.mark.isAbsent;
+      const percent = r.isRecorded && !isAbsent ? percentOf(r) : null;
+      sheet.push([
+        rank ?? "—",
+        r.student.registrationNumber ?? "—",
+        r.student.name,
+        isAbsent || !r.isRecorded ? "" : r.mark.marks,
+        r.isRecorded ? r.mark.maxMarks || exam.maxMarks : exam.maxMarks,
+        percent === null ? "" : `${Math.round(percent * 10) / 10}%`,
+        isAbsent ? "Absent" : r.isRecorded ? "" : "Not recorded",
+      ]);
+    }
+
+    const ws = XLSX.utils.aoa_to_sheet(sheet);
+    ws["!cols"] = [{ wch: 6 }, { wch: 18 }, { wch: 28 }, { wch: 8 }, { wch: 8 }, { wch: 12 }, { wch: 14 }];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Results");
+    const safeSubject = exam.subject.replace(/[^a-z0-9]+/gi, "_");
+    const isoDate = new Date(exam.examDate).toISOString().slice(0, 10);
+    XLSX.writeFile(wb, `KCSC_${safeSubject}_${isoDate}_Results.xlsx`);
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,14 +220,41 @@ export default function ExamDetailPage() {
       try {
         const wb = XLSX.read(event.target?.result, { type: "binary" });
         const wsData = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-        const payload = wsData.map((row: any) => {
-          const isAbsent = String(row["Absent"] ?? "").trim().toLowerCase() === "yes";
-          return {
-            studentId: row["Student ID"],
-            marks: isAbsent ? 0 : Number(row["Marks (Required)"]),
-            isAbsent,
-          };
-        });
+        // Fall back to the index number when Student ID is blank — staff do add
+        // rows by hand, and the index number is the column they can actually
+        // read off a student card. Rows that match neither are dropped rather
+        // than posted with an undefined studentId, which would 500 on validation.
+        const byIndexNumber = new Map<string, string>(
+          (data?.roster ?? [])
+            .filter((r: any) => r.student.registrationNumber)
+            .map((r: any) => [String(r.student.registrationNumber).trim().toUpperCase(), r.student._id])
+        );
+        const unmatched: string[] = [];
+        const payload = wsData
+          .map((row: any) => {
+            const isAbsent = String(row["Absent"] ?? "").trim().toLowerCase() === "yes";
+            const indexNumber = String(row["Index Number"] ?? "").trim().toUpperCase();
+            const studentId = row["Student ID"] || byIndexNumber.get(indexNumber);
+            if (!studentId) {
+              if (indexNumber || row["Name"]) unmatched.push(indexNumber || String(row["Name"]));
+              return null;
+            }
+            return {
+              studentId,
+              marks: isAbsent ? 0 : Number(row["Marks (Required)"]),
+              isAbsent,
+            };
+          })
+          .filter(Boolean);
+
+        if (payload.length === 0) {
+          setError(
+            unmatched.length > 0
+              ? `No rows matched a student on this roster. Unrecognised: ${unmatched.slice(0, 5).join(", ")}${unmatched.length > 5 ? "…" : ""}`
+              : "That sheet had no rows to import."
+          );
+          return;
+        }
         const res = await fetch(`/api/exams/${examId}/marks`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -166,8 +315,22 @@ export default function ExamDetailPage() {
   if (!data?.exam) return <div className="p-12 text-center text-muted-foreground">Exam not found</div>;
 
   const { exam, roster } = data;
-  const filteredRoster = roster.filter((r: any) => r.student.name.toLowerCase().includes(searchQuery.toLowerCase()));
   const recordedCount = roster.filter((r: any) => r.isRecorded).length;
+
+  // Hints still on offer: suggested by the register, not yet waved off, and not
+  // already overridden by a mark (the API stops suggesting once one exists).
+  const pendingHints = roster.filter((r: any) => r.suggestedAbsent && !dismissedHints.has(r.student._id));
+
+  // One ranking, shared by the table and the downloadable result sheet, so the
+  // two can never disagree about who came first.
+  const { scored, rankByStudentId, rankedRoster } = buildRanking(roster);
+
+  const query = searchQuery.trim().toLowerCase();
+  const filteredRoster = rankedRoster.filter(
+    (r: any) =>
+      r.student.name.toLowerCase().includes(query) ||
+      (r.student.registrationNumber ?? "").toLowerCase().includes(query)
+  );
 
   return (
     <div className="space-y-6">
@@ -250,6 +413,42 @@ export default function ExamDetailPage() {
         </button>
       </div>
 
+      {/* Carried over from the class register for this exam's date. Only an
+          explicitly marked absence produces a hint — a student with no
+          attendance row at all is "not marked", not absent, so the register
+          never having been closed leaves this banner off entirely. */}
+      {pendingHints.length > 0 && (
+        <div className="flex flex-col gap-4 rounded-lg border border-warning/30 bg-warning/5 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <CalendarX size={20} className="mt-0.5 shrink-0 text-warning" />
+            <div>
+              <p className="font-bold text-foreground">
+                {pendingHints.length} student{pendingHints.length === 1 ? " was" : "s were"} marked absent in class on{" "}
+                {new Date(exam.examDate).toLocaleDateString()}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Their Absent boxes are pre-ticked below. Nothing is saved until you apply them — un-tick anyone who
+                sat the paper anyway.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => applyAbsenceHints(pendingHints.map((r: any) => r.student._id))}
+            disabled={applyingHints}
+            className="flex shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-2 font-bold text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {applyingHints ? <Loader2 className="animate-spin" size={16} /> : <>Mark {pendingHints.length} absent</>}
+          </button>
+        </div>
+      )}
+
+      {data.attendance?.sessionCount === 0 && recordedCount === 0 && (
+        <p className="text-sm text-muted-foreground">
+          No class register was taken on {new Date(exam.examDate).toLocaleDateString()}, so no absences were carried
+          over. Close that day&apos;s register first if you want them filled in automatically.
+        </p>
+      )}
+
       <div className="flex flex-col gap-3 rounded-lg border border-dashed border-border p-4 sm:flex-row">
         <button
           onClick={handleDownloadTemplate}
@@ -273,20 +472,33 @@ export default function ExamDetailPage() {
       </div>
 
       <div className="overflow-hidden rounded-lg border border-border bg-card shadow-xs">
-        <div className="relative border-b border-border p-4">
-          <Search className="absolute left-7 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
-          <input
-            type="text"
-            placeholder="Search roster..."
-            className="field pl-12"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+        <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
+            <input
+              type="text"
+              placeholder="Search by name or index number..."
+              className="field pl-12"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          {/* Exports the whole class in rank order, not the filtered view. */}
+          <button
+            onClick={handleDownloadResultSheet}
+            disabled={recordedCount === 0}
+            title={recordedCount === 0 ? "Enter at least one mark first" : undefined}
+            className="flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border px-4 py-2 font-bold text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <FileSpreadsheet size={16} /> Download Result Sheet
+          </button>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="bg-secondary font-medium text-secondary-foreground">
               <tr>
+                <th className="px-4 py-3 text-center">Rank</th>
+                <th className="px-4 py-3">Index No</th>
                 <th className="px-6 py-3">Student</th>
                 <th className="px-6 py-3 text-center">Absent</th>
                 <th className="px-6 py-3 text-right">Marks (out of {exam.maxMarks})</th>
@@ -294,15 +506,29 @@ export default function ExamDetailPage() {
             </thead>
             <tbody className="divide-y divide-border">
               {filteredRoster.map((r: any) => {
-                const isAbsent = Boolean(r.mark?.isAbsent);
+                const isHinted = r.suggestedAbsent && !dismissedHints.has(r.student._id);
+                // A hint shows as ticked but is not a record — see applyAbsenceHints.
+                const isAbsent = Boolean(r.mark?.isAbsent) || isHinted;
+                const rank = rankByStudentId.get(r.student._id);
                 return (
-                <tr key={r.student._id} className="transition-colors duration-200 hover:bg-muted">
-                  <td className="px-6 py-2.5 font-semibold text-foreground">{r.student.name}</td>
+                <tr key={r.student._id} className={`transition-colors duration-200 hover:bg-muted ${isHinted ? "bg-warning/5" : ""}`}>
+                  <td className="px-4 py-2.5 text-center tabular font-bold text-muted-foreground">{rank ?? "—"}</td>
+                  <td className="px-4 py-2.5 font-mono text-xs text-muted-foreground">
+                    {r.student.registrationNumber ?? "—"}
+                  </td>
+                  <td className="px-6 py-2.5 font-semibold text-foreground">
+                    {r.student.name}
+                    {isHinted && (
+                      <span className="ml-2 rounded-full bg-warning/15 px-2 py-0.5 text-[10px] font-bold uppercase text-warning">
+                        Absent in class
+                      </span>
+                    )}
+                  </td>
                   <td className="px-6 py-2.5 text-center">
                     <input
                       type="checkbox"
                       checked={isAbsent}
-                      onChange={(e) => toggleAbsent(r.student._id, e.target.checked)}
+                      onChange={(e) => toggleAbsent(r.student._id, e.target.checked, isHinted)}
                       aria-label={`Mark ${r.student.name} absent`}
                     />
                   </td>
@@ -337,7 +563,7 @@ export default function ExamDetailPage() {
               })}
               {filteredRoster.length === 0 && (
                 <tr>
-                  <td colSpan={3} className="p-12 text-center text-muted-foreground">
+                  <td colSpan={5} className="p-12 text-center text-muted-foreground">
                     {roster.length === 0
                       ? `No Grade ${exam.grade} students are registered in ${exam.batchId?.name ?? "this batch"} yet.`
                       : "No students match your search."}
@@ -365,6 +591,40 @@ export default function ExamDetailPage() {
       <AlertModal open={error !== null} onClose={() => setError(null)} title="Something went wrong" description={error ?? undefined} tone="danger" />
     </div>
   );
+}
+
+/**
+ * Standard competition ranking (1, 2, 2, 4) over the marks actually entered,
+ * absentees excluded — the same rule /api/public/results applies, so a parent
+ * and a member of staff never see two different ranks for one exam.
+ *
+ * rankedRoster keys off the *saved* mark, not the value being typed: a row only
+ * moves once its mark is committed on blur, so nothing jumps out from under the
+ * cursor mid-entry. Students with no mark yet hold at the bottom in index-number
+ * order, which is where entry happens.
+ */
+function buildRanking(roster: any[]) {
+  const scored = roster
+    .filter((r: any) => r.isRecorded && !r.mark.isAbsent)
+    .sort((a: any, b: any) => b.mark.marks - a.mark.marks);
+
+  const rankByStudentId = new Map<string, number>();
+  scored.forEach((r: any, i: number) => {
+    const tiedWithPrevious = i > 0 && scored[i - 1].mark.marks === r.mark.marks;
+    rankByStudentId.set(
+      r.student._id,
+      tiedWithPrevious ? rankByStudentId.get(scored[i - 1].student._id)! : i + 1
+    );
+  });
+
+  const rankedRoster = [...roster].sort((a: any, b: any) => {
+    const group = (r: any) => (r.isRecorded && !r.mark.isAbsent ? 0 : r.isRecorded ? 1 : 2);
+    if (group(a) !== group(b)) return group(a) - group(b);
+    if (group(a) === 0) return b.mark.marks - a.mark.marks;
+    return 0; // already in index-number order from the API
+  });
+
+  return { scored, rankByStudentId, rankedRoster };
 }
 
 function EditExamModal({ exam, onClose, onSaved }: { exam: any; onClose: () => void; onSaved: () => void }) {

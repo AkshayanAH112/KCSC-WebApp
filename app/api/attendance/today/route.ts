@@ -3,6 +3,7 @@ import connectToDatabase from '@/lib/mongodb';
 import { ClassSession, Student, Attendance } from '@/models';
 import { getTodayRange } from '@/lib/dateRange';
 import { isStaffRequest } from '@/lib/auth-guard';
+import { sortByIndexNumber } from '@/lib/studentOrder';
 
 export async function GET(request: Request) {
   try {
@@ -22,7 +23,7 @@ export async function GET(request: Request) {
 
     const sessionIds = sessions.map((s) => s._id.toString());
     const [rosterStudents, attendanceRecords] = await Promise.all([
-      Student.find({ $or: sessions.map((s) => ({ batchId: s.batchId, grade: s.grade })) }).sort({ name: 1 }),
+      Student.find({ $or: sessions.map((s) => ({ batchId: s.batchId, grade: s.grade })) }).then(sortByIndexNumber),
       Attendance.find({ classId: { $in: sessionIds } }),
     ]);
 

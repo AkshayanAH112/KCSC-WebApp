@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import { Student, ClassSession, Attendance } from '@/models';
 import { isStaffRequest } from '@/lib/auth-guard';
+import { sortByIndexNumber } from '@/lib/studentOrder';
 
 /**
  * Raw JSON for the attendance Excel export — the file itself is built
@@ -40,10 +41,15 @@ export async function GET(request: Request) {
     }
 
     const [rosterStudents, attendanceRecords] = await Promise.all([
-      Student.find({ $or: sessions.map((s) => ({ batchId: s.batchId, grade: s.grade })) }).populate('batchId'),
+      Student.find({ $or: sessions.map((s) => ({ batchId: s.batchId, grade: s.grade })) })
+        .populate('batchId')
+        .then(sortByIndexNumber),
       Attendance.find({ classId: { $in: sessions.map((s) => s._id.toString()) } }),
     ]);
 
+    // rosterStudents is already in index-number order, and map preserves it, so
+    // the sheet's rows line up with the on-screen register. Sorting here instead
+    // would have to cope with the '—' placeholder below, which is display text.
     const rows = rosterStudents.map((student) => {
       const byClassId: Record<string, 'present' | 'leave' | 'not_eligible' | 'not_recorded'> = {};
       let totalPresent = 0;

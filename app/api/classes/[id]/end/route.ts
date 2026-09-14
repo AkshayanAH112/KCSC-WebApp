@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import { ClassSession, Student, Attendance } from '@/models';
 import { getAuthPayload } from '@/lib/auth-guard';
+import { sortByIndexNumber } from '@/lib/studentOrder';
 import { recordAttendance } from '@/lib/attendance-recorder';
 
 /**
@@ -28,7 +29,7 @@ async function getRoster(session: any) {
     batchId: session.batchId,
     grade: session.grade,
     isActive: true,
-  }).sort({ name: 1 });
+  }).then(sortByIndexNumber);
 
   // Mirrors /api/attendance/today and /api/dashboard/stats — a mid-batch
   // registrant is not on the roster for classes predating their registration,
