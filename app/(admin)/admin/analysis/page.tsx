@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, LineChart, Trophy } from "lucide-react";
+import { Download, Loader2, LineChart, Trophy } from "lucide-react";
+import { downloadAnalysisPdf, type AnalysisPdfFilters } from "@/lib/analysis-pdf";
 
 type StudentResult = {
   studentId: string;
@@ -30,6 +31,10 @@ export default function AnalysisPage() {
   const [results, setResults] = useState<StudentResult[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Filters the current results were produced with, so the PDF header matches
+  // the table even if the inputs were edited afterwards without re-running.
+  const [reportFilters, setReportFilters] = useState<AnalysisPdfFilters | null>(null);
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     fetch("/api/batches")
@@ -48,6 +53,12 @@ export default function AnalysisPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setResults(data.students);
+      setReportFilters({
+        start,
+        end,
+        gradeLabel: grade ? `Grade ${grade}` : "All grades",
+        batchLabel: batches.find((b) => b._id === batchId)?.name ?? "All batches",
+      });
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -59,6 +70,18 @@ export default function AnalysisPage() {
     runReport();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handleDownload = async () => {
+    if (!results || !reportFilters) return;
+    setDownloading(true);
+    try {
+      await downloadAnalysisPdf(results, reportFilters);
+    } catch (e: any) {
+      setError(`Could not create PDF: ${e.message}`);
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   const gradeBatches = batches.filter((b) => !grade || b.grades?.includes(Number(grade)));
 
@@ -117,11 +140,21 @@ export default function AnalysisPage() {
         </button>
       </div>
 
-      <p className="text-xs text-muted-foreground">
-        Combined score = average of avg. exam % and attendance % over the selected range. Where a student
-        only has one of the two in range, that single figure is used and the row is marked{" "}
-        <span className="font-semibold">partial</span>.
-      </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-xs text-muted-foreground">
+          Combined score = average of avg. exam % and attendance % over the selected range. Where a student
+          only has one of the two in range, that single figure is used and the row is marked{" "}
+          <span className="font-semibold">partial</span>.
+        </p>
+        <button
+          onClick={handleDownload}
+          disabled={loading || downloading || !results || results.length === 0}
+          className="flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground transition-colors duration-200 hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {downloading ? <Loader2 size={16} className="animate-spin" aria-hidden /> : <Download size={16} aria-hidden />}
+          Download PDF
+        </button>
+      </div>
 
       {error && (
         <div role="alert" className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
