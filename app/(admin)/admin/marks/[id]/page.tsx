@@ -184,7 +184,7 @@ export default function ExamDetailPage() {
       ["Class average", classAverage === null ? "—" : `${classAverage}%`],
       ["Highest mark", sat.length ? sat[0].mark.marks : "—"],
       [],
-      ["Rank", "Index Number", "Student Name", "Marks", "Out Of", "Percentage", "Remarks"],
+      ["Rank", "Index Number", "Student Name", "School", "Marks", "Out Of", "Percentage", "Remarks"],
     ];
 
     for (const r of ranked) {
@@ -195,6 +195,7 @@ export default function ExamDetailPage() {
         rank ?? "—",
         r.student.registrationNumber ?? "—",
         r.student.name,
+        r.student.school || "—",
         isAbsent || !r.isRecorded ? "" : r.mark.marks,
         r.isRecorded ? r.mark.maxMarks || exam.maxMarks : exam.maxMarks,
         percent === null ? "" : `${Math.round(percent * 10) / 10}%`,
@@ -203,7 +204,7 @@ export default function ExamDetailPage() {
     }
 
     const ws = XLSX.utils.aoa_to_sheet(sheet);
-    ws["!cols"] = [{ wch: 6 }, { wch: 18 }, { wch: 28 }, { wch: 8 }, { wch: 8 }, { wch: 12 }, { wch: 14 }];
+    ws["!cols"] = [{ wch: 6 }, { wch: 18 }, { wch: 28 }, { wch: 28 }, { wch: 8 }, { wch: 8 }, { wch: 12 }, { wch: 14 }];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Results");
     const safeSubject = exam.subject.replace(/[^a-z0-9]+/gi, "_");
