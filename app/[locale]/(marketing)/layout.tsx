@@ -16,6 +16,7 @@ import { MotionConfig } from "framer-motion";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations } from "next-intl/server";
 import { DEFAULT_OG_IMAGE } from "@/lib/seo";
+import { PageNavigationProgress } from "@/components/page-navigation-progress";
 
 // Three Latin families carry the design — Playfair for headlines, Plus Jakarta
 // for body, Cinzel for the club wordmark only. None of them ships Tamil
@@ -144,6 +145,7 @@ export default async function MarketingRootLayout({
       style={{ colorScheme: "dark", ...FONT_STACKS }}
     >
       <body className="antialiased min-h-screen flex flex-col relative bg-background text-on-background">
+        <PageNavigationProgress />
         <NextIntlClientProvider messages={messages}>
           <MotionConfig reducedMotion="user">
             <Navbar />

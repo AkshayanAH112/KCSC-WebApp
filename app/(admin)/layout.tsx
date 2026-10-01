@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Barlow, Barlow_Condensed, Geist_Mono } from "next/font/google";
 import "../globals.css";
+import { PageNavigationProgress } from "@/components/page-navigation-progress";
 
 // Barlow superfamily — athletic headings, table-friendly body. See
 // design-system/kallar-central-sports-club/MASTER.md. Self-hosted by next/font,
@@ -39,7 +40,10 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${barlow.variable} ${barlowCondensed.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <PageNavigationProgress />
+        {children}
+      </body>
     </html>
   );
 }

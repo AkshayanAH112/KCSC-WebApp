@@ -14,9 +14,11 @@ import {
   ArrowLeft,
   AlertTriangle,
   X,
+  Eye,
 } from "lucide-react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { RichTextEditor } from "@/components/rich-text-editor";
+import { PostPreviewModal } from "@/components/post-preview-modal";
 
 export type PostImage = { url: string; publicId?: string; caption?: string };
 
@@ -57,6 +59,7 @@ export function PostEditor({ initial }: { initial: PostDraft }) {
   const [post, setPost] = useState<PostDraft>(initial);
   const [tagsInput, setTagsInput] = useState(initial.tags.join(", "));
   const [saving, setSaving] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [uploading, setUploading] = useState<"cover" | "gallery" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -194,6 +197,13 @@ export function PostEditor({ initial }: { initial: PostDraft }) {
               <Trash2 size={16} aria-hidden /> Delete
             </button>
           )}
+          <button
+            type="button"
+            onClick={() => setPreviewOpen(true)}
+            className="flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 font-medium text-foreground transition-colors duration-200 hover:bg-muted"
+          >
+            <Eye size={16} aria-hidden /> Preview
+          </button>
           <button
             onClick={() => save("draft")}
             disabled={saving}
@@ -442,6 +452,12 @@ export function PostEditor({ initial }: { initial: PostDraft }) {
         description="Its images are removed from Cloudinary too. This cannot be undone."
         confirmLabel="Delete"
         tone="danger"
+      />
+
+      <PostPreviewModal
+        open={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+        post={post}
       />
     </div>
   );
