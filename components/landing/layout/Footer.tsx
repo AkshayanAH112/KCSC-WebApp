@@ -141,7 +141,16 @@ export default function Footer() {
       
       <div className="max-w-[1280px] mx-auto px-5 md:px-16 mt-6 pt-6 border-t border-tertiary-container/20 flex flex-col md:flex-row justify-between items-center gap-2 text-xs text-on-surface-variant/70">
         <p>&copy; {new Date().getFullYear()} {t("copyright")}</p>
-        <p>{t("developed_by")}</p>
+        <p>
+          <a
+            href="https://metasyntax.io"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-tertiary-container transition-colors"
+          >
+            {t("developed_by")}
+          </a>
+        </p>
         <div className="flex gap-4">
           <Link href={`/${locale}/privacy`} className="hover:text-tertiary-container transition-colors">{t("privacy")}</Link>
           <Link href="#" className="hover:text-tertiary-container transition-colors">{t("terms")}</Link>
