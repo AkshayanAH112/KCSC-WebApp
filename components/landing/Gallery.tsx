@@ -52,18 +52,12 @@ export default function Gallery() {
   // Auto-play interval
   useEffect(() => {
     if (folders.length <= 1 || isHovered) return;
-    
-    // Trigger the first animation almost immediately so the user doesn't wait
-    const initialTimeout = setTimeout(() => {
-      setActiveIndex((prev) => (prev + 1) % folders.length);
-    }, 300);
 
     const interval = setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % folders.length);
-    }, 1200); // Extremely fast auto-play interval
+    }, 3800);
     
     return () => {
-      clearTimeout(initialTimeout);
       clearInterval(interval);
     };
   }, [folders.length, isHovered]);
@@ -155,12 +149,58 @@ export default function Gallery() {
                 const zIndex = 50 - dist;
                 const opacity = isActive ? 1 : Math.max(0.22, 1 - dist * 0.2);
                 
+                const cardInner = (
+                  <>
+                    {folder.coverImageUrl ? (
+                      <Image
+                        src={folder.coverImageUrl}
+                        alt={folder.name}
+                        fill
+                        className={cn(
+                          "object-cover transition-all duration-500",
+                          isActive ? "group-hover:scale-105" : "brightness-[0.45]"
+                        )}
+                        sizes="(max-width: 768px) 62vw, 420px"
+                        priority={Math.abs(diff) <= 1}
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center bg-surface-variant">
+                        <FolderIcon className="w-16 h-16 text-tertiary-container/30" />
+                      </div>
+                    )}
+                    
+                    {/* Overlay text for active card */}
+                    <AnimatePresence>
+                      {isActive && (
+                        <motion.div 
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, transition: { duration: 0.1 } }}
+                          className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/65 to-transparent p-5 md:p-6 flex flex-col justify-end pt-20 pointer-events-none"
+                        >
+                          <h3 className="text-on-primary text-xl md:text-2xl font-display font-bold mb-1 tracking-tight leading-tight wrap-break-word group-hover:text-tertiary-container transition-colors">
+                            {folder.name}
+                          </h3>
+                          <div className="flex items-center justify-between gap-3 mt-1">
+                            <p className="text-on-surface-variant font-medium text-xs md:text-sm flex items-center gap-2">
+                              <span className="w-1.5 h-1.5 rounded-full bg-tertiary-container inline-block"></span>
+                              {folder.imageCount} {folder.imageCount === 1 ? t("photo") : t("photos")}
+                            </p>
+                            <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-on-primary bg-tertiary-container/30 border border-tertiary-container/50 px-3 py-1 rounded-full group-hover:bg-tertiary-container group-hover:text-black transition-colors shadow-sm">
+                              {locale === "ta" ? "ஆல்பத்தைப் பார்க்க" : "View Album"} <ArrowRight size={12} />
+                            </span>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </>
+                );
+
                 return (
                   <motion.div
                     key={folder._id}
-                    onClick={() => setActiveIndex(idx)}
                     className={cn(
-                      "absolute origin-center cursor-pointer overflow-hidden rounded-3xl transition-shadow bg-black",
+                      "absolute origin-center overflow-hidden rounded-3xl transition-shadow bg-black group cursor-pointer",
                       isActive
                         ? "ring-1 ring-tertiary-container/40 shadow-[0_0_90px_-8px_rgba(251,191,36,0.55)]"
                         : "shadow-xl shadow-black/60"
@@ -182,44 +222,24 @@ export default function Gallery() {
                       mass: 0.5
                     }}
                   >
-                    <>
-                        {folder.coverImageUrl ? (
-                          <Image
-                            src={folder.coverImageUrl}
-                            alt={folder.name}
-                            fill
-                            className={cn(
-                              "object-cover transition-opacity duration-300",
-                              !isActive && "brightness-[0.45]"
-                            )}
-                            sizes="(max-width: 768px) 62vw, 420px"
-                            priority={Math.abs(diff) <= 1}
-                          />
-                        ) : (
-                          <div className="absolute inset-0 flex items-center justify-center bg-surface-variant">
-                            <FolderIcon className="w-16 h-16 text-tertiary-container/30" />
-                          </div>
-                        )}
-                        
-                        {/* Overlay text for active card */}
-                        <AnimatePresence>
-                          {isActive && (
-                            <motion.div 
-                              initial={{ opacity: 0, y: 20 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, transition: { duration: 0.1 } }}
-                              className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black via-black/55 to-transparent p-5 md:p-6 flex flex-col justify-end pt-20 pointer-events-none"
-                            >
-                              <h3 className="text-on-primary text-xl md:text-2xl font-display font-bold mb-1 tracking-tight leading-tight wrap-break-word">{folder.name}</h3>
-                              <p className="text-on-surface-variant font-medium text-sm flex items-center gap-2">
-                                <span className="w-1.5 h-1.5 rounded-full bg-tertiary-container inline-block"></span>
-                                {folder.imageCount} {folder.imageCount === 1 ? t("photo") : t("photos")}
-                              </p>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </>
-                    </motion.div>
+                    {isActive ? (
+                      <Link
+                        href={`/${locale}/gallery/${folder._id}`}
+                        className="block w-full h-full relative"
+                        aria-label={`Open album: ${folder.name}`}
+                      >
+                        {cardInner}
+                      </Link>
+                    ) : (
+                      <div
+                        onClick={() => setActiveIndex(idx)}
+                        className="block w-full h-full relative"
+                        aria-label={`Select album: ${folder.name}`}
+                      >
+                        {cardInner}
+                      </div>
+                    )}
+                  </motion.div>
                 );
               })}
             </AnimatePresence>
