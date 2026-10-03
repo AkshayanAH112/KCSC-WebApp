@@ -17,9 +17,19 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
     await connectToDatabase();
     const { id } = await context.params;
 
-    const leaves = await Attendance.find({ studentId: id, countedAsLeave: true })
+    const rawLeaves = await Attendance.find({ studentId: id, countedAsLeave: true })
       .populate('classId')
       .sort({ date: 1 });
+
+    const leaves = rawLeaves
+      .map((l: any) => {
+        const classDate = l.classId?.date;
+        return {
+          ...l.toObject(),
+          date: classDate || l.date,
+        };
+      })
+      .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     return NextResponse.json({ leaves });
   } catch (e: any) {

@@ -1,4 +1,4 @@
-import { Attendance, Student, Notification } from '@/models';
+import { Attendance, Student, Notification, ClassSession } from '@/models';
 
 /**
  * The single write path for attendance.
@@ -31,16 +31,20 @@ export async function recordAttendance(opts: {
   // to the counters". The increment below is a pure function of the transition,
   // so re-toggling the same class back and forth (correcting a mistake) never
   // double-counts, and ending a class twice never counts a second leave.
-  const prior = await Attendance.findOne({ studentId, classId });
+  const [prior, session] = await Promise.all([
+    Attendance.findOne({ studentId, classId }),
+    ClassSession.findById(classId),
+  ]);
   const wasCounted = prior?.countedAsLeave ?? false;
   const nextPresent = present !== false;
   const nowCounted = !nextPresent;
+  const sessionDate = session?.date ?? new Date();
 
   const att = await Attendance.findOneAndUpdate(
     { studentId, classId },
     {
       present: nextPresent,
-      date: new Date(),
+      date: sessionDate,
       countedAsLeave: nowCounted,
       ...(remarks !== undefined ? { remarks } : {}),
     },

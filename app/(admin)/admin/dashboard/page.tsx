@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import * as XLSX from "xlsx";
 import {
   Users,
   CalendarCheck,
@@ -14,6 +15,8 @@ import {
   ShieldAlert,
   UserX,
   Bell,
+  Download,
+  Loader2,
 } from "lucide-react";
 import { useCurrentUser } from "@/components/current-user-provider";
 
@@ -92,7 +95,7 @@ const statConfig = [
   {
     key: "studentsAtCycle2" as const,
     title: "At 2 Leaves",
-    href: "/admin/notifications",
+    href: "/admin/notifications?type=parent_warning",
     icon: AlertTriangle,
     tone: "text-warning",
     bg: "bg-warning/10",
@@ -101,7 +104,7 @@ const statConfig = [
   {
     key: "studentsAtCycle3" as const,
     title: "At 3 Leaves",
-    href: "/admin/notifications",
+    href: "/admin/notifications?type=admin_critical",
     icon: ShieldAlert,
     tone: "text-destructive",
     bg: "bg-destructive/10",
@@ -130,6 +133,7 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [downloadingKey, setDownloadingKey] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/dashboard/stats")
@@ -141,6 +145,70 @@ export default function DashboardPage() {
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, []);
+
+  const handleDownloadCard = async (key: "studentsAtCycle2" | "studentsAtCycle3", e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const isCycle2 = key === "studentsAtCycle2";
+    const cycleParam = isCycle2 ? "2" : "3+";
+    const title = isCycle2 ? "At_2_Leaves" : "At_3_Leaves";
+
+    setDownloadingKey(key);
+    try {
+      const res = await fetch(`/api/students?cycle=${cycleParam}&isActive=true`);
+      const data = await res.json();
+      const studentsList = data.students || [];
+      if (studentsList.length === 0) return;
+
+      const header = [
+        "Registration Number",
+        "Student Name",
+        "Batch",
+        "Grade",
+        "Current Leave Cycle",
+        "Total Leaves (Lifetime)",
+        "School",
+        "Guardian Name",
+        "Guardian Phone",
+        "Address",
+      ];
+
+      const sheetRows = studentsList.map((s: any) => [
+        s.registrationNumber || "—",
+        s.name,
+        s.batchId?.name || "—",
+        s.grade ? `Grade ${s.grade}` : "—",
+        s.currentLeaveCycle ?? 0,
+        s.totalLeaves ?? 0,
+        s.school || "—",
+        s.guardianName || "—",
+        s.guardianPhone || "—",
+        s.address || "—",
+      ]);
+
+      const ws = XLSX.utils.aoa_to_sheet([header, ...sheetRows]);
+      ws["!cols"] = [
+        { wch: 18 },
+        { wch: 25 },
+        { wch: 18 },
+        { wch: 12 },
+        { wch: 20 },
+        { wch: 22 },
+        { wch: 25 },
+        { wch: 22 },
+        { wch: 18 },
+        { wch: 30 },
+      ];
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, isCycle2 ? "2 Leaves" : "3 Leaves");
+      XLSX.writeFile(wb, `KCSC_Students_${title}.xlsx`);
+    } catch (err) {
+      console.error("Failed to download students list", err);
+    } finally {
+      setDownloadingKey(null);
+    }
+  };
 
   // pendingMembers only exists in the payload for an admin session — an
   // lms_manager gets `null` from the API and never sees this card.
@@ -179,34 +247,56 @@ export default function DashboardPage() {
       )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {cards.map(({ key, title, href, icon: Icon, tone, bg, hint }) => (
-          <Link
-            key={key}
-            href={href}
-            className="card-gold-rule cursor-pointer p-5 shadow-xs transition-colors duration-200 hover:border-gold hover:bg-accent/40"
-          >
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
-              <span className={`rounded-lg p-2 ${bg}`}>
-                <Icon size={18} className={tone} aria-hidden />
-              </span>
-            </div>
-            {loading ? (
-              <div className="h-9 w-20 animate-pulse rounded-md bg-muted" />
-            ) : (
-              <>
-                <p className="tabular text-3xl font-bold text-foreground">
-                  {!stats
-                    ? "—"
-                    : key === "todayAttendance" && !stats.hasClassesToday
+        {cards.map(({ key, title, href, icon: Icon, tone, bg, hint }) => {
+          const isDownloadable = key === "studentsAtCycle2" || key === "studentsAtCycle3";
+          const count = stats ? Number(stats[key as keyof Stats] ?? 0) : 0;
+
+          return (
+            <Link
+              key={key}
+              href={href}
+              className="card-gold-rule group cursor-pointer p-5 shadow-xs transition-colors duration-200 hover:border-gold hover:bg-accent/40"
+            >
+              <div className="mb-3 flex items-center justify-between">
+                <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
+                <div className="flex items-center gap-1.5">
+                  {isDownloadable && (
+                    <button
+                      onClick={(e) => handleDownloadCard(key as "studentsAtCycle2" | "studentsAtCycle3", e)}
+                      disabled={downloadingKey === key || count === 0}
+                      className="cursor-pointer rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed"
+                      title={count === 0 ? "No students at this leave count" : `Download ${title} student list as Excel`}
+                      aria-label={`Download ${title} list`}
+                    >
+                      {downloadingKey === key ? (
+                        <Loader2 size={16} className="animate-spin text-primary" />
+                      ) : (
+                        <Download size={16} />
+                      )}
+                    </button>
+                  )}
+                  <span className={`rounded-lg p-2 ${bg}`}>
+                    <Icon size={18} className={tone} aria-hidden />
+                  </span>
+                </div>
+              </div>
+              {loading ? (
+                <div className="h-9 w-20 animate-pulse rounded-md bg-muted" />
+              ) : (
+                <>
+                  <p className="tabular text-3xl font-bold text-foreground">
+                    {!stats
                       ? "—"
-                      : String(stats[key])}
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">{stats ? hint(stats) : ""}</p>
-              </>
-            )}
-          </Link>
-        ))}
+                      : key === "todayAttendance" && !stats.hasClassesToday
+                        ? "—"
+                        : String(stats[key as keyof Stats])}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">{stats ? hint(stats) : ""}</p>
+                </>
+              )}
+            </Link>
+          );
+        })}
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, LineChart, Line } from "recharts";
 import { Loader2, ArrowLeft, AlertTriangle, GraduationCap, QrCode as QrIcon, Pencil, Trash2, X } from "lucide-react";
@@ -290,18 +291,35 @@ export default function StudentProfilePage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {leaveHistory.map((l: any) => (
-                  <tr key={l._id}>
-                    <td className="px-4 py-2">{new Date(l.date).toLocaleDateString()}</td>
-                    <td className="px-4 py-2 text-muted-foreground">{l.classId?.subject || "General Session"}</td>
-                    <td className="px-4 py-2">
-                      <span className="rounded-full bg-warning/15 px-2.5 py-1 text-xs font-bold text-warning">
-                        Cycle {l.leaveCycleAtRecord ?? "—"}
-                      </span>
-                    </td>
-                    <td className="px-4 py-2 text-muted-foreground">{l.remarks || "—"}</td>
-                  </tr>
-                ))}
+                {leaveHistory.map((l: any) => {
+                  const classDate = l.classId?.date || l.date;
+                  const classId = typeof l.classId === "object" ? l.classId?._id : l.classId;
+                  const subject = typeof l.classId === "object" ? l.classId?.subject : null;
+
+                  return (
+                    <tr key={l._id}>
+                      <td className="px-4 py-2 font-medium">{new Date(classDate).toLocaleDateString()}</td>
+                      <td className="px-4 py-2">
+                        {classId ? (
+                          <Link
+                            href={`/admin/classes/${classId}`}
+                            className="font-medium text-primary hover:underline"
+                          >
+                            {subject || "General Session"}
+                          </Link>
+                        ) : (
+                          <span className="text-muted-foreground">{subject || "General Session"}</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-2">
+                        <span className="rounded-full bg-warning/15 px-2.5 py-1 text-xs font-bold text-warning">
+                          Cycle {l.leaveCycleAtRecord ?? "—"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2 text-muted-foreground">{l.remarks || "—"}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

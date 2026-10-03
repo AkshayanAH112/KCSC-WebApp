@@ -14,10 +14,16 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const grade = searchParams.get('grade');
     const batchId = searchParams.get('batchId');
+    const cycle = searchParams.get('cycle');
+    const isActive = searchParams.get('isActive');
 
     let query: any = {};
     if (grade) query.grade = Number(grade);
     if (batchId) query.batchId = batchId;
+    if (cycle) {
+      query.currentLeaveCycle = cycle === '3+' ? { $gte: 3 } : Number(cycle);
+    }
+    if (isActive !== null) query.isActive = isActive === 'true';
 
     const students = await Student.find(query).populate('batchId').sort({ createdAt: -1 });
     return NextResponse.json({ students });
