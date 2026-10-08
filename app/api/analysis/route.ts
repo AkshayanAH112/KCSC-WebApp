@@ -11,11 +11,19 @@ import { isStaffRequest } from '@/lib/auth-guard';
  * Attendance rows for those exact sessions) rather than a blind date scan,
  * extended here with a caller-supplied date range instead of "today".
  *
- * Ranking is tiered by exams missed before score: everyone who sat every exam
- * held for them ranks above anyone who missed one, then one missed, two, and so
- * on — and only within a tier does the combined score decide. Otherwise a
- * student who skipped a hard paper averages over fewer exams and outranks one
- * who sat them all.
+ * Exams are the main criterion and attendance is secondary. Ranking is tiered
+ * by the number of exams sat (3, 2, 1, 0 — most first), then by exam average,
+ * with attendance only breaking ties. Otherwise a student who skipped a hard
+ * paper averages over fewer exams and outranks one who sat them all, and a
+ * student who sat none could top the list on attendance alone. Students with
+ * no exams sat are still listed, last, ordered by attendance.
+ *
+ * Tiering is by exams *sat*, not exams missed: a student counted as expected
+ * to sit nothing (joined after the exams, or a batch with no exams in range)
+ * has missed nothing, and would otherwise land in the top tier.
+ *
+ * combinedScore and partial are still returned for app builds that display
+ * them, but no longer affect the order.
  *
  * GET /api/analysis?start=2026-06-12&end=2026-07-12&grade=3&batchId=...
  */
@@ -219,10 +227,14 @@ export async function GET(request: Request) {
       };
     });
 
-    // Fewest exams missed first (sat all, then missed 1, 2, …); combined score
-    // only orders students within the same tier.
+    // Most exams sat first (3, 2, 1, 0), then exam average, then attendance as
+    // the tie-break. Compared on the rounded figures the report displays, so a
+    // tie on screen is a tie in the order.
     results.sort(
-      (a, b) => a.examsMissed - b.examsMissed || (b.combinedScore ?? -1) - (a.combinedScore ?? -1)
+      (a, b) =>
+        b.examsSat - a.examsSat ||
+        (b.avgMarksPercent ?? -1) - (a.avgMarksPercent ?? -1) ||
+        (b.attendancePercent ?? -1) - (a.attendancePercent ?? -1)
     );
 
     // Every exam that appears on at least one returned student, in date order —

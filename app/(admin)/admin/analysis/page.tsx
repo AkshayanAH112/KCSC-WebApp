@@ -155,10 +155,8 @@ export default function AnalysisPage() {
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs text-muted-foreground">
-          Students who sat every exam rank first, then those who missed one, two, and so on; the combined
-          score orders students within each group. Combined score = average of avg. exam % and attendance %
-          over the selected range. Where a student only has one of the two in range, that single figure is
-          used and the row is marked <span className="font-semibold">partial</span>. In the exam columns,{" "}
+          Students are ranked by the number of exams sat (most first, none last), then by average exam
+          mark; attendance only breaks a tie. In the exam columns,{" "}
           <span className="font-semibold">Ab</span> = marked absent, — = no mark recorded, and a blank cell means
           the exam wasn&apos;t held for that student&apos;s batch.
         </p>
@@ -207,7 +205,6 @@ export default function AnalysisPage() {
                   <th className="px-6 py-3">Exams</th>
                   <th className="px-6 py-3">Avg. Marks</th>
                   <th className="px-6 py-3">Attendance</th>
-                  <th className="px-6 py-3">Combined</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -240,19 +237,15 @@ export default function AnalysisPage() {
                       );
                     })}
                     <td className="px-6 py-2.5 text-muted-foreground">
-                      {r.examsTotal > 0 ? `${r.examsSat} / ${r.examsTotal}` : "—"}
-                    </td>
-                    <td className="px-6 py-2.5 text-muted-foreground">
-                      {r.avgMarksPercent === null ? "—" : `${r.avgMarksPercent}%`}
-                    </td>
-                    <td className="px-6 py-2.5 text-muted-foreground">
-                      {r.attendancePercent === null ? "—" : `${r.attendancePercent}%`}
+                      {r.examsTotal > 0 ? `${r.examsSat} / ${r.examsTotal}` : "0"}
                     </td>
                     <td className="px-6 py-2.5">
                       <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
-                        {r.combinedScore === null ? "—" : `${r.combinedScore}%`}
+                        {r.avgMarksPercent === null ? "—" : `${r.avgMarksPercent}%`}
                       </span>
-                      {r.partial && <span className="ml-2 text-xs text-muted-foreground">partial</span>}
+                    </td>
+                    <td className="px-6 py-2.5 text-muted-foreground">
+                      {r.attendancePercent === null ? "—" : `${r.attendancePercent}%`}
                     </td>
                   </tr>
                   );
