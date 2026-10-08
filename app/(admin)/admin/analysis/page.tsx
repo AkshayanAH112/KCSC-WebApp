@@ -2,13 +2,24 @@
 
 import { useEffect, useState } from "react";
 import { Download, Loader2, LineChart, Trophy } from "lucide-react";
-import { downloadAnalysisPdf, type AnalysisPdfFilters } from "@/lib/analysis-pdf";
+import {
+  downloadAnalysisPdf,
+  examDateLabel,
+  type AnalysisExam,
+  type AnalysisPdfFilters,
+  type AnalysisStudentExam,
+} from "@/lib/analysis-pdf";
 
 type StudentResult = {
   studentId: string;
   name: string;
+  school: string | null;
   grade: number;
+  exams: AnalysisStudentExam[];
   examCount: number;
+  examsSat: number;
+  examsTotal: number;
+  examsMissed: number;
   avgMarksPercent: number | null;
   attendancePercent: number | null;
   combinedScore: number | null;
@@ -29,6 +40,7 @@ export default function AnalysisPage() {
   const [batches, setBatches] = useState<any[]>([]);
   const [batchId, setBatchId] = useState("");
   const [results, setResults] = useState<StudentResult[] | null>(null);
+  const [exams, setExams] = useState<AnalysisExam[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // Filters the current results were produced with, so the PDF header matches
@@ -53,6 +65,7 @@ export default function AnalysisPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setResults(data.students);
+      setExams(data.exams ?? []);
       setReportFilters({
         start,
         end,
@@ -75,7 +88,7 @@ export default function AnalysisPage() {
     if (!results || !reportFilters) return;
     setDownloading(true);
     try {
-      await downloadAnalysisPdf(results, reportFilters);
+      await downloadAnalysisPdf(results, exams, reportFilters);
     } catch (e: any) {
       setError(`Could not create PDF: ${e.message}`);
     } finally {
@@ -142,9 +155,12 @@ export default function AnalysisPage() {
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs text-muted-foreground">
-          Combined score = average of avg. exam % and attendance % over the selected range. Where a student
-          only has one of the two in range, that single figure is used and the row is marked{" "}
-          <span className="font-semibold">partial</span>.
+          Students who sat every exam rank first, then those who missed one, two, and so on; the combined
+          score orders students within each group. Combined score = average of avg. exam % and attendance %
+          over the selected range. Where a student only has one of the two in range, that single figure is
+          used and the row is marked <span className="font-semibold">partial</span>. In the exam columns,{" "}
+          <span className="font-semibold">Ab</span> = marked absent, — = no mark recorded, and a blank cell means
+          the exam wasn&apos;t held for that student&apos;s batch.
         </p>
         <button
           onClick={handleDownload}
@@ -180,6 +196,14 @@ export default function AnalysisPage() {
                   <th className="px-6 py-3">Rank</th>
                   <th className="px-6 py-3">Student</th>
                   <th className="px-6 py-3">Grade</th>
+                  {exams.map((e) => (
+                    <th key={e.key} className="whitespace-nowrap px-4 py-3 text-center">
+                      <span className="block">{e.label}</span>
+                      <span className="block text-xs font-normal opacity-80">
+                        {examDateLabel(e.examDate)} · /{e.maxMarks}
+                      </span>
+                    </th>
+                  ))}
                   <th className="px-6 py-3">Exams</th>
                   <th className="px-6 py-3">Avg. Marks</th>
                   <th className="px-6 py-3">Attendance</th>
@@ -187,12 +211,37 @@ export default function AnalysisPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {results.map((r, i) => (
+                {results.map((r, i) => {
+                  const byExam = new Map(r.exams.map((e) => [e.examKey, e]));
+                  return (
                   <tr key={r.studentId} className="transition-colors duration-200 hover:bg-muted">
                     <td className="px-6 py-2.5 font-bold text-foreground">{i + 1}</td>
-                    <td className="px-6 py-2.5 font-semibold text-foreground">{r.name}</td>
-                    <td className="px-6 py-2.5 text-muted-foreground">Grade {r.grade}</td>
-                    <td className="px-6 py-2.5 text-muted-foreground">{r.examCount}</td>
+                    <td className="px-6 py-2.5">
+                      <span className="block font-semibold text-foreground">{r.name}</span>
+                      {r.school && <span className="block text-xs text-muted-foreground">{r.school}</span>}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-2.5 text-muted-foreground">Grade {r.grade}</td>
+                    {exams.map((e) => {
+                      const result = byExam.get(e.key);
+                      return (
+                        <td key={e.key} className="px-4 py-2.5 text-center tabular-nums">
+                          {!result ? null : result.status === "sat" ? (
+                            <span className="font-semibold text-foreground">{result.marks}</span>
+                          ) : result.status === "absent" ? (
+                            <span className="text-xs font-semibold text-destructive" title="Marked absent">
+                              Ab
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground" title="No mark recorded">
+                              —
+                            </span>
+                          )}
+                        </td>
+                      );
+                    })}
+                    <td className="px-6 py-2.5 text-muted-foreground">
+                      {r.examsTotal > 0 ? `${r.examsSat} / ${r.examsTotal}` : "—"}
+                    </td>
                     <td className="px-6 py-2.5 text-muted-foreground">
                       {r.avgMarksPercent === null ? "—" : `${r.avgMarksPercent}%`}
                     </td>
@@ -206,7 +255,8 @@ export default function AnalysisPage() {
                       {r.partial && <span className="ml-2 text-xs text-muted-foreground">partial</span>}
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
