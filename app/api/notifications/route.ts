@@ -25,7 +25,7 @@ export async function GET(request: Request) {
     if (searchParams.get('expand') === 'student') {
       findQuery = findQuery.populate({
         path: 'studentId',
-        select: 'name registrationNumber guardianName guardianPhone grade batchId school address',
+        select: 'name registrationNumber guardianName guardianPhone grade batchId school address isActive',
         populate: { path: 'batchId', select: 'name' },
       });
     }

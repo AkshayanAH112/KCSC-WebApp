@@ -13,10 +13,15 @@ import {
   Search,
   Phone,
   Filter,
+  UserX,
+  Trash2,
 } from "lucide-react";
+import { ConfirmDialog, AlertModal } from "@/components/confirm-dialog";
+import { useCurrentUser } from "@/components/current-user-provider";
 
 type NotificationStatus = "pending" | "acknowledged" | "resolved" | "all";
 type NotificationType = "all" | "parent_warning" | "admin_critical";
+type StudentAction = { notificationId: string; studentId: string; studentName: string };
 
 const STATUS_TABS: { key: NotificationStatus; label: string }[] = [
   { key: "pending", label: "Pending" },
@@ -55,6 +60,13 @@ function NotificationsContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [notifications, setNotifications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useCurrentUser();
+  // The student a 3-leave card is about to act on. `notificationId` rides along
+  // so deactivating can close the alert in the same step.
+  const [deactivateTarget, setDeactivateTarget] = useState<StudentAction | null>(null);
+  const [removeTarget, setRemoveTarget] = useState<StudentAction | null>(null);
+  const [actionBusy, setActionBusy] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const fetchData = async (status: NotificationStatus, type: NotificationType) => {
     setLoading(true);
@@ -81,6 +93,52 @@ function NotificationsContent() {
       body: JSON.stringify({ status }),
     });
     fetchData(statusTab, typeFilter);
+  };
+
+  // Deactivating is the answer to a 3-leave alert, so the alert is resolved
+  // with it rather than left pending for a second tap.
+  const deactivateStudent = async () => {
+    if (!deactivateTarget) return;
+    setActionBusy(true);
+    try {
+      const res = await fetch(`/api/students/${deactivateTarget.studentId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isActive: false }),
+      });
+      if (!res.ok) throw new Error((await res.json()).error ?? "Failed to deactivate");
+      await fetch(`/api/notifications/${deactivateTarget.notificationId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "resolved" }),
+      });
+      setDeactivateTarget(null);
+      fetchData(statusTab, typeFilter);
+    } catch (e: any) {
+      setDeactivateTarget(null);
+      setActionError(e.message);
+    } finally {
+      setActionBusy(false);
+    }
+  };
+
+  // A student at 3 leaves always has attendance rows, so a plain DELETE would
+  // only ever come back 409 — this goes straight to the admin-only force delete,
+  // which also erases the student's notifications (this card included).
+  const removeStudent = async () => {
+    if (!removeTarget) return;
+    setActionBusy(true);
+    try {
+      const res = await fetch(`/api/students/${removeTarget.studentId}?force=true`, { method: "DELETE" });
+      if (!res.ok) throw new Error((await res.json()).error ?? "Failed to remove");
+      setRemoveTarget(null);
+      fetchData(statusTab, typeFilter);
+    } catch (e: any) {
+      setRemoveTarget(null);
+      setActionError(e.message);
+    } finally {
+      setActionBusy(false);
+    }
   };
 
   const query = searchQuery.trim().toLowerCase();
@@ -291,6 +349,11 @@ function NotificationsContent() {
                         >
                           {n.registrationNumber || "—"} — {n.studentName}
                         </Link>
+                        {studentObj?.isActive === false && (
+                          <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-bold text-muted-foreground">
+                            Deactivated
+                          </span>
+                        )}
                         {batchName && (
                           <span className="text-xs text-muted-foreground">({batchName})</span>
                         )}
@@ -337,6 +400,32 @@ function NotificationsContent() {
                         Resolve
                       </button>
                     )}
+                    {/* Only the 3-leave alert asks for a decision about the student
+                        themselves; studentObj is null once the student is deleted. */}
+                    {n.type === "admin_critical" && studentObj && (
+                      <>
+                        {studentObj.isActive !== false && (
+                          <button
+                            onClick={() =>
+                              setDeactivateTarget({ notificationId: n._id, studentId: studentObj._id, studentName: n.studentName })
+                            }
+                            className="inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted transition-colors"
+                          >
+                            <UserX size={13} aria-hidden /> Deactivate
+                          </button>
+                        )}
+                        {user?.role === "admin" && (
+                          <button
+                            onClick={() =>
+                              setRemoveTarget({ notificationId: n._id, studentId: studentObj._id, studentName: n.studentName })
+                            }
+                            className="inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-destructive/30 px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10 transition-colors"
+                          >
+                            <Trash2 size={13} aria-hidden /> Remove
+                          </button>
+                        )}
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -344,6 +433,33 @@ function NotificationsContent() {
           })}
         </div>
       )}
+
+      <ConfirmDialog
+        open={deactivateTarget !== null}
+        onClose={() => setDeactivateTarget(null)}
+        onConfirm={deactivateStudent}
+        title={`Deactivate ${deactivateTarget?.studentName ?? "this student"}?`}
+        description="They leave every class register but keep their attendance and marks history. This alert is marked resolved. You can reactivate them from the student page."
+        confirmLabel={actionBusy ? "Deactivating…" : "Deactivate"}
+      />
+
+      <ConfirmDialog
+        open={removeTarget !== null}
+        onClose={() => setRemoveTarget(null)}
+        onConfirm={removeStudent}
+        title={`Remove ${removeTarget?.studentName ?? "this student"} permanently?`}
+        description="This erases the student together with all of their attendance records, marks and alerts. It cannot be undone. Deactivate instead if the history should be kept."
+        confirmLabel={actionBusy ? "Removing…" : "Remove permanently"}
+        tone="danger"
+      />
+
+      <AlertModal
+        open={actionError !== null}
+        onClose={() => setActionError(null)}
+        title="That didn't work"
+        description={actionError ?? undefined}
+        tone="danger"
+      />
     </div>
   );
 }
