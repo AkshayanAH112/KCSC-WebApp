@@ -169,10 +169,14 @@ export default function Navbar() {
 
           {/* Center: Desktop Nav Links. These stay real page routes
               (/about, /gallery, /news) plus the /#home anchor — the pill
-              styling is cosmetic and does not change where anything goes. */}
+              styling is cosmetic and does not change where anything goes.
+              Shown from lg, not md: with six links the pill no longer fits
+              beside the wordmark and the CTA at 768px — in Tamil it pushed the
+              language switcher and Join button off the screen entirely — so
+              tablets get the drawer instead. */}
           <div
             className={cn(
-              "hidden md:flex items-center justify-center rounded-full border border-tertiary-container/15 bg-surface-container/60 backdrop-blur-md shadow-inner",
+              "hidden lg:flex items-center justify-center rounded-full border border-tertiary-container/15 bg-surface-container/60 backdrop-blur-md shadow-inner",
               isTamil ? "gap-1 px-3 py-1.5" : "gap-1 px-4 py-1.5"
             )}
           >
@@ -200,7 +204,7 @@ export default function Navbar() {
             
             <Button 
               className={cn(
-                "hidden md:inline-flex rounded-full shadow-soft transition-all duration-300",
+                "hidden lg:inline-flex rounded-full shadow-soft transition-all duration-300",
                 isTamil ? "text-[12px] px-4" : (isScrolled || !isHomePage) ? "px-6" : "px-8"
               )}
               onClick={handleJoinClick}
@@ -209,7 +213,7 @@ export default function Navbar() {
             </Button>
 
             <button
-              className="cursor-pointer md:hidden text-tertiary-container p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary rounded-lg bg-primary-container/50 border border-tertiary-container/30 hover:text-on-primary transition-colors"
+              className="cursor-pointer lg:hidden text-tertiary-container p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary rounded-lg bg-primary-container/50 border border-tertiary-container/30 hover:text-on-primary transition-colors"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               aria-label="Toggle Menu"
             >
@@ -221,7 +225,7 @@ export default function Navbar() {
 
       {/* Mobile Menu Drawer */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-40 bg-background/98 backdrop-blur-md pt-28 px-5 md:hidden flex flex-col gap-6 overflow-y-auto pb-8">
+        <div className="fixed inset-0 z-40 bg-background/98 backdrop-blur-md pt-28 px-5 lg:hidden flex flex-col gap-6 overflow-y-auto pb-8">
           {navLinks.map((link) => (
             <Link
               key={link.label}

@@ -5,6 +5,7 @@ import {
   SPACES_NEWS_FOLDER,
   SPACES_MEMBERS_FOLDER,
   SPACES_GALLERY_FOLDER,
+  SPACES_CRICKET_FOLDER,
 } from '@/lib/spaces';
 import { isStaffRequest } from '@/lib/auth-guard';
 
@@ -16,6 +17,7 @@ const FOLDERS: Record<string, string> = {
   news: SPACES_NEWS_FOLDER,
   members: SPACES_MEMBERS_FOLDER,
   gallery: SPACES_GALLERY_FOLDER,
+  cricket: SPACES_CRICKET_FOLDER,
 };
 
 export async function POST(request: Request) {

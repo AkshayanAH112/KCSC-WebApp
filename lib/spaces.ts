@@ -31,6 +31,7 @@ export const SPACES_NEWS_FOLDER = 'kcsc/news';
 export const SPACES_MEMBERS_FOLDER = 'kcsc/members';
 export const SPACES_GALLERY_FOLDER = 'kcsc/gallery';
 export const SPACES_PAYMENTS_FOLDER = 'kcsc/payments';
+export const SPACES_CRICKET_FOLDER = 'kcsc/cricket';
 
 export function isSpacesConfigured() {
   return Boolean(

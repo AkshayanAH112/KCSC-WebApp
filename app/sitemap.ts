@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import connectToDatabase from "@/lib/mongodb";
-import { Post, GalleryFolder } from "@/models";
+import { Post, GalleryFolder, CricketTournament } from "@/models";
 import { siteConfig } from "@/lib/constants";
 import { LOCALES, DEFAULT_LOCALE } from "@/lib/seo";
 
@@ -23,6 +23,10 @@ const STATIC_PATHS: StaticPath[] = [
   // The lookup form itself is worth indexing; the results it returns are not
   // reachable by URL (the lookup is a POST), so nothing personal can be crawled.
   { path: "/results", changeFrequency: "weekly", priority: 0.8 },
+  // Live scores. Only the hub and published tournaments are listed below —
+  // individual match, team and player pages are reachable from those and
+  // would otherwise multiply the sitemap by every fixture ever played.
+  { path: "/live", changeFrequency: "daily", priority: 0.8 },
   { path: "/privacy", changeFrequency: "yearly", priority: 0.3 },
 ];
 
@@ -50,9 +54,10 @@ function localizedEntries(
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   await connectToDatabase();
-  const [posts, folders] = await Promise.all([
+  const [posts, folders, tournaments] = await Promise.all([
     Post.find({ status: "published" }).select("slug updatedAt").lean(),
     GalleryFolder.find().select("_id updatedAt").lean(),
+    CricketTournament.find({ isPublished: true }).select("slug updatedAt").lean(),
   ]);
 
   const entries: MetadataRoute.Sitemap = STATIC_PATHS.flatMap((p) =>
@@ -64,6 +69,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
   for (const folder of folders) {
     entries.push(...localizedEntries(`/gallery/${folder._id}`, "monthly", 0.5, folder.updatedAt));
+  }
+  for (const tournament of tournaments) {
+    entries.push(...localizedEntries(`/live/tournament/${tournament.slug}`, "daily", 0.6, tournament.updatedAt));
   }
 
   return entries;

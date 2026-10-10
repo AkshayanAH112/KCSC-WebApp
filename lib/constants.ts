@@ -19,6 +19,9 @@ export const navLinks = [
   // page to browse — and because a fifth item is what starts crowding the
   // desktop pill at the md breakpoint in Tamil, where every label is longer.
   { label: "Results", href: "/results" },
+  // Live cricket scores. The label is the single word "Live" in both locales
+  // for the reason given above: a sixth item only fits the desktop pill short.
+  { label: "Live", href: "/live" },
 ];
 
 // Real club facts (see about.txt): founded 2007, 170+ members, 8+ trophies

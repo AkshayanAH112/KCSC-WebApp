@@ -1,5 +1,13 @@
 import mongoose from "mongoose";
 import { POST_CATEGORIES } from "@/lib/post-categories";
+import {
+  EXTRA_TYPES,
+  MATCH_STATUSES,
+  PLAYER_ROLES,
+  RESULT_OUTCOMES,
+  TOURNAMENT_STATUSES,
+  WICKET_KINDS,
+} from "@/lib/cricket/engine";
 
 /**
  * Kallar Central Sports Club — free tuition programme.
@@ -317,3 +325,137 @@ const GalleryFolderSchema = new mongoose.Schema({
 // Keeping GalleryImage model around so we can migrate legacy images
 export const GalleryImage = mongoose.models.GalleryImage || mongoose.model("GalleryImage", GalleryImageSchema);
 export const GalleryFolder = mongoose.models.GalleryFolder || mongoose.model("GalleryFolder", GalleryFolderSchema);
+
+/**
+ * Cricket live scoring — teams, tournaments and matches. Unrelated to both
+ * Student (the tuition roster) and Member (club membership): a cricket player
+ * here is just a name on a team sheet, and opposition sides have players too.
+ *
+ * A match stores its deliveries and nothing derived from them. Totals,
+ * scorecards, the points table and career statistics are all computed by
+ * lib/cricket/engine.ts — see the header there for why. The one exception is
+ * `scores`, a denormalised per-innings total kept so list views never have to
+ * load a few hundred ball subdocuments per match.
+ *
+ * The enums live in lib/cricket/engine.ts (mongoose-free, so client components
+ * can import them) for the same reason POST_CATEGORIES lives outside this file.
+ */
+const CricketPlayerSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  role: { type: String, enum: PLAYER_ROLES, default: 'batter' },
+  isCaptain: { type: Boolean, default: false },
+  isKeeper: { type: Boolean, default: false },
+});
+
+const CricketTeamSchema = new mongoose.Schema({
+  name: { type: String, required: true, unique: true },
+  shortName: { type: String },
+  // Hex accent for the team's chip on the public site, where most sides have no crest.
+  color: { type: String },
+  logoUrl: { type: String },
+  logoPublicId: { type: String },
+  // Embedded: a player's _id here is what every ball refers to, so a player is
+  // never removed while a match still references them (see /api/cricket/teams/[id]).
+  players: { type: [CricketPlayerSchema], default: [] },
+}, { timestamps: true });
+export const CricketTeam = mongoose.models.CricketTeam || mongoose.model("CricketTeam", CricketTeamSchema);
+
+const CricketTournamentSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  slug: { type: String, required: true, unique: true, index: true },
+  season: { type: String },
+  venue: { type: String },
+  oversPerInnings: { type: Number, default: 20 },
+  teams: [{ type: mongoose.Schema.Types.ObjectId, ref: 'CricketTeam' }],
+  status: { type: String, enum: TOURNAMENT_STATUSES, default: 'upcoming' },
+  pointsWin: { type: Number, default: 2 },
+  pointsTie: { type: Number, default: 1 },
+  pointsNoResult: { type: Number, default: 1 },
+  // Same gate as Exam.isPublished: fixtures and squads are assembled over days,
+  // so nothing about a tournament is public until an admin says so.
+  isPublished: { type: Boolean, default: false, index: true },
+  startDate: { type: Date },
+  endDate: { type: Date },
+}, { timestamps: true });
+export const CricketTournament = mongoose.models.CricketTournament || mongoose.model("CricketTournament", CricketTournamentSchema);
+
+const CricketWicketSchema = new mongoose.Schema({
+  kind: { type: String, enum: WICKET_KINDS, required: true },
+  playerOut: { type: mongoose.Schema.Types.ObjectId, required: true },
+  fielder: { type: mongoose.Schema.Types.ObjectId },
+}, { _id: false });
+
+const CricketBallSchema = new mongoose.Schema({
+  striker: { type: mongoose.Schema.Types.ObjectId, required: true },
+  nonStriker: { type: mongoose.Schema.Types.ObjectId, required: true },
+  bowler: { type: mongoose.Schema.Types.ObjectId, required: true },
+  batRuns: { type: Number, default: 0 },
+  extraType: { type: String, enum: [...EXTRA_TYPES, null], default: null },
+  // The whole extras figure for the ball, including the wide/no-ball penalty run.
+  extraRuns: { type: Number, default: 0 },
+  wicket: { type: CricketWicketSchema, default: null },
+}, { _id: false });
+
+const CricketInningsSchema = new mongoose.Schema({
+  battingTeam: { type: mongoose.Schema.Types.ObjectId, required: true },
+  bowlingTeam: { type: mongoose.Schema.Types.ObjectId, required: true },
+  // Who faces the next ball. Null means the scorer still has to send someone in.
+  striker: { type: mongoose.Schema.Types.ObjectId, default: null },
+  nonStriker: { type: mongoose.Schema.Types.ObjectId, default: null },
+  bowler: { type: mongoose.Schema.Types.ObjectId, default: null },
+  isClosed: { type: Boolean, default: false },
+  balls: { type: [CricketBallSchema], default: [] },
+}, { _id: false });
+
+const CricketMatchSchema = new mongoose.Schema({
+  // Absent for a friendly — a match does not have to belong to a tournament.
+  tournamentId: { type: mongoose.Schema.Types.ObjectId, ref: 'CricketTournament', index: true },
+  title: { type: String }, // "Final", "Match 4" — optional
+  teamA: { type: mongoose.Schema.Types.ObjectId, ref: 'CricketTeam', required: true },
+  teamB: { type: mongoose.Schema.Types.ObjectId, ref: 'CricketTeam', required: true },
+  // The playing sides, as CricketTeam.players ids. Their length sets how many
+  // wickets end an innings, so a 7-a-side game is all out at six.
+  squadA: [{ type: mongoose.Schema.Types.ObjectId }],
+  squadB: [{ type: mongoose.Schema.Types.ObjectId }],
+  oversPerInnings: { type: Number, required: true, default: 20 },
+  venue: { type: String },
+  startAt: { type: Date, index: true },
+  status: { type: String, enum: MATCH_STATUSES, default: 'upcoming', index: true },
+  toss: {
+    type: new mongoose.Schema({
+      wonBy: { type: mongoose.Schema.Types.ObjectId, required: true },
+      decision: { type: String, enum: ['bat', 'bowl'], required: true },
+    }, { _id: false }),
+    default: null,
+  },
+  innings: { type: [CricketInningsSchema], default: [] },
+  scores: {
+    type: [new mongoose.Schema({
+      team: { type: mongoose.Schema.Types.ObjectId },
+      runs: Number,
+      wickets: Number,
+      balls: Number,
+      allOut: Boolean,
+    }, { _id: false })],
+    default: [],
+  },
+  // `outcome`, not `type` — a key named `type` inside a nested object is read by
+  // mongoose as the field's type declaration.
+  result: {
+    type: new mongoose.Schema({
+      outcome: { type: String, enum: RESULT_OUTCOMES, required: true },
+      winner: { type: mongoose.Schema.Types.ObjectId },
+      by: { type: String, enum: ['runs', 'wickets', null] },
+      margin: { type: Number },
+      manual: { type: Boolean, default: false },
+    }, { _id: false }),
+    default: null,
+  },
+  playerOfMatch: { type: mongoose.Schema.Types.ObjectId },
+  // Lets a scorer run a practice match without it appearing on the public site.
+  isPublished: { type: Boolean, default: true },
+  // Bumped on every scoring write and required to match on the next one, so a
+  // double-tap or a second scorer's phone cannot record the same ball twice.
+  rev: { type: Number, default: 0 },
+}, { timestamps: true });
+export const CricketMatch = mongoose.models.CricketMatch || mongoose.model("CricketMatch", CricketMatchSchema);

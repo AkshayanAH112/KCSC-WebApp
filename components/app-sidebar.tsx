@@ -18,6 +18,7 @@ import {
   LayoutGrid,
   Bell,
   FileSpreadsheet,
+  Trophy,
 } from "lucide-react";
 
 import {
@@ -49,10 +50,11 @@ const lmsNavItems = [
   { title: "Gallery", url: "/admin/gallery", icon: ImageIcon },
 ];
 
-// Admin-only: club membership and staff-account management. Hidden from
+// Admin-only: club membership, cricket scoring and staff-account management. Hidden from
 // lms_manager sessions here for UX; the API rejects them regardless (auth-guard.ts).
 const adminNavItems = [
   { title: "Club Members", url: "/admin/members", icon: UserCog },
+  { title: "Cricket Scoring", url: "/admin/cricket", icon: Trophy },
   { title: "Staff Accounts", url: "/admin/staff", icon: ShieldCheck },
 ];
 
